@@ -19,7 +19,7 @@ namespace testicek
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("tralalaaaa");
+            MessageBox.Show("tralalaaadsadsadasa");
         }
     }
 }
