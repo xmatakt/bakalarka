@@ -507,6 +507,12 @@ namespace Kocka
             //KresliKocku();
         }
 
+        public void SetLight(Vector3 specular, Vector3 ambient, Vector3 diffuse, Vector3 direction)
+        {
+            light = new DirectionalLight(direction, ambient, specular, diffuse);
+            light.SetDirectionalLightUniforms(spMain);
+        }
+
         public void KresliKocku()
         {
             Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations);

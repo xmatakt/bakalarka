@@ -257,5 +257,26 @@ namespace Kocka
             hLomeno2 = 2.0f / (float)glControl1.Height;
             scale = 1.0f;
         }
+
+        private void SpecLx_ValueChanged(object sender, EventArgs e)
+        {
+            if(sfera)
+            {
+                Vector3 specular = new Vector3((float)SpecLx.Value, (float)SpecLy.Value,(float)SpecLz.Value);
+                Vector3 ambient = new Vector3((float)AmbLx.Value, (float)AmbLy.Value, (float)AmbLz.Value);
+                Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
+                Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
+                sphere.SetLight(specular,ambient,diffuse,direction);
+            }
+            else
+            {
+                Vector3 specular = new Vector3((float)SpecLx.Value, (float)SpecLy.Value, (float)SpecLz.Value);
+                Vector3 ambient = new Vector3((float)AmbLx.Value, (float)AmbLy.Value, (float)AmbLz.Value);
+                Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
+                Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
+                kocka.SetLight(specular, ambient, diffuse, direction);
+            }
+            glControl1.Invalidate();
+        }
     }
 }

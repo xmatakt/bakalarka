@@ -85,27 +85,6 @@ namespace Kocka
             }
         }
 
-        private void NastavMatice(bool co)
-        {
-            //prvotny resize
-            if (!co)
-            {
-                modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 3.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-
-                ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
-                TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
-                RotationMatrix = Matrix4.Identity;
-                MatrixStore_Rotations = Matrix4.Identity;
-                MatrixStore_Translations = Matrix4.Identity;
-                MatrixStore_Scales = Matrix4.Identity;
-                Current = Matrix4.Identity;
-            }
-            //resize vyvolany pouzivatelom
-            else
-                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-        }
-
         private void SetSphere()
         {
             kocka = new Vector3[len];
@@ -224,6 +203,33 @@ namespace Kocka
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
             GL.ClearDepth(1.0);
+        }
+
+        public void SetLight(Vector3 specular,Vector3 ambient, Vector3 diffuse, Vector3 direction)
+        {
+            light = new DirectionalLight(direction, ambient, specular, diffuse);
+            light.SetDirectionalLightUniforms(spMain);
+        }
+
+        private void NastavMatice(bool co)
+        {
+            //prvotny resize
+            if (!co)
+            {
+                modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 3.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
+
+                ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
+                TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+                RotationMatrix = Matrix4.Identity;
+                MatrixStore_Rotations = Matrix4.Identity;
+                MatrixStore_Translations = Matrix4.Identity;
+                MatrixStore_Scales = Matrix4.Identity;
+                Current = Matrix4.Identity;
+            }
+            //resize vyvolany pouzivatelom
+            else
+                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
         }
 
         private void KresliSferu()
