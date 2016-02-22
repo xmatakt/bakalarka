@@ -18,28 +18,29 @@ void main()
 	vec3 n,R,color,ld;
 	
 	color = ambient;//nezavisle na pozicii vsetkeho
+	ld=lightDirection;//tohoto sa zbavit
 
 	//fragment shader nemoze zapisovat varying premenne, preto n=...
 	n = normalize(normal);
 
-	NdotL = max(dot(n,-lightDirection),0.0);
+	NdotL = max(dot(n,-ld),0.0);
 
 	//vypocet odrazeneho luca R
-	R = 2.0 * NdotL * n - lightDirection;
+	R = 2.0 * NdotL * n - ld;
 	R = normalize(R);
+	RdotEye = dot(R,normalize(EyeVector));
 
 	if(NdotL > 0.0)
 	{
 		color += diffuse * NdotL;
-		RdotEye = max(dot(R,normalize(EyeVector)),0.0);
-		color += specular * pow(RdotEye,shininess);
+		//druhy if tu?,alebo bez ifu?
 	}
 
-	color = color * TheColor;
+	if(RdotEye > 0.0)
+		color += specular * pow(RdotEye, 3);
+
+	//color = color * TheColor;
 	
-	gl_FragColor = vec4(color, 1.0);
+	gl_FragColor = vec4(TheColor, 1.0);
 	//outputColor=vec4(TheColor, 1.0);
 }
-
-// inspiracia:
-// http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/directional-light-per-pixel/

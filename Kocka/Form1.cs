@@ -13,11 +13,16 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 // planujem pridat groupox na nastavovanie materialovych vlastnosti
+//      -este snad dnes
+
 // daco na vyber ci chce clovek flat alebo gourand shading - ale to by som musel najprv vyriesit problem s deravou sferou
-// spravil som flat shading => sphere = new Sphere(glControl1.Width, glControl1.Height, scale,true);
-// gourandovo tienovanie    => sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
+//      -najprv musim vyriesit deravost sfery
+
 // nevyriesil som (ani som neriesil) deravu sferu pri opatovnom zvoleni vykreslovanie sfery
+//      -bezo zmeny
+
 // snazil som sa vytvorit per pixel shadere, zatial sa mi nepodarilo skompilovat vertex shader, takze sa nic nevykresluje
+//      - tak jedina chyba bola, ze som posielal medzi shaderami inty, na co je zrejme alergicky, floaty mu nevadia...
 
 namespace Kocka
 {
@@ -56,7 +61,7 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, false);
                 sphere.DrawSphere();
             }
             else

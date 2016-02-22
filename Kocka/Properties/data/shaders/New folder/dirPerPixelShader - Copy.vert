@@ -54,15 +54,15 @@ void main()
 	diffuse =  material.diffCoef * light.diffuse;// * NdotL pride az vo fragment shaderi
 	ambient = light.ambient * material.ambCoef;
 	specular = material.specCoef * light.specular;//zvysok pride vo fragment shaderi
-	shininess = material.shininess;//teba tiez len poslem
+	shininess = material.shininess;
 
 	TheColor = inColor;//farbu iba posuniem fragment shaderu
 
 	gl_Position = projectionMatrix*modelViewMatrix*vec4(inPosition, 1.0);	
 }
 
-// Vytvorene s pomocou:
-// http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/directional-light-per-pixel/
+//Vytvorene s pomocou:
+
 
 
 

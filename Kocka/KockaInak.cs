@@ -265,15 +265,23 @@ namespace Kocka
             GL.Enable(EnableCap.PrimitiveRestart);
             GL.PrimitiveRestartIndex(36);
 
-            //vytvorenie shader programu--- pridana kontrola nacitania, zo Shaders.dll by som teda mohol odstranit vyhadzaovanie messageboxov
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //per vertex shaders
+            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+
+            //uplne prve shadere
             //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.vert", ShaderType.VertexShader))
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
             //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.frag", ShaderType.FragmentShader))
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+
+            ////per pixel shaders - zatial nefunkcny, chyba je zrejme vo fragment shaderi
+            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
        
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
