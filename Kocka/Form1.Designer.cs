@@ -28,10 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            //this.glControl1 = new OpenTK.GLControl();
-
-            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
-
+            this.glControl1 = new OpenTK.GLControl();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.dacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,6 +49,16 @@
             this.AmbLx = new System.Windows.Forms.NumericUpDown();
             this.SpecLz = new System.Windows.Forms.NumericUpDown();
             this.SpecLy = new System.Windows.Forms.NumericUpDown();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.diffCoef = new System.Windows.Forms.NumericUpDown();
+            this.ambCoeff = new System.Windows.Forms.NumericUpDown();
+            this.specCoeff = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
+            this.shininess = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLx)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -66,6 +73,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.AmbLx)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLz)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLy)).BeginInit();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.shininess)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -514,11 +526,170 @@
             0});
             this.SpecLy.ValueChanged += new System.EventHandler(this.SpecLx_ValueChanged);
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.shininess);
+            this.groupBox2.Controls.Add(this.label10);
+            this.groupBox2.Controls.Add(this.label9);
+            this.groupBox2.Controls.Add(this.label8);
+            this.groupBox2.Controls.Add(this.label7);
+            this.groupBox2.Controls.Add(this.diffCoef);
+            this.groupBox2.Controls.Add(this.ambCoeff);
+            this.groupBox2.Controls.Add(this.specCoeff);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Location = new System.Drawing.Point(956, 212);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(293, 120);
+            this.groupBox2.TabIndex = 3;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Material";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(220, 25);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(52, 17);
+            this.label9.TabIndex = 23;
+            this.label9.Text = "Diffuse";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(68, 25);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(64, 17);
+            this.label8.TabIndex = 22;
+            this.label8.Text = "Specular";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(143, 25);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(59, 17);
+            this.label7.TabIndex = 21;
+            this.label7.Text = "Ambient";
+            // 
+            // diffCoef
+            // 
+            this.diffCoef.DecimalPlaces = 2;
+            this.diffCoef.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.diffCoef.Location = new System.Drawing.Point(214, 45);
+            this.diffCoef.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.diffCoef.Name = "diffCoef";
+            this.diffCoef.Size = new System.Drawing.Size(68, 22);
+            this.diffCoef.TabIndex = 20;
+            this.diffCoef.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.diffCoef.Value = new decimal(new int[] {
+            44,
+            0,
+            0,
+            131072});
+            this.diffCoef.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
+            // 
+            // ambCoeff
+            // 
+            this.ambCoeff.DecimalPlaces = 2;
+            this.ambCoeff.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.ambCoeff.Location = new System.Drawing.Point(141, 45);
+            this.ambCoeff.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.ambCoeff.Name = "ambCoeff";
+            this.ambCoeff.Size = new System.Drawing.Size(68, 22);
+            this.ambCoeff.TabIndex = 19;
+            this.ambCoeff.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.ambCoeff.Value = new decimal(new int[] {
+            23,
+            0,
+            0,
+            131072});
+            this.ambCoeff.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
+            // 
+            // specCoeff
+            // 
+            this.specCoeff.DecimalPlaces = 2;
+            this.specCoeff.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.specCoeff.Location = new System.Drawing.Point(67, 45);
+            this.specCoeff.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.specCoeff.Name = "specCoeff";
+            this.specCoeff.Size = new System.Drawing.Size(68, 22);
+            this.specCoeff.TabIndex = 18;
+            this.specCoeff.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.specCoeff.Value = new decimal(new int[] {
+            64,
+            0,
+            0,
+            131072});
+            this.specCoeff.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(-1, 47);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(48, 17);
+            this.label2.TabIndex = 17;
+            this.label2.Text = "Coeffs";
+            // 
+            // shininess
+            // 
+            this.shininess.Location = new System.Drawing.Point(214, 79);
+            this.shininess.Maximum = new decimal(new int[] {
+            128,
+            0,
+            0,
+            0});
+            this.shininess.Name = "shininess";
+            this.shininess.Size = new System.Drawing.Size(68, 22);
+            this.shininess.TabIndex = 25;
+            this.shininess.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.shininess.Value = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.shininess.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(118, 81);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(69, 17);
+            this.label10.TabIndex = 24;
+            this.label10.Text = "Shininess";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 756);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.glControl1);
             this.Controls.Add(this.menuStrip1);
@@ -542,6 +713,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.AmbLx)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLz)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLy)).EndInit();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.shininess)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -570,6 +747,16 @@
         private System.Windows.Forms.NumericUpDown AmbLx;
         private System.Windows.Forms.NumericUpDown SpecLz;
         private System.Windows.Forms.NumericUpDown SpecLy;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.NumericUpDown diffCoef;
+        private System.Windows.Forms.NumericUpDown ambCoeff;
+        private System.Windows.Forms.NumericUpDown specCoeff;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown shininess;
+        private System.Windows.Forms.Label label10;
     }
 }
 

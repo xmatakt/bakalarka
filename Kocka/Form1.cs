@@ -12,9 +12,6 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
-// planujem pridat groupox na nastavovanie materialovych vlastnosti
-//      -este snad dnes
-
 // daco na vyber ci chce clovek flat alebo gourand shading - ale to by som musel najprv vyriesit problem s deravou sferou
 //      -najprv musim vyriesit deravost sfery
 
@@ -286,6 +283,27 @@ namespace Kocka
                 Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
                 Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
                 kocka.SetLight(specular, ambient, diffuse, direction);
+            }
+            glControl1.Invalidate();
+        }
+
+        private void SpecMx_ValueChanged(object sender, EventArgs e)
+        {
+            if (sfera)
+            {
+                float specCoeff = (float)this.specCoeff.Value;
+                float ambCoeff = (float)this.ambCoeff.Value;
+                float diffCoef = (float)this.diffCoef.Value;
+                int shininess = (int)this.shininess.Value;
+                sphere.SetMaterial(specCoeff,ambCoeff,diffCoef,shininess);
+            }
+            else
+            {
+                float specCoeff = (float)this.specCoeff.Value;
+                float ambCoeff = (float)this.ambCoeff.Value;
+                float diffCoef = (float)this.diffCoef.Value;
+                int shininess = (int)this.shininess.Value;
+                kocka.SetMaterial(specCoeff, ambCoeff, diffCoef, shininess);
             }
             glControl1.Invalidate();
         }

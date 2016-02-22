@@ -39,7 +39,7 @@ namespace Kocka
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
-            material = new Material(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), 0.30f, 0.10f, 0.420f, 8);
+            material = new Material(0.30f, 0.10f, 0.420f, 8);
            
             width = w;
             height = h;
@@ -313,6 +313,12 @@ namespace Kocka
         {
             light = new DirectionalLight(direction, ambient, specular, diffuse);
             light.SetDirectionalLightUniforms(spMain);
+        }
+
+        public void SetMaterial(float SpecCoeff, float AmbCoeff, float DiffCoeff, int shin)
+        {
+            material = new Material(AmbCoeff, SpecCoeff, DiffCoeff, shin);
+            material.SetMaterialUniforms(spMain);
         }
 
         private void KresliKocku()
