@@ -1,6 +1,6 @@
 #version 330
 
-smooth in vec3 TheColor;
+in vec3 TheColor;
 out vec4 outputColor;
 
 void main()

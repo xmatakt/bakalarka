@@ -28,7 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.glControl1 = new OpenTK.GLControl();
+            //this.glControl1 = new OpenTK.GLControl();
+
+            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
+
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.dacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -206,13 +209,8 @@
             0,
             131072});
             this.DirLz.Location = new System.Drawing.Point(217, 130);
-            this.DirLz.Maximum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.DirLz.Minimum = new decimal(new int[] {
-            1,
+            100,
             0,
             0,
             -2147483648});
@@ -236,11 +234,11 @@
             0,
             131072});
             this.DirLy.Location = new System.Drawing.Point(144, 130);
-            this.DirLy.Maximum = new decimal(new int[] {
-            1,
+            this.DirLy.Minimum = new decimal(new int[] {
+            100,
             0,
             0,
-            0});
+            -2147483648});
             this.DirLy.Name = "DirLy";
             this.DirLy.Size = new System.Drawing.Size(68, 22);
             this.DirLy.TabIndex = 19;
@@ -256,11 +254,11 @@
             0,
             131072});
             this.DirLx.Location = new System.Drawing.Point(70, 130);
-            this.DirLx.Maximum = new decimal(new int[] {
-            1,
+            this.DirLx.Minimum = new decimal(new int[] {
+            100,
             0,
             0,
-            0});
+            -2147483648});
             this.DirLx.Name = "DirLx";
             this.DirLx.Size = new System.Drawing.Size(68, 22);
             this.DirLx.TabIndex = 18;

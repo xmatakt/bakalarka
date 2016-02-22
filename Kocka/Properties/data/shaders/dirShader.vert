@@ -32,28 +32,29 @@ struct Material
 
 uniform Material material;
 
-smooth out vec3 TheColor;
+out vec3 TheColor;
 
 void main()
 {
 	vec3 lightDirection, normal3, diffuse, ambient, specular, R;
 	vec4 normal4;
 	float NdotL, RdotEye;
-	
+
 	//transformacia normaly do eye space a znormovanie vysledku
 	normal4=normalMatrix * normalize(vec4(inNormal,1.0));
 	normal3=normalize(normal4.xyz);	
 
-	lightDirection = normalize(-light.direction);
+	lightDirection = normalize(light.direction);
 	specular = vec3(0.0);
 	
 	//cos uhla medzi normalov a lucom, ak je vyseldok zaporny, svetlo prichadza zozadu, preto max(...,0.0)
-	NdotL = max(dot(normal3,lightDirection),0.0);	
+	NdotL = max(dot(normal3,-lightDirection),0.0);	
+	//NdotL = dot(normal3,lightDirection);
 
 	//vypocet odrazeneho luca R
-	R = 2.0 * normal3 * NdotL - lightDirection;
+	R = 2.0 * NdotL * normal3  - lightDirection;
 	R = normalize(R);
-	RdotEye = dot(normal3, normalize(eye));
+	RdotEye = dot(R,normalize(eye));
 
 	//diffuse = light.diffuse * material.diffuse * material.diffCoef;
 	diffuse =  material.diffCoef * light.diffuse * NdotL;//iny zdroj z netu
@@ -66,9 +67,10 @@ void main()
 		specular =  material.specCoef * light.specular * pow(RdotEye, material.shininess);//iny zdroj z netu
 	}
 
-	TheColor = (NdotL * diffuse + ambient + specular) * inColor;
+	//TheColor = (NdotL * diffuse + ambient + specular) * inColor;
+	TheColor = (diffuse + ambient + specular) * inColor;
 
-	gl_Position = projectionMatrix*modelViewMatrix*vec4(inPosition, 1.0);
+	gl_Position = projectionMatrix*modelViewMatrix*vec4(inPosition, 1.0);	
 }
 
 //Vytvorene s pomocou:

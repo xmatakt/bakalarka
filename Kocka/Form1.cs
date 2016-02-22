@@ -12,6 +12,13 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
+// planujem pridat groupox na nastavovanie materialovych vlastnosti
+// daco na vyber ci chce clovek flat alebo gourand shading - ale to by som musel najprv vyriesit problem s deravou sferou
+// spravil som flat shading => sphere = new Sphere(glControl1.Width, glControl1.Height, scale,true);
+// gourandovo tienovanie    => sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
+// nevyriesil som (ani som neriesil) deravu sferu pri opatovnom zvoleni vykreslovanie sfery
+// snazil som sa vytvorit per pixel shadere, zatial sa mi nepodarilo skompilovat vertex shader, takze sa nic nevykresluje
+
 namespace Kocka
 {
     public partial class Form1 : Form
@@ -49,7 +56,7 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
                 sphere.DrawSphere();
             }
             else
@@ -243,10 +250,9 @@ namespace Kocka
             {
                 kocka.Delete();
                 Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
             }
             glControl1.Invalidate();
-            //MessageBox.Show("calamada z tristohrnc ov");
         }
 
         private void Reset()
