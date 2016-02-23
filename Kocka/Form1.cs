@@ -28,7 +28,7 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize,sfera; 
+        private bool loaded, resize,sfera,flat; 
         //private Stvorec3D kocka;
         private KockaInak kocka;
         private Sphere sphere;
@@ -43,6 +43,7 @@ namespace Kocka
             loaded = false;
             resize = false;
             sfera = volacoToolStripMenuItem.Checked;
+            flat = flatShadingToolStripMenuItem.Checked;
             scale = 1.0f;
         }
 
@@ -64,8 +65,8 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, false);
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, flat);
+                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
                 sphere.DrawSphere();
             }
             else
@@ -242,30 +243,6 @@ namespace Kocka
             }
         }
 
-        private void volacoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            sfera = volacoToolStripMenuItem.Checked = !volacoToolStripMenuItem.Checked;
-            //volacoToolStripMenuItem.Checked = !volacoToolStripMenuItem.Checked;
-        }
-
-        private void volacoToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            if(sfera)
-            {
-                sphere.Delete();
-                Reset();
-                kocka = new KockaInak(glControl1.Width, glControl1.Height, scale);
-            }
-            else
-            {
-                kocka.Delete();
-                Reset();
-                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
-            }
-            glControl1.Invalidate();
-        }
-
         private void Reset()
         {
             wPol = glControl1.Width / 2.0f;
@@ -313,6 +290,81 @@ namespace Kocka
                 float diffCoef = (float)this.diffCoef.Value;
                 int shininess = (int)this.shininess.Value;
                 kocka.SetMaterial(specCoeff, ambCoeff, diffCoef, shininess);
+            }
+            glControl1.Invalidate();
+        }
+
+        private void flatShadingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
+            if(!flatShadingToolStripMenuItem.Checked)
+            {
+                flatShadingToolStripMenuItem.Checked = true;
+                gourandShadingToolStripMenuItem.Checked = false;
+            }
+            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
+        }
+
+        private void gourandShadingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("flat = {0}",flat);
+            if(!gourandShadingToolStripMenuItem.Checked)
+            {
+                gourandShadingToolStripMenuItem.Checked = true;
+                flatShadingToolStripMenuItem.Checked = false;
+            }
+            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
+        }
+
+        //zrejme nie uplne optimalne
+        private void flatShadingToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            sfera = true;
+            kockaToolStripMenuItem.Checked = false;
+            volacoToolStripMenuItem.Checked = true;
+            if (sfera)
+            {
+                flat = flatShadingToolStripMenuItem.Checked;
+                sphere.Delete();
+                Reset();
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,flat);
+            }
+            glControl1.Invalidate();
+        }
+
+        private void volacoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(!volacoToolStripMenuItem.Checked)
+            {
+                volacoToolStripMenuItem.Checked = true;
+                kockaToolStripMenuItem.Checked = false;
+            }
+        }
+
+        private void kockaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(!kockaToolStripMenuItem.Checked)
+            {
+                kockaToolStripMenuItem.Checked = true;
+                volacoToolStripMenuItem.Checked = false;
+            }
+        }
+
+        private void volacoToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            sfera = volacoToolStripMenuItem.Checked;
+            if (sfera)
+            {
+                flat = flatShadingToolStripMenuItem.Checked;
+                kocka.Delete();
+                Reset();
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, flat);
+            }
+            else
+            {
+                sphere.Delete();
+                Reset();
+                kocka = new KockaInak(glControl1.Width, glControl1.Height, scale);
             }
             glControl1.Invalidate();
         }

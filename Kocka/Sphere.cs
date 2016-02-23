@@ -111,7 +111,6 @@ namespace Kocka
                     x = 0.0f;
                     y = 0.0f;
                     list.Add(new Vector3(x, y, z));
-                    //System.Diagnostics.Debug.WriteLine(list[list.Count-1].ToString());
                 }
                 else
                 {
@@ -120,7 +119,6 @@ namespace Kocka
                         x = r * (float)Math.Cos(alfa) * sinB;
                         y = r * (float)Math.Sin(alfa) * sinB;
                         list.Add(new Vector3(x, y, z));
-                        //System.Diagnostics.Debug.WriteLine(list[list.Count - 1].ToString());
                     }
                 }
             }
@@ -299,20 +297,17 @@ namespace Kocka
             farba = new Vector3[len];
 
             int p = 0;
-            //gourand shading
             //vrchna cast
             for (int i = 1; i <= DvaPi; i++)
             {
                 if (i == DvaPi)
                 {
-                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}",0,i,1);
                     kocka[p] = normaly[p] = list[0]; p++;
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[1]; p++;
                 }
                 else
                 {
-                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", 0, i, i+1);
                     kocka[p] = normaly[p] = list[0]; p++;
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[i + 1]; p++;
@@ -326,24 +321,20 @@ namespace Kocka
                 {
                     if (i % DvaPi == 0)
                     {
-                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi,((j - 1) * DvaPi) + 1 + DvaPi);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, ((j - 1) * DvaPi) + 1 + DvaPi, ((j - 1) * DvaPi) + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1]; p++;
                     }
                     else
                     {
-                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi, i + DvaPi + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi+1, i + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
                         kocka[p] = normaly[p] = list[i + 1]; p++;
@@ -357,33 +348,20 @@ namespace Kocka
             {
                 if (i == tmp - 2)
                 {
-                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, tmp - 1, tmp - DvaPi - 1);
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[tmp - 1]; p++;
                     kocka[p] = normaly[p] = list[tmp - DvaPi - 1]; p++;
                 }
                 else
                 {
-                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, tmp - 1, i + 1);
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[tmp - 1]; p++;
                     kocka[p] = normaly[p] = list[i + 1]; p++;
                 }
             }
 
-            //System.Diagnostics.Debug.WriteLine("==========================");
-            //foreach (var n in normaly)
-            //{
-            //    System.Diagnostics.Debug.WriteLine(n.ToString());
-            //}
-            //System.Diagnostics.Debug.WriteLine("==========================");
-
             for (int i = 0; i < p; i++)
-            {
-                //farba[i] = new Vector3(0.0f, 0.0f, (i + 1) / (float)p);
                 farba[i] = new Vector3(1.0f, 1.0f, 1.0f);
-                //normaly[i] = -normaly[i].Normalized();
-            }
 
             InitSphere();
         }

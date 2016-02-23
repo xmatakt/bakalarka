@@ -32,6 +32,8 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.dacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.flatShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gourandShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Specular = new System.Windows.Forms.Label();
             this.SpecLx = new System.Windows.Forms.NumericUpDown();
             this.Ambient = new System.Windows.Forms.Label();
@@ -59,6 +61,7 @@
             this.ambCoeff = new System.Windows.Forms.NumericUpDown();
             this.specCoeff = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
+            this.kockaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLx)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -114,18 +117,42 @@
             // dacoToolStripMenuItem
             // 
             this.dacoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.volacoToolStripMenuItem});
+            this.volacoToolStripMenuItem,
+            this.kockaToolStripMenuItem});
             this.dacoToolStripMenuItem.Name = "dacoToolStripMenuItem";
             this.dacoToolStripMenuItem.Size = new System.Drawing.Size(56, 24);
             this.dacoToolStripMenuItem.Text = "Daco";
             // 
             // volacoToolStripMenuItem
             // 
+            this.volacoToolStripMenuItem.Checked = true;
+            this.volacoToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.volacoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.flatShadingToolStripMenuItem,
+            this.gourandShadingToolStripMenuItem});
             this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
-            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
+            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
             this.volacoToolStripMenuItem.Text = "Sfera";
             this.volacoToolStripMenuItem.CheckedChanged += new System.EventHandler(this.volacoToolStripMenuItem_CheckedChanged);
             this.volacoToolStripMenuItem.Click += new System.EventHandler(this.volacoToolStripMenuItem_Click);
+            // 
+            // flatShadingToolStripMenuItem
+            // 
+            this.flatShadingToolStripMenuItem.Checked = true;
+            this.flatShadingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.flatShadingToolStripMenuItem.Name = "flatShadingToolStripMenuItem";
+            this.flatShadingToolStripMenuItem.Size = new System.Drawing.Size(191, 26);
+            this.flatShadingToolStripMenuItem.Text = "Flat shading";
+            this.flatShadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.flatShadingToolStripMenuItem_CheckedChanged);
+            this.flatShadingToolStripMenuItem.Click += new System.EventHandler(this.flatShadingToolStripMenuItem_Click);
+            // 
+            // gourandShadingToolStripMenuItem
+            // 
+            this.gourandShadingToolStripMenuItem.Name = "gourandShadingToolStripMenuItem";
+            this.gourandShadingToolStripMenuItem.Size = new System.Drawing.Size(191, 26);
+            this.gourandShadingToolStripMenuItem.Text = "Gourand shading";
+            this.gourandShadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.flatShadingToolStripMenuItem_CheckedChanged);
+            this.gourandShadingToolStripMenuItem.Click += new System.EventHandler(this.gourandShadingToolStripMenuItem_Click);
             // 
             // Specular
             // 
@@ -682,6 +709,13 @@
             this.label2.TabIndex = 17;
             this.label2.Text = "Coeffs";
             // 
+            // kockaToolStripMenuItem
+            // 
+            this.kockaToolStripMenuItem.Name = "kockaToolStripMenuItem";
+            this.kockaToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
+            this.kockaToolStripMenuItem.Text = "Kocka";
+            this.kockaToolStripMenuItem.Click += new System.EventHandler(this.kockaToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -755,6 +789,9 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown shininess;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.ToolStripMenuItem flatShadingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gourandShadingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kockaToolStripMenuItem;
     }
 }
 
