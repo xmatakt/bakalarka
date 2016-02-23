@@ -302,9 +302,9 @@ namespace Kocka
             ////smer svetelnych lucov
             //spMain.SetUniform("sunLight.vDirection", new Vector3(0.0f, 0.0f, -1.0f));
 
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
-            GL.ClearDepth(1.0);
+            //GL.Enable(EnableCap.DepthTest);
+            //GL.DepthFunc(DepthFunction.Less);
+            //GL.ClearDepth(1.0);
 
             KresliKocku();
         }
@@ -389,11 +389,20 @@ namespace Kocka
         {
             //zrejme by tu tiez mohla prist kontrola, ci znicenie programov prebehlo v poriadku, resp. ju zakomponovat do Shaders.dll
             //pozriet sa ci deletujem vsetko co sa da
-            VertexShader.DeleteShader();
-            FragmentShader.DeleteShader();
-            spMain.DeleteProgram();
             GL.DeleteBuffers(4, VBO);
             GL.DeleteVertexArrays(1, VAO);
+            GL.DisableVertexAttribArray(0);//pridavane zo zufalstva
+            GL.DisableVertexAttribArray(1);//pridavane zo zufalstva
+            GL.DisableVertexAttribArray(2);//pridavane zo zufalstva
+            GL.Disable(EnableCap.PrimitiveRestart);//tak tento bazmek robil certy
+
+            GL.DetachShader(spMain.GetProgramHandle(),VertexShader.GetShaderHandle());
+            VertexShader.DeleteShader();
+            GL.DetachShader(spMain.GetProgramHandle(), FragmentShader.GetShaderHandle());
+            FragmentShader.DeleteShader();
+
+
+            spMain.DeleteProgram();
         }
 
         public void Pohyb(float dd)

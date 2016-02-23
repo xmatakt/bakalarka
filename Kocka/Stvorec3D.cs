@@ -508,9 +508,9 @@ namespace Kocka
             ////smer svetelnych lucov
             //spMain.SetUniform("sunLight.vDirection", new Vector3(0.0f, 0.0f, -1.0f));
 
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
-            GL.ClearDepth(1.0);
+            //GL.Enable(EnableCap.DepthTest);
+            //GL.DepthFunc(DepthFunction.Less);
+            //GL.ClearDepth(1.0);
 
             //KresliKocku();
         }

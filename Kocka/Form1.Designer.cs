@@ -50,6 +50,8 @@
             this.SpecLz = new System.Windows.Forms.NumericUpDown();
             this.SpecLy = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.shininess = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -57,8 +59,6 @@
             this.ambCoeff = new System.Windows.Forms.NumericUpDown();
             this.specCoeff = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
-            this.shininess = new System.Windows.Forms.NumericUpDown();
-            this.label10 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLx)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -74,10 +74,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.SpecLz)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLy)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.shininess)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.shininess)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -121,10 +121,8 @@
             // 
             // volacoToolStripMenuItem
             // 
-            this.volacoToolStripMenuItem.Checked = true;
-            this.volacoToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
-            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(112, 26);
+            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
             this.volacoToolStripMenuItem.Text = "Sfera";
             this.volacoToolStripMenuItem.CheckedChanged += new System.EventHandler(this.volacoToolStripMenuItem_CheckedChanged);
             this.volacoToolStripMenuItem.Click += new System.EventHandler(this.volacoToolStripMenuItem_Click);
@@ -545,6 +543,34 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Material";
             // 
+            // shininess
+            // 
+            this.shininess.Location = new System.Drawing.Point(214, 79);
+            this.shininess.Maximum = new decimal(new int[] {
+            128,
+            0,
+            0,
+            0});
+            this.shininess.Name = "shininess";
+            this.shininess.Size = new System.Drawing.Size(68, 22);
+            this.shininess.TabIndex = 25;
+            this.shininess.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.shininess.Value = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.shininess.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(118, 81);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(69, 17);
+            this.label10.TabIndex = 24;
+            this.label10.Text = "Shininess";
+            // 
             // label9
             // 
             this.label9.AutoSize = true;
@@ -656,34 +682,6 @@
             this.label2.TabIndex = 17;
             this.label2.Text = "Coeffs";
             // 
-            // shininess
-            // 
-            this.shininess.Location = new System.Drawing.Point(214, 79);
-            this.shininess.Maximum = new decimal(new int[] {
-            128,
-            0,
-            0,
-            0});
-            this.shininess.Name = "shininess";
-            this.shininess.Size = new System.Drawing.Size(68, 22);
-            this.shininess.TabIndex = 25;
-            this.shininess.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.shininess.Value = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.shininess.ValueChanged += new System.EventHandler(this.SpecMx_ValueChanged);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(118, 81);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(69, 17);
-            this.label10.TabIndex = 24;
-            this.label10.Text = "Shininess";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -715,10 +713,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.SpecLy)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.shininess)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.shininess)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -13,13 +13,16 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 // daco na vyber ci chce clovek flat alebo gourand shading - ale to by som musel najprv vyriesit problem s deravou sferou
-//      -najprv musim vyriesit deravost sfery
-
-// nevyriesil som (ani som neriesil) deravu sferu pri opatovnom zvoleni vykreslovanie sfery
-//      -bezo zmeny
-
+//      - najprv musim vyriesit deravost sfery
+//      - uz mozem
 // snazil som sa vytvorit per pixel shadere, zatial sa mi nepodarilo skompilovat vertex shader, takze sa nic nevykresluje
 //      - tak jedina chyba bola, ze som posielal medzi shaderami inty, na co je zrejme alergicky, floaty mu nevadia...
+// pridana moznost nacitat data pre sferu zo subor
+//      - robil som to koli snahe odhalit problem s deravou sferou, jedna moznost co ma napadala bola, ze data sa po druhy, treti az nekonecny krat
+//        z nejakych zahadnych dovodov vygeneruju zle -> nie je problem pri opatovnom generovani dat ale dade inde
+// takze problem sposobuje kocka, zatial netusim preco
+//      - problem sposobovalo GL.Enable(EnableCap.PrimitiveRestart);, po pridani GL.Disable.... do Delete() kocky bol problem odstraneny
+//      - poucenie: co si kto zapne nech si aj vypne, zatial vsak nie uplne aplikovane
 
 namespace Kocka
 {
@@ -51,6 +54,9 @@ namespace Kocka
             wLomeno2 = 2.0f / (float)glControl1.Width;
             hLomeno2 = 2.0f / (float)glControl1.Height;
             GL.ClearColor(Color.Black);
+            GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Less);
+            GL.ClearDepth(1.0);
             //GL.Enable(EnableCap.CullFace);
             //GL.CullFace(CullFaceMode.Back);
             //GL.FrontFace(FrontFaceDirection.Ccw);
@@ -58,7 +64,8 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, false);
+                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, false);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
                 sphere.DrawSphere();
             }
             else
@@ -238,6 +245,7 @@ namespace Kocka
         private void volacoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             sfera = volacoToolStripMenuItem.Checked = !volacoToolStripMenuItem.Checked;
+            //volacoToolStripMenuItem.Checked = !volacoToolStripMenuItem.Checked;
         }
 
         private void volacoToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -252,7 +260,8 @@ namespace Kocka
             {
                 kocka.Delete();
                 Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
+                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale,false);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
             }
             glControl1.Invalidate();
         }

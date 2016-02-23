@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -32,7 +33,7 @@ namespace Kocka
         public Sphere(int w, int h, float s,bool flat)
         {
             this.flat = flat;
-            Pi = 10; DvaPi = 10;//tieto hodnoty by timo mohol dat do konstruktora
+            Pi = 100; DvaPi = 100;//tieto hodnoty by timo mohol dat do konstruktora
             len = 2 * 3 * DvaPi + (Pi - 2) * DvaPi * 2 * 3;
 
             VBO = new int[3];
@@ -45,7 +46,7 @@ namespace Kocka
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
-            material = new Material( 0.0f, 0.50f, 0.6f, 128);
+            material = new Material( 0.16f, 0.50f, 0.6f, 128);
            
             width = w;
             height = h;
@@ -57,6 +58,42 @@ namespace Kocka
                 SetFlatSphere();
             else
                 SetGourandSphere();
+
+            //Write();
+
+            KresliSferu();
+        }
+
+        public Sphere(int w, int h, float s, string PathToSfere)
+        {
+            Pi = 100; DvaPi = 100;//tieto hodnoty by timo mohol dat do konstruktora
+            len = 2 * 3 * DvaPi + (Pi - 2) * DvaPi * 2 * 3;
+
+            VBO = new int[3];
+            VAO = new int[1];
+            VertexShader = new Shaders.Shader();
+            FragmentShader = new Shaders.Shader();
+            spMain = new Shaders.ShaderProgram();
+            list = new List<Vector3>();
+            BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
+            //svetlo - smer,ambient,specular,diffuse
+            light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
+            //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
+            material = new Material(0.16f, 0.50f, 0.6f, 128);
+
+            width = w;
+            height = h;
+            scale = s;
+            Current = Matrix4.Identity;
+
+            CalculateSphere();
+            if (flat)
+                SetFlatSphere();
+            else
+                SetGourandSphere();
+
+            LoadSfereFromFile(PathToSfere);
+
             KresliSferu();
         }
 
@@ -64,7 +101,6 @@ namespace Kocka
         {
             float r = 1.0f;
             float x, y, z, sinB;
-            int p = 0;//teba vymazem
 
             for (double beta = 0.0f; beta <= Math.PI + 0.0001; beta += Math.PI / (double)Pi)
             {
@@ -75,7 +111,7 @@ namespace Kocka
                     x = 0.0f;
                     y = 0.0f;
                     list.Add(new Vector3(x, y, z));
-                    p++;
+                    //System.Diagnostics.Debug.WriteLine(list[list.Count-1].ToString());
                 }
                 else
                 {
@@ -84,10 +120,68 @@ namespace Kocka
                         x = r * (float)Math.Cos(alfa) * sinB;
                         y = r * (float)Math.Sin(alfa) * sinB;
                         list.Add(new Vector3(x, y, z));
-                        p++;
+                        //System.Diagnostics.Debug.WriteLine(list[list.Count - 1].ToString());
                     }
                 }
             }
+        }
+
+        private void Write()
+        {
+            StreamWriter sw = new StreamWriter("..\\..\\Properties\\data\\sfera.txt");
+            sw.WriteLine("#nv: "+kocka.Length);//pocet vrcholov
+            foreach (var vrchol in kocka)
+            {
+                 sw.WriteLine("{0} {1} {2}",vrchol.X,vrchol.Y,vrchol.Z);
+            }
+            sw.WriteLine("#nn: " + normaly.Length);//pocet normal
+            foreach (var normala in normaly)
+            {
+                sw.WriteLine("{0} {1} {2}", normala.X, normala.Y, normala.Z);
+            }
+            sw.Flush();
+            sw.Close();
+        }
+
+        private void LoadSfereFromFile(string PathToSfere)
+        {
+            char[] separator = { ' ' };
+            StreamReader sr = new StreamReader("..\\..\\Properties\\data\\"+PathToSfere);//kontrola by nemusel byt zla
+            string CurrentLine = sr.ReadLine();
+            if (CurrentLine.Contains("#nv:"))
+                len = Int32.Parse(CurrentLine.Split(separator)[1]);
+
+            kocka = new Vector3[len];
+
+            string[] num;
+            for (int i = 0; i < len; i++)
+            {
+               num = sr.ReadLine().Split(separator);//try
+               kocka[i] = new Vector3(float.Parse(num[0]), float.Parse(num[1]), float.Parse(num[2]));
+            }
+            CurrentLine = sr.ReadLine();
+            if (CurrentLine.Contains("#nn:"))
+                if (len == Int32.Parse(CurrentLine.Split(separator)[1]))
+                {
+                    normaly = new Vector3[len];
+                    farba=new Vector3[len];
+                }
+                //else vyhlas chybu
+
+            //v pripade ze chyba nebola hlasena:
+            for (int i = 0; i < len; i++)
+            {
+                num = sr.ReadLine().Split(separator);//try
+                normaly[i] = new Vector3(float.Parse(num[0]), float.Parse(num[1]), float.Parse(num[2]));
+            }
+
+            for (int i = 0; i < len; i++)
+            {
+                farba[i] = new Vector3(1.0f,1.0f,1.0f);
+            }
+
+            sr.Close();
+            InitSphere();
         }
 
         private void SetFlatSphere()
@@ -195,71 +289,7 @@ namespace Kocka
                 //normaly[i] = normaly[i].Normalized();
             }
 
-            NastavMatice(false);
-            GL.GenBuffers(4, VBO);
-            GL.GenVertexArrays(1, VAO);
-
-            GL.BindVertexArray(VAO[0]);
-
-            //vrcholy
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(len * Vector3.SizeInBytes), kocka, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-
-            //farby
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[1]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(len * Vector3.SizeInBytes), farba, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-
-            //normaly
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[2]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(len * Vector3.SizeInBytes), normaly, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(2);
-            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 0, 0);
-
-            //vytvorenie shader programu--- pridana kontrola nacitania, zo Shaders.dll by som teda mohol odstranit vyhadzaovanie messageboxov
-            //per vertex shaders
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            //uplne prve shadere
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-       
-            ////per pixel shaders - zatial nefunkcny, chyba je zrejme vo fragment shaderi
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            spMain.CreateProgram();
-            spMain.AddShaderToProgram(VertexShader);
-            spMain.AddShaderToProgram(FragmentShader);
-            spMain.LinkProgram();
-            spMain.UseProgram();
-
-            spMain.SetUniform("projectionMatrix", projectionMatrix);
-            spMain.SetUniform("eye", new Vector3(0.0f, 0.0f, 3.5f));//dorobit pri zmene pozicie kamery update
-            material.SetMaterialUniforms(spMain);
-            light.SetDirectionalLightUniforms(spMain);
-
-            //prvy shader pre rovnobezne svetlo
-            ////farba svetla
-            //spMain.SetUniform("sunLight.vColor", new Vector3(1.0f, 1.0f, 1.0f));
-            ////nastavenie intenzity ambientneho svetla
-            //spMain.SetUniform("sunLight.fAmbientIntensity", 0.15f);
-            ////smer svetelnych lucov
-            //spMain.SetUniform("sunLight.vDirection", new Vector3(1.0f, 0.0f, 0.0f));
-
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
-            GL.ClearDepth(1.0);
+            InitSphere();
         }
 
         private void SetGourandSphere()
@@ -275,12 +305,14 @@ namespace Kocka
             {
                 if (i == DvaPi)
                 {
+                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}",0,i,1);
                     kocka[p] = normaly[p] = list[0]; p++;
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[1]; p++;
                 }
                 else
                 {
+                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", 0, i, i+1);
                     kocka[p] = normaly[p] = list[0]; p++;
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[i + 1]; p++;
@@ -294,20 +326,24 @@ namespace Kocka
                 {
                     if (i % DvaPi == 0)
                     {
+                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi,((j - 1) * DvaPi) + 1 + DvaPi);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
 
+                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, ((j - 1) * DvaPi) + 1 + DvaPi, ((j - 1) * DvaPi) + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1]; p++;
                     }
                     else
                     {
+                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi, i + DvaPi + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
 
+                        //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, i + DvaPi+1, i + 1);
                         kocka[p] = normaly[p] = list[i]; p++;
                         kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
                         kocka[p] = normaly[p] = list[i + 1]; p++;
@@ -321,27 +357,41 @@ namespace Kocka
             {
                 if (i == tmp - 2)
                 {
+                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, tmp - 1, tmp - DvaPi - 1);
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[tmp - 1]; p++;
                     kocka[p] = normaly[p] = list[tmp - DvaPi - 1]; p++;
                 }
                 else
                 {
+                    //System.Diagnostics.Debug.WriteLine("{0}->{1}->{2}", i, tmp - 1, i + 1);
                     kocka[p] = normaly[p] = list[i]; p++;
                     kocka[p] = normaly[p] = list[tmp - 1]; p++;
                     kocka[p] = normaly[p] = list[i + 1]; p++;
                 }
             }
 
+            //System.Diagnostics.Debug.WriteLine("==========================");
+            //foreach (var n in normaly)
+            //{
+            //    System.Diagnostics.Debug.WriteLine(n.ToString());
+            //}
+            //System.Diagnostics.Debug.WriteLine("==========================");
+
             for (int i = 0; i < p; i++)
             {
                 //farba[i] = new Vector3(0.0f, 0.0f, (i + 1) / (float)p);
                 farba[i] = new Vector3(1.0f, 1.0f, 1.0f);
-                //normaly[i] = normaly[i].Normalized();
+                //normaly[i] = -normaly[i].Normalized();
             }
 
+            InitSphere();
+        }
+
+        private void InitSphere()
+        {
             NastavMatice(false);
-            GL.GenBuffers(4, VBO);
+            GL.GenBuffers(3, VBO);
             GL.GenVertexArrays(1, VAO);
 
             GL.BindVertexArray(VAO[0]);
@@ -402,9 +452,9 @@ namespace Kocka
             ////smer svetelnych lucov
             //spMain.SetUniform("sunLight.vDirection", new Vector3(1.0f, 0.0f, 0.0f));
 
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
-            GL.ClearDepth(1.0);
+            //GL.Enable(EnableCap.DepthTest);
+            //GL.DepthFunc(DepthFunction.Less);
+            //GL.ClearDepth(1.0);
         }
 
         public void SetLight(Vector3 specular,Vector3 ambient, Vector3 diffuse, Vector3 direction)
@@ -454,6 +504,7 @@ namespace Kocka
         {
             GL.BindVertexArray(VAO[0]);
             GL.DrawArrays(PrimitiveType.Triangles, 0, len);
+            //GL.DrawArrays(PrimitiveType.LineLoop, 0, len);
         }
 
         public void Transalte(float x, float y)
@@ -507,12 +558,12 @@ namespace Kocka
         public void Delete()
         {
             //zrejme by tu tiez mohla prist kontrola, ci znicenie programov prebehlo v poriadku, resp. ju zakomponovat do Shaders.dll
-            VertexShader.DeleteShader();
-            FragmentShader.DeleteShader();
-            spMain.DeleteProgram();
             GL.DeleteBuffers(3, VBO);
             GL.DeleteVertexArrays(1, VAO);
             list.Clear();
+            spMain.DeleteProgram();
+            VertexShader.DeleteShader();
+            FragmentShader.DeleteShader();
         }
 
         public void Pohyb(float dd)
