@@ -29,9 +29,6 @@ namespace Kocka
             prog.SetUniform("material.specCoef",SpecCoef);
             prog.SetUniform("material.diffCoef", diffCoef);
             prog.SetUniform("material.ambCoef", ambCoef);
-            //prog.SetUniform("material.ambient", Ambient);
-            //prog.SetUniform("material.diffuse", Diffuse);
-            //prog.SetUniform("material.specular", Specular);
             prog.SetUniform("material.shininess", shininess);
         }
     }

@@ -19,7 +19,7 @@ namespace Kocka
         List<Vector3> list;
         private int[] VBO;
         private int[] VAO;
-        private bool flat;
+        private bool flat,PerVertexShader;
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 modelViewMatrix, projectionMatrix;
@@ -30,10 +30,11 @@ namespace Kocka
         DirectionalLight light;
         Material material;
 
-        public Sphere(int w, int h, float s,bool flat)
+        public Sphere(int w, int h, float s,int Pi,int DvaPi,bool flat,bool PerVertexShader)
         {
+            this.PerVertexShader = PerVertexShader;
             this.flat = flat;
-            Pi = 100; DvaPi = 100;//tieto hodnoty by timo mohol dat do konstruktora
+            this.Pi = Pi; this.DvaPi = DvaPi;
             len = 2 * 3 * DvaPi + (Pi - 2) * DvaPi * 2 * 3;
 
             VBO = new int[3];
@@ -64,8 +65,9 @@ namespace Kocka
             KresliSferu();
         }
 
-        public Sphere(int w, int h, float s, string PathToSfere)
+        public Sphere(int w, int h, float s, string PathToSfere, bool PerVertexShader)
         {
+            this.PerVertexShader = PerVertexShader;
             Pi = 100; DvaPi = 100;//tieto hodnoty by timo mohol dat do konstruktora
             len = 2 * 3 * DvaPi + (Pi - 2) * DvaPi * 2 * 3;
 
@@ -392,24 +394,22 @@ namespace Kocka
             GL.EnableVertexAttribArray(2);
             GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 0, 0);
 
-            //vytvorenie shader programu--- pridana kontrola nacitania, zo Shaders.dll by som teda mohol odstranit vyhadzaovanie messageboxov
-            //per vertex shaders
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            //uplne prve shadere
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            ////per pixel shaders - zatial nefunkcny, chyba je zrejme vo fragment shaderi
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //per vertex shader
+            if (PerVertexShader)
+            {
+                if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
+            //per pixel shader
+            else
+            {
+                if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
@@ -422,17 +422,19 @@ namespace Kocka
             material.SetMaterialUniforms(spMain);
             light.SetDirectionalLightUniforms(spMain);
 
+            //uplne prve shadere
+            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.vert", ShaderType.VertexShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\l_shader.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+
             //prvy shader pre rovnobezne svetlo
             ////farba svetla
-            //spMain.SetUniform("sunLight.vColor", new Vector3(1.0f, 1.0f, 1.0f));
+            //spMain.SetUniform("sunLight.vColor", new Vector3(1.0f, 0.0f, 1.0f));
             ////nastavenie intenzity ambientneho svetla
             //spMain.SetUniform("sunLight.fAmbientIntensity", 0.15f);
             ////smer svetelnych lucov
-            //spMain.SetUniform("sunLight.vDirection", new Vector3(1.0f, 0.0f, 0.0f));
-
-            //GL.Enable(EnableCap.DepthTest);
-            //GL.DepthFunc(DepthFunction.Less);
-            //GL.ClearDepth(1.0);
+            //spMain.SetUniform("sunLight.vDirection", new Vector3(0.0f, 0.0f, -1.0f));
         }
 
         public void SetLight(Vector3 specular,Vector3 ambient, Vector3 diffuse, Vector3 direction)

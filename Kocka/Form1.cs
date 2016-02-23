@@ -28,7 +28,7 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize,sfera,flat; 
+        private bool loaded, resize,sfera,flat,shader; 
         //private Stvorec3D kocka;
         private KockaInak kocka;
         private Sphere sphere;
@@ -42,7 +42,8 @@ namespace Kocka
             InitializeComponent();
             loaded = false;
             resize = false;
-            sfera = volacoToolStripMenuItem.Checked;
+            ShadersGroupBox.Enabled = sfera = volacoToolStripMenuItem.Checked;
+            shader = PerFragment.Checked;
             flat = flatShadingToolStripMenuItem.Checked;
             scale = 1.0f;
         }
@@ -65,7 +66,7 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, flat);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,(int)Pi.Value,(int)DvaPi.Value, flat,shader);
                 //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
                 sphere.DrawSphere();
             }
@@ -319,7 +320,7 @@ namespace Kocka
         //zrejme nie uplne optimalne
         private void flatShadingToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            sfera = true;
+            ShadersGroupBox.Enabled = sfera = true;
             kockaToolStripMenuItem.Checked = false;
             volacoToolStripMenuItem.Checked = true;
             if (sfera)
@@ -327,7 +328,7 @@ namespace Kocka
                 flat = flatShadingToolStripMenuItem.Checked;
                 sphere.Delete();
                 Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,flat);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
             }
             glControl1.Invalidate();
         }
@@ -352,13 +353,13 @@ namespace Kocka
 
         private void volacoToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            sfera = volacoToolStripMenuItem.Checked;
+            sfera = ShadersGroupBox.Enabled = volacoToolStripMenuItem.Checked;
             if (sfera)
             {
                 flat = flatShadingToolStripMenuItem.Checked;
                 kocka.Delete();
                 Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, flat);
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
             }
             else
             {
@@ -367,6 +368,38 @@ namespace Kocka
                 kocka = new KockaInak(glControl1.Width, glControl1.Height, scale);
             }
             glControl1.Invalidate();
+        }
+
+        private void PerFragment_CheckedChanged(object sender, EventArgs e)
+        {
+            shader = PerFragment.Checked;
+            if(sfera)
+            {
+                if(PerFragment.Checked)
+                {
+                    sphere.Delete();
+                    Reset();
+                    sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                }
+                else
+                {
+                    sphere.Delete();
+                    Reset();
+                    sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                }
+                glControl1.Invalidate();
+            }
+        }
+
+        private void Pi_ValueChanged(object sender, EventArgs e)
+        {
+            if(sfera)
+            {
+                sphere.Delete();
+                Reset();
+                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                glControl1.Invalidate();
+            }
         }
     }
 }

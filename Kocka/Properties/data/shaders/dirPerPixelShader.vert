@@ -28,9 +28,6 @@ struct Material
 	float diffCoef;		//[0,1]
 	float ambCoef;		//[0,1]
 	int shininess;	//[0,128]
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
 };
 
 uniform Material material;

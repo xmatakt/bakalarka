@@ -34,6 +34,7 @@
             this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flatShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gourandShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kockaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Specular = new System.Windows.Forms.Label();
             this.SpecLx = new System.Windows.Forms.NumericUpDown();
             this.Ambient = new System.Windows.Forms.Label();
@@ -61,7 +62,14 @@
             this.ambCoeff = new System.Windows.Forms.NumericUpDown();
             this.specCoeff = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
-            this.kockaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.PerFragment = new System.Windows.Forms.RadioButton();
+            this.PerPixel = new System.Windows.Forms.RadioButton();
+            this.ShadersGroupBox = new System.Windows.Forms.GroupBox();
+            this.parametreGroupBox = new System.Windows.Forms.GroupBox();
+            this.Pi = new System.Windows.Forms.NumericUpDown();
+            this.DvaPi = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLx)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -81,6 +89,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).BeginInit();
+            this.ShadersGroupBox.SuspendLayout();
+            this.parametreGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Pi)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DvaPi)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -131,7 +143,7 @@
             this.flatShadingToolStripMenuItem,
             this.gourandShadingToolStripMenuItem});
             this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
-            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
+            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(118, 26);
             this.volacoToolStripMenuItem.Text = "Sfera";
             this.volacoToolStripMenuItem.CheckedChanged += new System.EventHandler(this.volacoToolStripMenuItem_CheckedChanged);
             this.volacoToolStripMenuItem.Click += new System.EventHandler(this.volacoToolStripMenuItem_Click);
@@ -153,6 +165,13 @@
             this.gourandShadingToolStripMenuItem.Text = "Gourand shading";
             this.gourandShadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.flatShadingToolStripMenuItem_CheckedChanged);
             this.gourandShadingToolStripMenuItem.Click += new System.EventHandler(this.gourandShadingToolStripMenuItem_Click);
+            // 
+            // kockaToolStripMenuItem
+            // 
+            this.kockaToolStripMenuItem.Name = "kockaToolStripMenuItem";
+            this.kockaToolStripMenuItem.Size = new System.Drawing.Size(118, 26);
+            this.kockaToolStripMenuItem.Text = "Kocka";
+            this.kockaToolStripMenuItem.Click += new System.EventHandler(this.kockaToolStripMenuItem_Click);
             // 
             // Specular
             // 
@@ -709,18 +728,128 @@
             this.label2.TabIndex = 17;
             this.label2.Text = "Coeffs";
             // 
-            // kockaToolStripMenuItem
+            // PerFragment
             // 
-            this.kockaToolStripMenuItem.Name = "kockaToolStripMenuItem";
-            this.kockaToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
-            this.kockaToolStripMenuItem.Text = "Kocka";
-            this.kockaToolStripMenuItem.Click += new System.EventHandler(this.kockaToolStripMenuItem_Click);
+            this.PerFragment.AutoSize = true;
+            this.PerFragment.Checked = true;
+            this.PerFragment.Location = new System.Drawing.Point(16, 31);
+            this.PerFragment.Name = "PerFragment";
+            this.PerFragment.Size = new System.Drawing.Size(111, 21);
+            this.PerFragment.TabIndex = 26;
+            this.PerFragment.TabStop = true;
+            this.PerFragment.Text = "Per fragment";
+            this.PerFragment.UseVisualStyleBackColor = true;
+            this.PerFragment.CheckedChanged += new System.EventHandler(this.PerFragment_CheckedChanged);
+            // 
+            // PerPixel
+            // 
+            this.PerPixel.AutoSize = true;
+            this.PerPixel.Location = new System.Drawing.Point(16, 58);
+            this.PerPixel.Name = "PerPixel";
+            this.PerPixel.Size = new System.Drawing.Size(83, 21);
+            this.PerPixel.TabIndex = 27;
+            this.PerPixel.Text = "Per pixel";
+            this.PerPixel.UseVisualStyleBackColor = true;
+            // 
+            // ShadersGroupBox
+            // 
+            this.ShadersGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ShadersGroupBox.Controls.Add(this.PerPixel);
+            this.ShadersGroupBox.Controls.Add(this.PerFragment);
+            this.ShadersGroupBox.Location = new System.Drawing.Point(953, 352);
+            this.ShadersGroupBox.Name = "ShadersGroupBox";
+            this.ShadersGroupBox.Size = new System.Drawing.Size(150, 100);
+            this.ShadersGroupBox.TabIndex = 28;
+            this.ShadersGroupBox.TabStop = false;
+            this.ShadersGroupBox.Text = "Shaders";
+            // 
+            // parametreGroupBox
+            // 
+            this.parametreGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.parametreGroupBox.Controls.Add(this.label5);
+            this.parametreGroupBox.Controls.Add(this.label4);
+            this.parametreGroupBox.Controls.Add(this.DvaPi);
+            this.parametreGroupBox.Controls.Add(this.Pi);
+            this.parametreGroupBox.Location = new System.Drawing.Point(1109, 352);
+            this.parametreGroupBox.Name = "parametreGroupBox";
+            this.parametreGroupBox.Size = new System.Drawing.Size(140, 100);
+            this.parametreGroupBox.TabIndex = 29;
+            this.parametreGroupBox.TabStop = false;
+            this.parametreGroupBox.Text = "Parameters";
+            // 
+            // Pi
+            // 
+            this.Pi.Location = new System.Drawing.Point(50, 31);
+            this.Pi.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.Pi.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.Pi.Name = "Pi";
+            this.Pi.Size = new System.Drawing.Size(79, 22);
+            this.Pi.TabIndex = 0;
+            this.Pi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.Pi.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.Pi.ValueChanged += new System.EventHandler(this.Pi_ValueChanged);
+            // 
+            // DvaPi
+            // 
+            this.DvaPi.Location = new System.Drawing.Point(50, 59);
+            this.DvaPi.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.DvaPi.Minimum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.DvaPi.Name = "DvaPi";
+            this.DvaPi.Size = new System.Drawing.Size(79, 22);
+            this.DvaPi.TabIndex = 30;
+            this.DvaPi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.DvaPi.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.DvaPi.ValueChanged += new System.EventHandler(this.Pi_ValueChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 36);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(20, 17);
+            this.label4.TabIndex = 30;
+            this.label4.Text = "Pi";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 62);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(28, 17);
+            this.label5.TabIndex = 31;
+            this.label5.Text = "2Pi";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 756);
+            this.Controls.Add(this.parametreGroupBox);
+            this.Controls.Add(this.ShadersGroupBox);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.glControl1);
@@ -751,6 +880,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.diffCoef)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ambCoeff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).EndInit();
+            this.ShadersGroupBox.ResumeLayout(false);
+            this.ShadersGroupBox.PerformLayout();
+            this.parametreGroupBox.ResumeLayout(false);
+            this.parametreGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Pi)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DvaPi)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -792,6 +927,14 @@
         private System.Windows.Forms.ToolStripMenuItem flatShadingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gourandShadingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem kockaToolStripMenuItem;
+        private System.Windows.Forms.RadioButton PerFragment;
+        private System.Windows.Forms.RadioButton PerPixel;
+        private System.Windows.Forms.GroupBox ShadersGroupBox;
+        private System.Windows.Forms.GroupBox parametreGroupBox;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown DvaPi;
+        private System.Windows.Forms.NumericUpDown Pi;
     }
 }
 
