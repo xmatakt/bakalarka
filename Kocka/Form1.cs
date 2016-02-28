@@ -12,18 +12,6 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 
-// daco na vyber ci chce clovek flat alebo gourand shading - ale to by som musel najprv vyriesit problem s deravou sferou
-//      - najprv musim vyriesit deravost sfery
-//      - uz mozem
-// snazil som sa vytvorit per pixel shadere, zatial sa mi nepodarilo skompilovat vertex shader, takze sa nic nevykresluje
-//      - tak jedina chyba bola, ze som posielal medzi shaderami inty, na co je zrejme alergicky, floaty mu nevadia...
-// pridana moznost nacitat data pre sferu zo subor
-//      - robil som to koli snahe odhalit problem s deravou sferou, jedna moznost co ma napadala bola, ze data sa po druhy, treti az nekonecny krat
-//        z nejakych zahadnych dovodov vygeneruju zle -> nie je problem pri opatovnom generovani dat ale dade inde
-// takze problem sposobuje kocka, zatial netusim preco
-//      - problem sposobovalo GL.Enable(EnableCap.PrimitiveRestart);, po pridani GL.Disable.... do Delete() kocky bol problem odstraneny
-//      - poucenie: co si kto zapne nech si aj vypne, zatial vsak nie uplne aplikovane
-
 namespace Kocka
 {
     public partial class Form1 : Form
