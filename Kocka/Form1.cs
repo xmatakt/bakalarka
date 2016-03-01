@@ -20,6 +20,7 @@ namespace Kocka
         //private Stvorec3D kocka;
         private KockaInak kocka;
         private Sphere sphere;
+        private SphereDAT sdat;
         float scale;
         float dx, dy;
         float wPol, hPol;
@@ -34,6 +35,7 @@ namespace Kocka
             shader = PerFragment.Checked;
             flat = flatShadingToolStripMenuItem.Checked;
             scale = 1.0f;
+            //sdat = new SphereDAT("..\\..\\Properties\\data\\datFiles\\data_const.dat");
         }
 
         private void glControl1_Load(object sender, EventArgs e)
@@ -54,9 +56,11 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale,(int)Pi.Value,(int)DvaPi.Value, flat,shader);
+                sdat = new SphereDAT(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_const.dat");
+                sdat.DrawSphere();
+                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale,(int)Pi.Value,(int)DvaPi.Value, flat,shader);
                 //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
-                sphere.DrawSphere();
+                //sphere.DrawSphere();
             }
             else
             {
@@ -71,8 +75,9 @@ namespace Kocka
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            if(sfera)
-                sphere.DrawSphere();
+            if (sfera)
+                sdat.DrawSphere();
+            //sphere.DrawSphere();
             else
                 kocka.PrekresliKocku();
             
@@ -125,8 +130,9 @@ namespace Kocka
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(sfera)
-                sphere.Delete();
+            if (sfera)
+                sdat.Delete();
+            //sphere.Delete();
             else
                 kocka.Delete();
            
@@ -151,8 +157,10 @@ namespace Kocka
                 float tmpy = dy - e.Location.Y;
                 if(sfera)
                 {
-                    sphere.Scale(scale);
-                    sphere.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
+                    //sphere.Scale(scale);
+                    //sphere.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
+                    sdat.Scale(scale);
+                    sdat.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                 }
                 else
                 {
@@ -169,8 +177,10 @@ namespace Kocka
                 float angle = (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
                 if(sfera)
                 {
-                    sphere.Scale(scale);
-                    sphere.Rotate(tmpx, tmpy, angle);
+                    //sphere.Scale(scale);
+                    //sphere.Rotate(tmpx, tmpy, angle);
+                    sdat.Scale(scale);
+                    sdat.Rotate(tmpx, tmpy, angle);
                 }
                 else
                 {
@@ -190,7 +200,8 @@ namespace Kocka
                 dy = e.Location.Y;
 
                 if (sfera)
-                    sphere.Scale(scale);
+                    sdat.Scale(scale);
+                    //sphere.Scale(scale);
                 else
                     kocka.Scale(scale);
                
@@ -204,7 +215,8 @@ namespace Kocka
             if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle || e.Button == MouseButtons.Right)
             {
                 if(sfera)
-                    sphere.Ende();
+                    sdat.Ende();
+                    //sphere.Ende();
                 else
                     kocka.Ende();
             }
@@ -221,7 +233,8 @@ namespace Kocka
                 GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
                 if(sfera)
                 {
-                    sphere.Resize(glControl1.Width, glControl1.Height);
+                    sdat.Resize(glControl1.Width, glControl1.Height);
+                    //sphere.Resize(glControl1.Width, glControl1.Height);
                     glControl1.Invalidate();
                 }
                 else

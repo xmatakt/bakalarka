@@ -13,7 +13,7 @@ namespace Kocka
 {
     class Sphere
     {
-        private Vector3[] kocka;
+        private Vector3[] sfera;
         private Vector3[] farba;
         private Vector3[] normaly;
         List<Vector3> list;
@@ -36,6 +36,8 @@ namespace Kocka
             this.flat = flat;
             this.Pi = Pi; this.DvaPi = DvaPi;
             len = 2 * 3 * DvaPi + (Pi - 2) * DvaPi * 2 * 3;
+
+            System.Diagnostics.Debug.WriteLine("LENGTH = {0}",len);
 
             VBO = new int[3];
             VAO = new int[1];
@@ -129,8 +131,8 @@ namespace Kocka
         private void Write()
         {
             StreamWriter sw = new StreamWriter("..\\..\\Properties\\data\\sfera.txt");
-            sw.WriteLine("#nv: "+kocka.Length);//pocet vrcholov
-            foreach (var vrchol in kocka)
+            sw.WriteLine("#nv: " + sfera.Length);//pocet vrcholov
+            foreach (var vrchol in sfera)
             {
                  sw.WriteLine("{0} {1} {2}",vrchol.X,vrchol.Y,vrchol.Z);
             }
@@ -151,13 +153,13 @@ namespace Kocka
             if (CurrentLine.Contains("#nv:"))
                 len = Int32.Parse(CurrentLine.Split(separator)[1]);
 
-            kocka = new Vector3[len];
+            sfera = new Vector3[len];
 
             string[] num;
             for (int i = 0; i < len; i++)
             {
                num = sr.ReadLine().Split(separator);//try
-               kocka[i] = new Vector3(float.Parse(num[0]), float.Parse(num[1]), float.Parse(num[2]));
+               sfera[i] = new Vector3(float.Parse(num[0]), float.Parse(num[1]), float.Parse(num[2]));
             }
             CurrentLine = sr.ReadLine();
             if (CurrentLine.Contains("#nn:"))
@@ -186,7 +188,7 @@ namespace Kocka
 
         private void SetFlatSphere()
         {
-            kocka = new Vector3[len];
+            sfera = new Vector3[len];
             normaly = new Vector3[len];
             farba = new Vector3[len];
 
@@ -197,20 +199,20 @@ namespace Kocka
             {
                 if (i == DvaPi)
                 {
-                    kocka[p] = list[0];
+                    sfera[p] = list[0];
                     normaly[p] = Vector3.Cross(list[1] - list[0], list[0] - list[i]); p++;
-                    kocka[p] = list[i];
+                    sfera[p] = list[i];
                     normaly[p] = Vector3.Cross(list[i] - list[0], list[1] - list[i]); p++;
-                    kocka[p] = list[1];
+                    sfera[p] = list[1];
                     normaly[p] = Vector3.Cross(list[1] - list[i], list[0] - list[1]); p++;
                 }
                 else
                 {
-                    kocka[p] = list[0];
+                    sfera[p] = list[0];
                     normaly[p] = Vector3.Cross(list[0] - list[i + 1], list[i] - list[0]); p++;
-                    kocka[p] = list[i];
+                    sfera[p] = list[i];
                     normaly[p] = Vector3.Cross(list[i] - list[0], list[i + 1] - list[i]); p++;
-                    kocka[p] = list[i + 1];
+                    sfera[p] = list[i + 1];
                     normaly[p] = Vector3.Cross(list[i + 1] - list[i], list[0] - list[i + 1]); p++;
                 }
             }
@@ -222,37 +224,37 @@ namespace Kocka
                 {
                     if (i % DvaPi == 0)
                     {
-                        kocka[p] = list[i];
+                        sfera[p] = list[i];
                         normaly[p] = Vector3.Cross(list[i] - list[((j - 1) * DvaPi) + 1 + DvaPi], list[i + DvaPi] - list[i]); p++;
-                        kocka[p] = list[i + DvaPi];
+                        sfera[p] = list[i + DvaPi];
                         normaly[p] = Vector3.Cross(list[i + DvaPi] - list[i], list[((j - 1) * DvaPi) + 1 + DvaPi] - list[i + DvaPi]); p++;
-                        kocka[p] = list[((j - 1) * DvaPi) + 1 + DvaPi];
+                        sfera[p] = list[((j - 1) * DvaPi) + 1 + DvaPi];
                         normaly[p] = Vector3.Cross(list[((j - 1) * DvaPi) + 1 + DvaPi] - list[i + DvaPi], list[i] - list[((j - 1) * DvaPi) + 1 + DvaPi]); p++;
 
-                        kocka[p] = list[i];
+                        sfera[p] = list[i];
                         normaly[p] = Vector3.Cross(list[i] - list[((j - 1) * DvaPi) + 1], list[((j - 1) * DvaPi) + 1 + DvaPi] - list[i]);
                         p++;
-                        kocka[p] = list[((j - 1) * DvaPi) + 1 + DvaPi];
+                        sfera[p] = list[((j - 1) * DvaPi) + 1 + DvaPi];
                         normaly[p] = Vector3.Cross(list[((j - 1) * DvaPi) + 1 + DvaPi] - list[i], list[((j - 1) * DvaPi) + 1] - list[((j - 1) * DvaPi) + 1 + DvaPi]);
                         p++;
-                        kocka[p] = list[((j - 1) * DvaPi) + 1];
+                        sfera[p] = list[((j - 1) * DvaPi) + 1];
                         normaly[p] = Vector3.Cross(list[((j - 1) * DvaPi) + 1] - list[((j - 1) * DvaPi) + 1 + DvaPi], list[i] - list[((j - 1) * DvaPi) + 1]);
                         p++;
                     }
                     else
                     {
-                        kocka[p] = list[i];
+                        sfera[p] = list[i];
                         normaly[p] = Vector3.Cross(list[i] - list[i + DvaPi + 1], list[i + DvaPi] - list[i]); p++;
-                        kocka[p] = list[i + DvaPi];
+                        sfera[p] = list[i + DvaPi];
                         normaly[p] = Vector3.Cross(list[i + DvaPi] - list[i], list[i + DvaPi + 1] - list[i + DvaPi]); p++;
-                        kocka[p] = list[i + DvaPi + 1];
+                        sfera[p] = list[i + DvaPi + 1];
                         normaly[p] = Vector3.Cross(list[i + DvaPi + 1] - list[i + DvaPi], list[i] - list[i + DvaPi + 1]); p++;
 
-                        kocka[p] = list[i];
+                        sfera[p] = list[i];
                         normaly[p] = Vector3.Cross(list[i] - list[i + 1], list[i + DvaPi + 1] - list[i]); p++;
-                        kocka[p] = list[i + DvaPi + 1];
+                        sfera[p] = list[i + DvaPi + 1];
                         normaly[p] = Vector3.Cross(list[i + DvaPi + 1] - list[i], list[i + 1] - list[i + DvaPi + 1]); p++;
-                        kocka[p] = list[i + 1];
+                        sfera[p] = list[i + 1];
                         normaly[p] = Vector3.Cross(list[i + 1] - list[i + DvaPi + 1], list[i] - list[i + 1]); p++;
                     }
                 }
@@ -264,20 +266,20 @@ namespace Kocka
             {
                 if (i == tmp - 2)
                 {
-                    kocka[p] = list[i];
+                    sfera[p] = list[i];
                     normaly[p] = Vector3.Cross(list[i] - list[tmp - DvaPi - 1], list[tmp - 1] - list[tmp - DvaPi - 1]); p++;
-                    kocka[p] = list[tmp - 1];
+                    sfera[p] = list[tmp - 1];
                     normaly[p] = Vector3.Cross(list[tmp - 1] - list[i], list[tmp - DvaPi - 1] - list[tmp - 1]); p++;
-                    kocka[p] = list[tmp - DvaPi - 1];
+                    sfera[p] = list[tmp - DvaPi - 1];
                     normaly[p] = Vector3.Cross(list[tmp - DvaPi - 1] - list[tmp - 1], list[i] - list[tmp - DvaPi - 1]); p++;
                 }
                 else
                 {
-                    kocka[p] = list[i];
+                    sfera[p] = list[i];
                     normaly[p] = Vector3.Cross(list[i] - list[i + 1], list[tmp - 1] - list[i]); p++;
-                    kocka[p] = list[tmp - 1];
+                    sfera[p] = list[tmp - 1];
                     normaly[p] = Vector3.Cross(list[tmp - 1] - list[i], list[i + 1] - list[tmp - 1]); p++;
-                    kocka[p] = list[i + 1];
+                    sfera[p] = list[i + 1];
                     normaly[p] = Vector3.Cross(list[i + 1] - list[tmp - 1], list[i] - list[i + 1]); p++;
                 }
             }
@@ -294,7 +296,7 @@ namespace Kocka
 
         private void SetGourandSphere()
         {
-            kocka = new Vector3[len];
+            sfera = new Vector3[len];
             normaly = new Vector3[len];
             farba = new Vector3[len];
 
@@ -304,15 +306,15 @@ namespace Kocka
             {
                 if (i == DvaPi)
                 {
-                    kocka[p] = normaly[p] = list[0]; p++;
-                    kocka[p] = normaly[p] = list[i]; p++;
-                    kocka[p] = normaly[p] = list[1]; p++;
+                    sfera[p] = normaly[p] = list[0]; p++;
+                    sfera[p] = normaly[p] = list[i]; p++;
+                    sfera[p] = normaly[p] = list[1]; p++;
                 }
                 else
                 {
-                    kocka[p] = normaly[p] = list[0]; p++;
-                    kocka[p] = normaly[p] = list[i]; p++;
-                    kocka[p] = normaly[p] = list[i + 1]; p++;
+                    sfera[p] = normaly[p] = list[0]; p++;
+                    sfera[p] = normaly[p] = list[i]; p++;
+                    sfera[p] = normaly[p] = list[i + 1]; p++;
                 }
             }
 
@@ -323,23 +325,23 @@ namespace Kocka
                 {
                     if (i % DvaPi == 0)
                     {
-                        kocka[p] = normaly[p] = list[i]; p++;
-                        kocka[p] = normaly[p] = list[i + DvaPi]; p++;
-                        kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
+                        sfera[p] = normaly[p] = list[i]; p++;
+                        sfera[p] = normaly[p] = list[i + DvaPi]; p++;
+                        sfera[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
 
-                        kocka[p] = normaly[p] = list[i]; p++;
-                        kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
-                        kocka[p] = normaly[p] = list[((j - 1) * DvaPi) + 1]; p++;
+                        sfera[p] = normaly[p] = list[i]; p++;
+                        sfera[p] = normaly[p] = list[((j - 1) * DvaPi) + 1 + DvaPi]; p++;
+                        sfera[p] = normaly[p] = list[((j - 1) * DvaPi) + 1]; p++;
                     }
                     else
                     {
-                        kocka[p] = normaly[p] = list[i]; p++;
-                        kocka[p] = normaly[p] = list[i + DvaPi]; p++;
-                        kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
+                        sfera[p] = normaly[p] = list[i]; p++;
+                        sfera[p] = normaly[p] = list[i + DvaPi]; p++;
+                        sfera[p] = normaly[p] = list[i + DvaPi + 1]; p++;
 
-                        kocka[p] = normaly[p] = list[i]; p++;
-                        kocka[p] = normaly[p] = list[i + DvaPi + 1]; p++;
-                        kocka[p] = normaly[p] = list[i + 1]; p++;
+                        sfera[p] = normaly[p] = list[i]; p++;
+                        sfera[p] = normaly[p] = list[i + DvaPi + 1]; p++;
+                        sfera[p] = normaly[p] = list[i + 1]; p++;
                     }
                 }
             }
@@ -350,15 +352,15 @@ namespace Kocka
             {
                 if (i == tmp - 2)
                 {
-                    kocka[p] = normaly[p] = list[i]; p++;
-                    kocka[p] = normaly[p] = list[tmp - 1]; p++;
-                    kocka[p] = normaly[p] = list[tmp - DvaPi - 1]; p++;
+                    sfera[p] = normaly[p] = list[i]; p++;
+                    sfera[p] = normaly[p] = list[tmp - 1]; p++;
+                    sfera[p] = normaly[p] = list[tmp - DvaPi - 1]; p++;
                 }
                 else
                 {
-                    kocka[p] = normaly[p] = list[i]; p++;
-                    kocka[p] = normaly[p] = list[tmp - 1]; p++;
-                    kocka[p] = normaly[p] = list[i + 1]; p++;
+                    sfera[p] = normaly[p] = list[i]; p++;
+                    sfera[p] = normaly[p] = list[tmp - 1]; p++;
+                    sfera[p] = normaly[p] = list[i + 1]; p++;
                 }
             }
 
@@ -378,7 +380,7 @@ namespace Kocka
 
             //vrcholy
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(len * Vector3.SizeInBytes), kocka, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(len * Vector3.SizeInBytes), sfera, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
 
@@ -483,8 +485,8 @@ namespace Kocka
         public void DrawSphere()
         {
             GL.BindVertexArray(VAO[0]);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, len);
-            //GL.DrawArrays(PrimitiveType.LineLoop, 0, len);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, len);
+            GL.DrawArrays(PrimitiveType.LineStrip, 0, len);
         }
 
         public void Transalte(float x, float y)
