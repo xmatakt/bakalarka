@@ -306,37 +306,252 @@ namespace Kocka
                 }
             }
             #endregion
-            System.Diagnostics.Debug.WriteLine("AHELEMORE == {0}",noormals.Count);
-        }
 
-        private void GeoToSpatialCoords()
-        {
-            float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
-            for (int i = 0; i < coords.Count; i++)
+            #region dolna polovica
+            for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
             {
-                rH = R + coords[i].Z;
-                cosBxRAD = (float)Math.Cos(coords[i].X * RAD);
-                sinBxRAD = (float)Math.Sin(coords[i].X * RAD);
-                cosLxRAD = (float)Math.Cos(coords[i].Y * RAD);
-                sinLxRAD = (float)Math.Sin(coords[i].Y * RAD);
-                coords[i] = new Vector3(rH * cosBxRAD * cosLxRAD, rH * cosBxRAD * sinLxRAD, rH * sinBxRAD);
+                if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
+                {
+                    startIndex = 2 * i * (i - 1) + 1;
+                    endIndex = startIndex + (i * 4) - 1;
+                    tmp = startIndex;
+                }
+                else
+                {
+                    startIndex = tmp + (i + 1) * 4;
+                    endIndex = startIndex + (i * 4) - 1;
+                    tmp = startIndex;
+                }
+                int increment = i * 4;
+                for (int j = startIndex; j <= endIndex; j++)
+                {
+                    if (j == startIndex)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[endIndex] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[j - (i - 1) * 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - increment - 4], coords[j - increment - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[endIndex] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 4] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                    }
+                    if (j == startIndex + i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment-1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment-1], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j - increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j-1], coords[j - increment - 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 4], coords[j - increment - 3] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                    }
+                    if (j == startIndex + 2 * i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment + 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment + 2], coords[j + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j - increment - 2] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1); 
+                    }
+                    if (j == startIndex + 3 * i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            if(j !=endIndex)
+                            {
+                                n = Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[j + 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
+                                noormals.Add(n);
+                            }
+                            else
+                            {
+                                n = Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[startIndex] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[startIndex], coords[j + 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
+                                noormals.Add(n);
+                            }
+                        }
+                    }
+                    if (j > startIndex && j < startIndex + i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - (i - 1) * 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i + 1) * 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i + 1) * 4], coords[j - (i + 1) * 4 + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + increment);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                    }
+                    if (j > startIndex + i && j < startIndex + 2 * i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4-1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4-1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment-1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment-1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 1], coords[j - (i + 1) * 4 + 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 2], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i + 1) * 4 + 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + increment - 1);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                    }
+                    if (j > startIndex + 2 * i && j < startIndex + 3 * i)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - (i - 1) * 4 - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j + increment - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j + increment - 3] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + increment - 2);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1);
+                    }
+                    if (j > startIndex + 3 * i && j <= endIndex)
+                    {
+                        if (i == (NumOfParallels - 1) / 2)
+                        {
+                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment], coords[j - increment + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j + increment - 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
+                            noormals.Add(n);
+                        }
+                        else
+                        {
+                            if(j != endIndex)
+                            {
+                                n = Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j + increment - 4] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[j + 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
+                                noormals.Add(n);
+                            }
+                            else
+                            {
+                                n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 4] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 1] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[startIndex] - coords[j]);
+                                n += Vector3.Cross(coords[j] - coords[startIndex], coords[j + 1] - coords[j]);
+                                noormals.Add(n);
+                            }
+                        }
+                    }
+                }
             }
-        }
+            #endregion
+           
+            //koniec
+            n = Vector3.Cross(coords[endIndex + 1] - coords[endIndex], coords[startIndex] - coords[endIndex + 1]);
+            n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex], coords[startIndex + 1] - coords[endIndex + 1]);
+            n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex + 1], coords[endIndex - 1] - coords[endIndex + 1]);
+            n += Vector3.Cross(coords[endIndex + 1] - coords[endIndex - 1], coords[endIndex] - coords[endIndex + 1]);
+            noormals.Add(n);
 
-        private void GetNumberOfTriangles()
-        {
-            //(NumOfParallels-1)/2 --> (pocet rovnobeciek - rovnik)/2
-            //nad i-tou rovnobezkou je 4*(2*(i-1)+1) trojuholnikov
-            for (int i = (NumOfParallels - 1) / 2; i > 0; i--)
-            {
-                //NumOfTriangles += (i - 1);
-                //NumOfTriangles += 4 * (2 * (i - 1) + 1);
-                NumOfTriangles += i;
-            }
-            //NumOfTriangles = 2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
-            NumOfTriangles = -2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
-            NumOfTriangles *= 2;//dve polgule
-            System.Diagnostics.Debug.WriteLine("NumOfTriangles = {0}", NumOfTriangles);
+            System.Diagnostics.Debug.WriteLine("startIndex == {0}", startIndex);
+            System.Diagnostics.Debug.WriteLine("endIndex == {0}", endIndex);
+
+            System.Diagnostics.Debug.WriteLine("pocet normal == {0}",noormals.Count);
+            System.Diagnostics.Debug.WriteLine("pocet vrcholov == {0}", coords.Count);
         }
 
         private void InitSphere()
@@ -377,7 +592,7 @@ namespace Kocka
             normals[p] = noormals[1]; p++;
 
             #region horna polovica
-            for (int i = 1; i < (NumOfParallels - 1) / 2 - 1; i++)
+            for (int i = 1; i < (NumOfParallels - 1) / 2 ; i++)
             {
                 startIndex = 2 * i * (i - 1) + 1;
                 endIndex = startIndex + (i * 4) - 1;
@@ -614,152 +829,195 @@ namespace Kocka
             }
             #endregion
 
-            //#region dolna polovica
-            //for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
-            //{
-            //    if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
-            //    {
-            //        startIndex = 2 * i * (i - 1) + 1;
-            //        endIndex = startIndex + (i * 4) - 1;
-            //        tmp = startIndex;
-            //    }
-            //    else
-            //    {
-            //        startIndex = tmp + (i + 1) * 4;
-            //        endIndex = startIndex + (i * 4) - 1;
-            //        tmp = startIndex;
-            //    }
-            //    int increment = i * 4;
-            //    for (int j = startIndex; j <= endIndex; j++)
-            //    {
-            //        if (j == startIndex)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
-            //        }
-            //        if (j == startIndex + i)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 1]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
-            //        }
-            //        if (j == startIndex + 2 * i)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 2]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1); 
-            //        }
-            //        if (j == startIndex + 3 * i)
-            //        {
-            //            if (j == endIndex)
-            //            {
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + 1]; p++;
-            //                vertices[p] = coords[startIndex]; p++;
-
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex);
-            //            }
-            //            else
-            //            {
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + increment - 3]; p++;
-            //                vertices[p] = coords[j + 1]; p++;
-
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
-            //            }
-            //        }
-            //        if (j > startIndex && j < startIndex + i)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 1]; p++;
-            //            vertices[p] = coords[j + increment]; p++;
-
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + increment);
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
-            //        }
-            //        if (j > startIndex + i && j < startIndex + 2 * i)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 2]; p++;
-            //            vertices[p] = coords[j + increment - 1]; p++;
-
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 1]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + increment - 1);
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
-            //        }
-            //        if (j > startIndex + 2 * i && j < startIndex + 3 * i)
-            //        {
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 3]; p++;
-            //            vertices[p] = coords[j + increment - 2]; p++;
-
-            //            vertices[p] = coords[j]; p++;
-            //            vertices[p] = coords[j + increment - 2]; p++;
-            //            vertices[p] = coords[j + 1]; p++;
-
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + increment - 2);
-            //            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1);
-            //        }
-            //        if (j > startIndex + 3 * i && j <= endIndex)
-            //        {
-            //            if (j != endIndex)
-            //            {
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + increment - 4]; p++;
-            //                vertices[p] = coords[j + increment - 3]; p++;
-
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + increment - 3]; p++;
-            //                vertices[p] = coords[j + 1]; p++;
-
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + increment - 3);
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
-            //            }
-            //            else
-            //            {
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + increment - 4]; p++;
-            //                vertices[p] = coords[j + 1]; p++;
-
-            //                vertices[p] = coords[j]; p++;
-            //                vertices[p] = coords[j + 1]; p++;
-            //                vertices[p] = coords[startIndex]; p++;
-
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + 1);
-            //                //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex); 
-            //            }
-            //        }
-            //    }
-            //}
-            //#endregion
-
-            NumOfVertices = p;
-            for (int i = 0; i < p; i++)
+            #region dolna polovica
+            for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
             {
-                //color[i] = new Vector3(1.0f, 1.0f, 0.0f);
-                if (i % 3 == 0)
-                    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
-                if (i % 3 == 1)
-                    color[i] = new Vector3(0.0f, 1.0f, 0.0f);
-                if (i % 3 == 2)
-                    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
+                if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
+                {
+                    startIndex = 2 * i * (i - 1) + 1;
+                    endIndex = startIndex + (i * 4) - 1;
+                    tmp = startIndex;
+                }
+                else
+                {
+                    startIndex = tmp + (i + 1) * 4;
+                    endIndex = startIndex + (i * 4) - 1;
+                    tmp = startIndex;
+                }
+                int increment = i * 4;
+                for (int j = startIndex; j <= endIndex; j++)
+                {
+                    if (j == startIndex)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment];
+                        normals[p] = noormals[j+increment]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                    }
+                    if (j == startIndex + i)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j+increment-1]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                    }
+                    if (j == startIndex + 2 * i)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j+increment-2]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1); 
+                    }
+                    if (j == startIndex + 3 * i)
+                    {
+                        if (j == endIndex)
+                        {
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j+1]; p++;
+                            vertices[p] = coords[startIndex];
+                            normals[p] = noormals[startIndex]; p++;
+
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex);
+                        }
+                        else
+                        {
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + increment - 3];
+                            normals[p] = noormals[j+increment-3]; p++;
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j+1]; p++;
+
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
+                        }
+                    }
+                    if (j > startIndex && j < startIndex + i)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j+increment-1]; p++;
+                        vertices[p] = coords[j + increment];
+                        normals[p] = noormals[j+increment]; p++;
+
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment];
+                        normals[p] = noormals[j+increment]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + increment);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                    }
+                    if (j > startIndex + i && j < startIndex + 2 * i)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j+increment-2]; p++;
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j+increment-1]; p++;
+
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j+increment-1]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + increment - 1);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                    }
+                    if (j > startIndex + 2 * i && j < startIndex + 3 * i)
+                    {
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 3];
+                        normals[p] = noormals[j+increment-3]; p++;
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j+increment-2]; p++;
+
+                        vertices[p] = coords[j];
+                        normals[p] = noormals[j]; p++;
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j+increment-2]; p++;
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j+1]; p++;
+
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + increment - 2);
+                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1);
+                    }
+                    if (j > startIndex + 3 * i && j <= endIndex)
+                    {
+                        if (j != endIndex)
+                        {
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + increment - 4];
+                            normals[p] = noormals[j+increment-4]; p++;
+                            vertices[p] = coords[j + increment - 3];
+                            normals[p] = noormals[j+increment-3]; p++;
+
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + increment - 3];
+                            normals[p] = noormals[j+increment-3]; p++;
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j+1]; p++;
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + increment - 3);
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
+                        }
+                        else
+                        {
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + increment - 4];
+                            normals[p] = noormals[j+increment-4]; p++;
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j+1]; p++;
+
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j+1]; p++;
+                            vertices[p] = coords[startIndex];
+                            normals[p] = noormals[startIndex]; p++;
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + 1);
+                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex); 
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            //NumOfVertices = p;
+            for (int i = 0; i < NumOfVertices; i++)
+            {
+                color[i] = new Vector3(1.0f, 1.0f, 0.0f);
+                //if (i % 3 == 0)
+                //    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
+                //if (i % 3 == 1)
+                //    color[i] = new Vector3(0.0f, 1.0f, 0.0f);
+                //if (i % 3 == 2)
+                //    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
             }
 
-            System.Diagnostics.Debug.WriteLine("pp = {0}",p);
+            System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}",NumOfVertices);
         }
 
         private void InitScene()
@@ -835,6 +1093,37 @@ namespace Kocka
             //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
         }
 
+        private void GeoToSpatialCoords()
+        {
+            float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
+            for (int i = 0; i < coords.Count; i++)
+            {
+                rH = R + coords[i].Z;
+                cosBxRAD = (float)Math.Cos(coords[i].X * RAD);
+                sinBxRAD = (float)Math.Sin(coords[i].X * RAD);
+                cosLxRAD = (float)Math.Cos(coords[i].Y * RAD);
+                sinLxRAD = (float)Math.Sin(coords[i].Y * RAD);
+                coords[i] = new Vector3(rH * cosBxRAD * cosLxRAD, rH * cosBxRAD * sinLxRAD, rH * sinBxRAD);
+            }
+        }
+
+        private void GetNumberOfTriangles()
+        {
+            //(NumOfParallels-1)/2 --> (pocet rovnobeciek - rovnik)/2
+            //nad i-tou rovnobezkou je 4*(2*(i-1)+1) trojuholnikov
+            for (int i = (NumOfParallels - 1) / 2; i > 0; i--)
+            {
+                //NumOfTriangles += (i - 1);
+                //NumOfTriangles += 4 * (2 * (i - 1) + 1);
+                NumOfTriangles += i;
+            }
+            //NumOfTriangles = 2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
+            NumOfTriangles = -2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
+            NumOfTriangles *= 2;//dve polgule
+            System.Diagnostics.Debug.WriteLine("NumOfTriangles = {0}", NumOfTriangles);
+        }
+
+        #region ovladanie mysou
         public void Transalte(float x, float y)
         {
             TranslationMatrix = Matrix4.CreateTranslation(x, y, 0.0f);
@@ -871,6 +1160,7 @@ namespace Kocka
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", Current);
         }
+        #endregion
 
         public void Ende()
         {
