@@ -21,7 +21,7 @@ namespace Kocka
         private Vector3[] color;
         private List<Vector3> coords;
         private List<Vector3> noormals;
-        private float RAD,R,scale;
+        private float RAD, R, scale, min, max;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -34,6 +34,8 @@ namespace Kocka
         //nacitanie dat do listu + prevod
         public SphereDAT(int w, int h,string pathToFile)
         {
+            min = float.MaxValue;
+            max = float.MinValue;
             R = 1.0f;
             scale = 1.0f;
             width = w; height = h;
@@ -52,28 +54,24 @@ namespace Kocka
             FragmentShader = new Shaders.Shader();
             spMain = new Shaders.ShaderProgram();
 
-            StreamReader sr;
-            Vector3 tmp;
-            char[] separator={'\t'};
-            string[] line;
-            try
-            {
-                sr = new StreamReader(pathToFile);
-                while(!sr.EndOfStream)
-                {
-                    line = sr.ReadLine().Split(separator);
-                    tmp=new Vector3(float.Parse(line[0]),float.Parse(line[1]),float.Parse(line[2]));
-                    coords.Add(tmp);
-                }
-                sr.Close();
-            }
-            catch(FileNotFoundException)
-            {
-                System.Windows.Forms.MessageBox.Show("Subor sa nenasiel!");
-            }
+            LoadData(pathToFile);
+
+            ScaleHeights();
+
+            //StreamWriter sw = new StreamWriter("nove.dat");
+            //Shaders.HeightMapGenerator hmg = new Shaders.HeightMapGenerator();
+            //foreach (var item in coords)
+            //{
+            //    float z = hmg.GetNormalDistributedValue(item.Z, 0.01f);
+            //    sw.WriteLine("{0}\t{1}\t{2}", item.X, item.Y, z);
+            //}
+            //sw.Flush();
+            //sw.Close();
 
             NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
+            //PustiToRychlejsie(0.033f);
             GeoToSpatialCoords();
+            
             GetNumberOfTriangles();
             NumOfVertices = 3 * NumOfTriangles;
             vertices = new Vector3[NumOfVertices];
@@ -97,7 +95,6 @@ namespace Kocka
 
         private void CalculateNormals()
         {
-            int p = 0;
             int startIndex = 0;
             int endIndex = 0;
             int tmp = 0;
@@ -546,12 +543,6 @@ namespace Kocka
             n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex + 1], coords[endIndex - 1] - coords[endIndex + 1]);
             n += Vector3.Cross(coords[endIndex + 1] - coords[endIndex - 1], coords[endIndex] - coords[endIndex + 1]);
             noormals.Add(n);
-
-            System.Diagnostics.Debug.WriteLine("startIndex == {0}", startIndex);
-            System.Diagnostics.Debug.WriteLine("endIndex == {0}", endIndex);
-
-            System.Diagnostics.Debug.WriteLine("pocet normal == {0}",noormals.Count);
-            System.Diagnostics.Debug.WriteLine("pocet vrcholov == {0}", coords.Count);
         }
 
         private void InitSphere()
@@ -597,7 +588,6 @@ namespace Kocka
                 startIndex = 2 * i * (i - 1) + 1;
                 endIndex = startIndex + (i * 4) - 1;
                 int increment = i * 4;
-                System.Diagnostics.Debug.WriteLine("{0} ", i);
                 for (int j = startIndex; j <= endIndex; j++)
                 {
                     if (j == startIndex)
@@ -689,7 +679,8 @@ namespace Kocka
                             vertices[p] = coords[j + increment + 3];
                             normals[p] = noormals[j + increment + 3]; p++;
 
-                            vertices[p] = coords[j]; p++;
+                            vertices[p] = coords[j];
+                            normals[p] = noormals[j]; p++;
                             vertices[p] = coords[j + increment + 3];
                             normals[p] = noormals[j + increment + 3]; p++;
                             vertices[p] = coords[j + increment + 4];
@@ -1005,10 +996,9 @@ namespace Kocka
             }
             #endregion
 
-            //NumOfVertices = p;
             for (int i = 0; i < NumOfVertices; i++)
             {
-                color[i] = new Vector3(1.0f, 1.0f, 0.0f);
+                color[i] = new Vector3(1.0f, 0.54901960784f, 0.0f);
                 //if (i % 3 == 0)
                 //    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
                 //if (i % 3 == 1)
@@ -1016,7 +1006,6 @@ namespace Kocka
                 //if (i % 3 == 2)
                 //    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
             }
-
             System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}",NumOfVertices);
         }
 
@@ -1052,16 +1041,16 @@ namespace Kocka
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per pixel
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per vertex
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
@@ -1093,6 +1082,55 @@ namespace Kocka
             //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
         }
 
+        private void LoadData(string pathToFile)
+        {
+            StreamReader sr;
+            Vector3 tmp;
+            char[] separator={' ','\t'};
+            string[] line;
+            try
+            {
+                sr = new StreamReader(pathToFile);
+                while(!sr.EndOfStream)
+                {
+                    //System.Diagnostics.Debug.WriteLine(sr.ReadLine());
+                    line = sr.ReadLine().Split(separator);
+                    //System.Diagnostics.Debug.WriteLine("dlzka = {0}",line.Length);
+                    tmp=new Vector3(float.Parse(line[0]),float.Parse(line[1]),float.Parse(line[2]));
+                    coords.Add(tmp);
+                    if (coords.Last().Z < min)
+                        min = coords.Last().Z;
+                    if (coords.Last().Z > max)
+                        max = coords.Last().Z;
+                }
+                sr.Close();
+            }
+            catch(FileNotFoundException)
+            {
+                System.Windows.Forms.MessageBox.Show("Subor sa nenasiel!");
+            }
+        }
+
+        private void ScaleHeights()
+        {
+            //for (int i = 0; i < coords.Count; i++)
+            //{
+            //    if (coords[i].Z < min)
+            //        min = coords[i].Z;
+            //    if (coords[i].Z > max)
+            //        max = coords[i].Z;
+            //}
+            System.Diagnostics.Debug.WriteLine("min = {0}", min);
+            System.Diagnostics.Debug.WriteLine("max = {0}", max);
+
+            float L = Math.Abs(max - min)*5.0f;
+            for (int i = 0; i < coords.Count; i++)
+            {
+                //coords[i] = new Vector3(coords[i].X, coords[i].Y, coords[i].Z / (float)L);
+                coords[i] = new Vector3(coords[i].X, coords[i].Y, (coords[i].Z-min) / (float)L);
+            }
+        }
+
         private void GeoToSpatialCoords()
         {
             float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
@@ -1104,7 +1142,25 @@ namespace Kocka
                 cosLxRAD = (float)Math.Cos(coords[i].Y * RAD);
                 sinLxRAD = (float)Math.Sin(coords[i].Y * RAD);
                 coords[i] = new Vector3(rH * cosBxRAD * cosLxRAD, rH * cosBxRAD * sinLxRAD, rH * sinBxRAD);
+                //if (coords[i].Z < min)
+                //    min = coords[i].Z;
+                //if (coords[i].Z > max)
+                //    max = coords[i].Z;
+
+                //if (coords[i].Length < min)
+                //    min = coords[i].Length;
+                //if (coords[i].Length > max)
+                //    max = coords[i].Length;
             }
+            System.Diagnostics.Debug.WriteLine("min = {0}", min);
+            System.Diagnostics.Debug.WriteLine("max = {0}", max);
+        }
+
+        private void PustiToRychlejsie(float s)
+        {
+            Shaders.HeightMapGenerator hmg= new Shaders.HeightMapGenerator();
+            for (int i = 0; i < coords.Count; i++)
+                coords[i] = new Vector3(coords[i].X, coords[i].Y, hmg.GetNormalDistributedValue(coords[i].Z, s));
         }
 
         private void GetNumberOfTriangles()

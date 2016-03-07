@@ -30,11 +30,8 @@
         {
             this.glControl1 = new OpenTK.GLControl();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.dacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.flatShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.gourandShadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.kockaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.volacoToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.otvorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Specular = new System.Windows.Forms.Label();
             this.SpecLx = new System.Windows.Forms.NumericUpDown();
             this.Ambient = new System.Windows.Forms.Label();
@@ -66,10 +63,11 @@
             this.PerPixel = new System.Windows.Forms.RadioButton();
             this.ShadersGroupBox = new System.Windows.Forms.GroupBox();
             this.parametreGroupBox = new System.Windows.Forms.GroupBox();
-            this.Pi = new System.Windows.Forms.NumericUpDown();
-            this.DvaPi = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.DvaPi = new System.Windows.Forms.NumericUpDown();
+            this.Pi = new System.Windows.Forms.NumericUpDown();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecLx)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -91,8 +89,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.specCoeff)).BeginInit();
             this.ShadersGroupBox.SuspendLayout();
             this.parametreGroupBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Pi)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DvaPi)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Pi)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -119,59 +117,27 @@
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.dacoToolStripMenuItem});
+            this.volacoToolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1258, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // dacoToolStripMenuItem
+            // volacoToolStripMenuItem1
             // 
-            this.dacoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.volacoToolStripMenuItem,
-            this.kockaToolStripMenuItem});
-            this.dacoToolStripMenuItem.Name = "dacoToolStripMenuItem";
-            this.dacoToolStripMenuItem.Size = new System.Drawing.Size(56, 24);
-            this.dacoToolStripMenuItem.Text = "Daco";
+            this.volacoToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.otvorToolStripMenuItem});
+            this.volacoToolStripMenuItem1.Name = "volacoToolStripMenuItem1";
+            this.volacoToolStripMenuItem1.Size = new System.Drawing.Size(67, 24);
+            this.volacoToolStripMenuItem1.Text = "Volaco";
             // 
-            // volacoToolStripMenuItem
+            // otvorToolStripMenuItem
             // 
-            this.volacoToolStripMenuItem.Checked = true;
-            this.volacoToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.volacoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.flatShadingToolStripMenuItem,
-            this.gourandShadingToolStripMenuItem});
-            this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
-            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(118, 26);
-            this.volacoToolStripMenuItem.Text = "Sfera";
-            this.volacoToolStripMenuItem.CheckedChanged += new System.EventHandler(this.volacoToolStripMenuItem_CheckedChanged);
-            this.volacoToolStripMenuItem.Click += new System.EventHandler(this.volacoToolStripMenuItem_Click);
-            // 
-            // flatShadingToolStripMenuItem
-            // 
-            this.flatShadingToolStripMenuItem.Checked = true;
-            this.flatShadingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.flatShadingToolStripMenuItem.Name = "flatShadingToolStripMenuItem";
-            this.flatShadingToolStripMenuItem.Size = new System.Drawing.Size(191, 26);
-            this.flatShadingToolStripMenuItem.Text = "Flat shading";
-            this.flatShadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.flatShadingToolStripMenuItem_CheckedChanged);
-            this.flatShadingToolStripMenuItem.Click += new System.EventHandler(this.flatShadingToolStripMenuItem_Click);
-            // 
-            // gourandShadingToolStripMenuItem
-            // 
-            this.gourandShadingToolStripMenuItem.Name = "gourandShadingToolStripMenuItem";
-            this.gourandShadingToolStripMenuItem.Size = new System.Drawing.Size(191, 26);
-            this.gourandShadingToolStripMenuItem.Text = "Gourand shading";
-            this.gourandShadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.flatShadingToolStripMenuItem_CheckedChanged);
-            this.gourandShadingToolStripMenuItem.Click += new System.EventHandler(this.gourandShadingToolStripMenuItem_Click);
-            // 
-            // kockaToolStripMenuItem
-            // 
-            this.kockaToolStripMenuItem.Name = "kockaToolStripMenuItem";
-            this.kockaToolStripMenuItem.Size = new System.Drawing.Size(118, 26);
-            this.kockaToolStripMenuItem.Text = "Kocka";
-            this.kockaToolStripMenuItem.Click += new System.EventHandler(this.kockaToolStripMenuItem_Click);
+            this.otvorToolStripMenuItem.Name = "otvorToolStripMenuItem";
+            this.otvorToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
+            this.otvorToolStripMenuItem.Text = "Otvor...";
+            this.otvorToolStripMenuItem.Click += new System.EventHandler(this.otvorToolStripMenuItem_Click);
             // 
             // Specular
             // 
@@ -777,29 +743,23 @@
             this.parametreGroupBox.TabStop = false;
             this.parametreGroupBox.Text = "Parameters";
             // 
-            // Pi
+            // label5
             // 
-            this.Pi.Location = new System.Drawing.Point(50, 31);
-            this.Pi.Maximum = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.Pi.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.Pi.Name = "Pi";
-            this.Pi.Size = new System.Drawing.Size(79, 22);
-            this.Pi.TabIndex = 0;
-            this.Pi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.Pi.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.Pi.ValueChanged += new System.EventHandler(this.Pi_ValueChanged);
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 62);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(28, 17);
+            this.label5.TabIndex = 31;
+            this.label5.Text = "2Pi";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 36);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(20, 17);
+            this.label4.TabIndex = 30;
+            this.label4.Text = "Pi";
             // 
             // DvaPi
             // 
@@ -825,23 +785,34 @@
             0});
             this.DvaPi.ValueChanged += new System.EventHandler(this.Pi_ValueChanged);
             // 
-            // label4
+            // Pi
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 36);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(20, 17);
-            this.label4.TabIndex = 30;
-            this.label4.Text = "Pi";
+            this.Pi.Location = new System.Drawing.Point(50, 31);
+            this.Pi.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.Pi.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.Pi.Name = "Pi";
+            this.Pi.Size = new System.Drawing.Size(79, 22);
+            this.Pi.TabIndex = 0;
+            this.Pi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.Pi.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.Pi.ValueChanged += new System.EventHandler(this.Pi_ValueChanged);
             // 
-            // label5
+            // openFileDialog1
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 62);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(28, 17);
-            this.label5.TabIndex = 31;
-            this.label5.Text = "2Pi";
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Text files |*.txt|Dat files |*.dat";
             // 
             // Form1
             // 
@@ -884,8 +855,8 @@
             this.ShadersGroupBox.PerformLayout();
             this.parametreGroupBox.ResumeLayout(false);
             this.parametreGroupBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Pi)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DvaPi)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Pi)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -895,8 +866,6 @@
 
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem dacoToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem volacoToolStripMenuItem;
         private System.Windows.Forms.Label Specular;
         private System.Windows.Forms.NumericUpDown SpecLx;
         private System.Windows.Forms.Label Ambient;
@@ -924,9 +893,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown shininess;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.ToolStripMenuItem flatShadingToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem gourandShadingToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem kockaToolStripMenuItem;
         private System.Windows.Forms.RadioButton PerFragment;
         private System.Windows.Forms.RadioButton PerPixel;
         private System.Windows.Forms.GroupBox ShadersGroupBox;
@@ -935,6 +901,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown DvaPi;
         private System.Windows.Forms.NumericUpDown Pi;
+        private System.Windows.Forms.ToolStripMenuItem volacoToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem otvorToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

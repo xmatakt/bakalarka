@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
+using System.Globalization;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -16,10 +18,8 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize,sfera,flat,shader; 
+        private bool loaded, resize,sfera,shader; 
         //private Stvorec3D kocka;
-        private KockaInak kocka;
-        private Sphere sphere;
         private SphereDAT sdat;
         float scale;
         float dx, dy;
@@ -29,11 +29,14 @@ namespace Kocka
         public Form1()
         {
             InitializeComponent();
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.CreateSpecificCulture("en-US");
+
             loaded = false;
             resize = false;
-            ShadersGroupBox.Enabled = sfera = volacoToolStripMenuItem.Checked;
+            sfera = false;
             shader = PerFragment.Checked;
-            flat = flatShadingToolStripMenuItem.Checked;
             scale = 1.0f;
             //sdat = new SphereDAT("..\\..\\Properties\\data\\datFiles\\data_const.dat");
         }
@@ -56,15 +59,11 @@ namespace Kocka
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
             if(sfera)
             {
-                sdat = new SphereDAT(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_const.dat");
-                sdat.DrawSphere();
+                //sdat = new SphereDAT(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data01.dat");
+                //sdat.DrawSphere();
                 //sphere = new Sphere(glControl1.Width, glControl1.Height, scale,(int)Pi.Value,(int)DvaPi.Value, flat,shader);
                 //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
                 //sphere.DrawSphere();
-            }
-            else
-            {
-                kocka = new KockaInak(glControl1.Width, glControl1.Height, scale);
             }
         }
 
@@ -78,54 +77,51 @@ namespace Kocka
             if (sfera)
                 sdat.DrawSphere();
             //sphere.DrawSphere();
-            else
-                kocka.PrekresliKocku();
-            
 
             glControl1.SwapBuffers();
         }
 
         private void glControl1_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
-            {
-                //
-                case Keys.Escape:
-                    this.Close();
-                    break;
-                //
-                case Keys.W:
-                    if(sfera)
-                        sphere.Pohyb(0.1f);
-                    else
-                        kocka.Pohyb(0.1f);
-                    glControl1.Invalidate();
-                    break;
-                case Keys.S:
-                    if (sfera)
-                        sphere.Pohyb(-0.1f);
-                    else
-                        kocka.Pohyb(-0.1f);
-                    glControl1.Invalidate();
-                    break;
-                case Keys.A:
-                    if (sfera)
-                        sphere.Natoc(-1.3f);
-                    else
-                        kocka.Natoc(-1.3f);
-                    glControl1.Invalidate();
-                    break;
-                case Keys.D:
-                    if (sfera)
-                        sphere.Natoc(1.3f);
-                    else
-                        kocka.Natoc(1.3f);
-                    glControl1.Invalidate();
-                    break;
-                //
-                default:
-                    break;
-            }
+            //switch (e.KeyCode)
+            //{
+            //    //
+            //    case Keys.Escape:
+            //        this.Close();
+            //        break;
+            //    //
+            //    case Keys.W:
+            //        if(sfera)
+            //            sphere.Pohyb(0.1f);
+            //        else
+            //            kocka.Pohyb(0.1f);
+            //        glControl1.Invalidate();
+            //        break;
+            //    case Keys.S:
+            //        if (sfera)
+            //            sphere.Pohyb(-0.1f);
+            //        else
+            //            kocka.Pohyb(-0.1f);
+            //        glControl1.Invalidate();
+            //        break;
+            //    case Keys.A:
+            //        if (sfera)
+            //            sphere.Natoc(-1.3f);
+            //        else
+            //            kocka.Natoc(-1.3f);
+            //        glControl1.Invalidate();
+            //        break;
+            //    case Keys.D:
+            //        if (sfera)
+            //            sphere.Natoc(1.3f);
+            //        else
+            //            kocka.Natoc(1.3f);
+            //        glControl1.Invalidate();
+            //        break;
+            //    //
+            //    default:
+            //        break;
+            //}
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -133,8 +129,6 @@ namespace Kocka
             if (sfera)
                 sdat.Delete();
             //sphere.Delete();
-            else
-                kocka.Delete();
            
         }
 
@@ -162,11 +156,6 @@ namespace Kocka
                     sdat.Scale(scale);
                     sdat.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                 }
-                else
-                {
-                    kocka.Scale(scale);
-                    kocka.Translate(wLomeno2 * tmpx, hLomeno2 * tmpy);
-                }
                 glControl1.Invalidate();
             }
             //rotacia
@@ -181,11 +170,6 @@ namespace Kocka
                     //sphere.Rotate(tmpx, tmpy, angle);
                     sdat.Scale(scale);
                     sdat.Rotate(tmpx, tmpy, angle);
-                }
-                else
-                {
-                    kocka.Scale(scale);
-                    kocka.Rotate(tmpx, tmpy, angle);
                 }
                 glControl1.Invalidate();
             }
@@ -202,8 +186,6 @@ namespace Kocka
                 if (sfera)
                     sdat.Scale(scale);
                     //sphere.Scale(scale);
-                else
-                    kocka.Scale(scale);
                
                 glControl1.Invalidate();
             }
@@ -217,8 +199,6 @@ namespace Kocka
                 if(sfera)
                     sdat.Ende();
                     //sphere.Ende();
-                else
-                    kocka.Ende();
             }
         }
 
@@ -235,11 +215,6 @@ namespace Kocka
                 {
                     sdat.Resize(glControl1.Width, glControl1.Height);
                     //sphere.Resize(glControl1.Width, glControl1.Height);
-                    glControl1.Invalidate();
-                }
-                else
-                {
-                    kocka.Resize(glControl1.Width, glControl1.Height);
                     glControl1.Invalidate();
                 }
             }
@@ -262,15 +237,7 @@ namespace Kocka
                 Vector3 ambient = new Vector3((float)AmbLx.Value, (float)AmbLy.Value, (float)AmbLz.Value);
                 Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
                 Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
-                sphere.SetLight(specular,ambient,diffuse,direction);
-            }
-            else
-            {
-                Vector3 specular = new Vector3((float)SpecLx.Value, (float)SpecLy.Value, (float)SpecLz.Value);
-                Vector3 ambient = new Vector3((float)AmbLx.Value, (float)AmbLy.Value, (float)AmbLz.Value);
-                Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
-                Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
-                kocka.SetLight(specular, ambient, diffuse, direction);
+                //sphere.SetLight(specular,ambient,diffuse,direction);
             }
             glControl1.Invalidate();
         }
@@ -283,90 +250,7 @@ namespace Kocka
                 float ambCoeff = (float)this.ambCoeff.Value;
                 float diffCoef = (float)this.diffCoef.Value;
                 int shininess = (int)this.shininess.Value;
-                sphere.SetMaterial(specCoeff,ambCoeff,diffCoef,shininess);
-            }
-            else
-            {
-                float specCoeff = (float)this.specCoeff.Value;
-                float ambCoeff = (float)this.ambCoeff.Value;
-                float diffCoef = (float)this.diffCoef.Value;
-                int shininess = (int)this.shininess.Value;
-                kocka.SetMaterial(specCoeff, ambCoeff, diffCoef, shininess);
-            }
-            glControl1.Invalidate();
-        }
-
-        private void flatShadingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
-            if(!flatShadingToolStripMenuItem.Checked)
-            {
-                flatShadingToolStripMenuItem.Checked = true;
-                gourandShadingToolStripMenuItem.Checked = false;
-            }
-            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
-        }
-
-        private void gourandShadingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("flat = {0}",flat);
-            if(!gourandShadingToolStripMenuItem.Checked)
-            {
-                gourandShadingToolStripMenuItem.Checked = true;
-                flatShadingToolStripMenuItem.Checked = false;
-            }
-            System.Diagnostics.Debug.WriteLine("flat = {0}", flat);
-        }
-
-        //zrejme nie uplne optimalne
-        private void flatShadingToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            ShadersGroupBox.Enabled = sfera = true;
-            kockaToolStripMenuItem.Checked = false;
-            volacoToolStripMenuItem.Checked = true;
-            if (sfera)
-            {
-                flat = flatShadingToolStripMenuItem.Checked;
-                sphere.Delete();
-                Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
-            }
-            glControl1.Invalidate();
-        }
-
-        private void volacoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if(!volacoToolStripMenuItem.Checked)
-            {
-                volacoToolStripMenuItem.Checked = true;
-                kockaToolStripMenuItem.Checked = false;
-            }
-        }
-
-        private void kockaToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if(!kockaToolStripMenuItem.Checked)
-            {
-                kockaToolStripMenuItem.Checked = true;
-                volacoToolStripMenuItem.Checked = false;
-            }
-        }
-
-        private void volacoToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            sfera = ShadersGroupBox.Enabled = volacoToolStripMenuItem.Checked;
-            if (sfera)
-            {
-                flat = flatShadingToolStripMenuItem.Checked;
-                kocka.Delete();
-                Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
-            }
-            else
-            {
-                sphere.Delete();
-                Reset();
-                kocka = new KockaInak(glControl1.Width, glControl1.Height, scale);
+                //sphere.SetMaterial(specCoeff,ambCoeff,diffCoef,shininess);
             }
             glControl1.Invalidate();
         }
@@ -378,15 +262,15 @@ namespace Kocka
             {
                 if(PerFragment.Checked)
                 {
-                    sphere.Delete();
+                    //sphere.Delete();
                     Reset();
-                    sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                    //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
                 }
                 else
                 {
-                    sphere.Delete();
+                    //sphere.Delete();
                     Reset();
-                    sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                    //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
                 }
                 glControl1.Invalidate();
             }
@@ -396,9 +280,21 @@ namespace Kocka
         {
             if(sfera)
             {
-                sphere.Delete();
+                //sphere.Delete();
                 Reset();
-                sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
+                glControl1.Invalidate();
+            }
+        }
+
+        private void otvorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //pridat zrusenie geoidu ak uz bol dajaky zobrazeny a ma sa kreslit novy
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                sfera = true;
+                sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                sdat.DrawSphere();
                 glControl1.Invalidate();
             }
         }

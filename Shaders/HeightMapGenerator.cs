@@ -37,6 +37,11 @@ namespace Shaders
             GenerateArrayOfIndices();
         }
 
+        public HeightMapGenerator()
+        {
+            X = new Random();
+        }
+
         float Trim(float c)
         {
             if (c < min)
@@ -47,7 +52,7 @@ namespace Shaders
         }
 
         //toto asi lepsie nepouzivat
-        private float GetNormalDistributedValue(float mu,float sigma)
+        public float GetNormalDistributedValue(float mu,float sigma)
         {
             float u = 2.0f * ((float)X.NextDouble()) - 1.0f;
             float v = 2.0f * ((float)X.NextDouble()) - 1.0f;
