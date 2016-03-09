@@ -553,34 +553,55 @@ namespace Kocka
             int tmp = 0;
 
             //Timova triangulacia
-            //cepicka
+            #region cepicka
             vertices[p] = coords[0];
-            normals[p] = noormals[0]; p++;
+            normals[p] = noormals[0];
+            color[p] = coolors[0]; p++;
+
             vertices[p] = coords[1];
-            normals[p] = noormals[1]; p++;
+            normals[p] = noormals[1];
+            color[p] = coolors[1]; p++;
+
             vertices[p] = coords[2];
-            normals[p] = noormals[2]; p++;
+            normals[p] = noormals[2];
+            color[p] = coolors[2]; p++;
 
             vertices[p] = coords[0];
-            normals[p] = noormals[0]; p++;
+            normals[p] = noormals[0];
+            color[p] = coolors[0]; p++;
+
             vertices[p] = coords[2];
-            normals[p] = noormals[2]; p++;
+            normals[p] = noormals[2];
+            color[p] = coolors[2]; p++;
+
             vertices[p] = coords[3];
-            normals[p] = noormals[3]; p++;
+            normals[p] = noormals[3];
+            color[p] = coolors[3]; p++;
 
             vertices[p] = coords[0];
-            normals[p] = noormals[0]; p++;
+            normals[p] = noormals[0];
+            color[p] = coolors[0]; p++;
+
             vertices[p] = coords[3];
-            normals[p] = noormals[3]; p++;
+            normals[p] = noormals[3];
+            color[p] = coolors[3]; p++;
+
             vertices[p] = coords[4];
-            normals[p] = noormals[4]; p++;
+            normals[p] = noormals[4];
+            color[p] = coolors[4]; p++;
 
             vertices[p] = coords[0];
-            normals[p] = noormals[0]; p++;
+            normals[p] = noormals[0];
+            color[p] = coolors[0]; p++;
+
             vertices[p] = coords[4];
-            normals[p] = noormals[4]; p++;
+            normals[p] = noormals[4];
+            color[p] = coolors[4]; p++;
+
             vertices[p] = coords[1];
-            normals[p] = noormals[1]; p++;
+            normals[p] = noormals[1];
+            color[p] = coolors[1]; p++;
+            #endregion
 
             #region horna polovica
             for (int i = 1; i < (NumOfParallels - 1) / 2 ; i++)
@@ -593,227 +614,327 @@ namespace Kocka
                     if (j == startIndex)
                     {
                         vertices[p] = coords[j]; 
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[2 * (i + 1) * i + (i + 1) * 4];
-                        normals[p] = noormals[2 * (i + 1) * i + (i + 1) * 4]; p++;
+                        normals[p] = noormals[2 * (i + 1) * i + (i + 1) * 4];
+                        color[p] = coolors[2 * (i + 1) * i + (i + 1) * 4]; p++;
+
                         vertices[p] = coords[j + increment]; 
-                        normals[p] = noormals[j + increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j + increment]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j+increment]; p++;
+
                         vertices[p] = coords[j + increment + 1]; 
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j+increment+1]; p++;
 
                         vertices[p] = coords[j]; 
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j+increment+1]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, 2 * (i + 1) * i + (i + 1) * 4, j + increment);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j+1]; p++;
                     }
                     if (j == startIndex + i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j+increment]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j+increment+1]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j + increment + 1]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + increment + 2]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j+increment+2]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j+1]; p++;
                     }
                     if (j == startIndex + 2 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j + increment + 1]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + increment + 2]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + increment + 2]; p++;
+
                         vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3]; p++;
+                        normals[p] = noormals[j + increment + 3];
+                        color[p] = coolors[j + increment + 3]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3]; p++;
+                        normals[p] = noormals[j + increment + 3];
+                        color[p] = coolors[j + increment + 3]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + 3 * i)
                     {
                         if (j == endIndex)//toto by malo nastat 2 krat
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 2];
-                            normals[p] = noormals[j + increment + 2]; p++;
+                            normals[p] = noormals[j + increment + 2];
+                            color[p] = coolors[j + increment + 2]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j + increment + 3]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j + increment + 3]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
+
                             vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, startIndex);
+                            normals[p] = noormals[startIndex];
+                            color[p] = coolors[startIndex]; p++;
                         }
                         else
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 2];
-                            normals[p] = noormals[j + increment + 2]; p++;
+                            normals[p] = noormals[j + increment + 2];
+                            color[p] = coolors[j + increment + 2]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j + increment + 3]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j+increment+3]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
+
                             vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, j + 1);
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
                         }
                     }
                     if (j > startIndex && j < startIndex + i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j + increment]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j + increment + 1]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j + increment + 1]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + i && j < startIndex + 2 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1]; p++;
+                        normals[p] = noormals[j + increment + 1];
+                        color[p] = coolors[j + increment + 1]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + increment + 2]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + increment + 2]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j+1]; p++;
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2]; p++;
+                        normals[p] = noormals[j + increment + 2];
+                        color[p] = coolors[j + 2]; p++;
+
                         vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3]; p++;
+                        normals[p] = noormals[j + increment + 3];
+                        color[p] = coolors[j + increment + 3]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3]; p++;
+                        normals[p] = noormals[j + increment + 3];
+                        color[p] = coolors[j + increment + 3]; p++;
+
                         vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1]; p++;
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + 1);
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + 3 * i && j <= endIndex)
                     {
                         if (j != endIndex)
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j + increment + 3]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
+
                             vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, j + 1);
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
                         }
                         else
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3]; p++;
+                            normals[p] = noormals[j + increment + 3];
+                            color[p] = coolors[j + increment + 3]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4]; p++;
+                            normals[p] = noormals[j + increment + 4];
+                            color[p] = coolors[j + increment + 4]; p++;
+
                             vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, startIndex);
+                            normals[p] = noormals[startIndex];
+                            color[p] = coolors[startIndex]; p++;
                         }
                     }
                 }
@@ -841,171 +962,223 @@ namespace Kocka
                     if (j == startIndex)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j+increment]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                        vertices[p] = coords[j + increment];
+                        normals[p] = noormals[j+increment];
+                        color[p] = coolors[j+increment]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j+increment-1]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j + increment - 1];
+                        color[p] = coolors[j + increment - 1]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + 2 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j+increment-2]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1); 
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j + increment - 2];
+                        color[p] = coolors[j + increment - 2]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++; 
                     }
                     if (j == startIndex + 3 * i)
                     {
                         if (j == endIndex)
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j+1]; p++;
-                            vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
 
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex);
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
+
+                            vertices[p] = coords[startIndex];
+                            normals[p] = noormals[startIndex];
+                            color[p] = coolors[startIndex]; p++;
                         }
                         else
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
-                            vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j+increment-3]; p++;
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j+1]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
 
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
+                            vertices[p] = coords[j + increment - 3];
+                            normals[p] = noormals[j + increment - 3];
+                            color[p] = coolors[j + increment - 3]; p++;
+
+                            vertices[p] = coords[j + 1];
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
                         }
                     }
                     if (j > startIndex && j < startIndex + i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j+increment-1]; p++;
+                        normals[p] = noormals[j + increment - 1];
+                        color[p] = coolors[j + increment - 1]; p++;
+
                         vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j+increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j + increment]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j+increment]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + increment);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                        vertices[p] = coords[j + increment];
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j + increment]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + i && j < startIndex + 2 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j+increment-2]; p++;
+                        normals[p] = noormals[j + increment - 2];
+                        color[p] = coolors[j + increment - 2]; p++;
+
                         vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j+increment-1]; p++;
+                        normals[p] = noormals[j + increment - 1];
+                        color[p] = coolors[j + increment - 1]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j+increment-1]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + increment - 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                        vertices[p] = coords[j + increment - 1];
+                        normals[p] = noormals[j + increment - 1];
+                        color[p] = coolors[j + increment - 1]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
+
                         vertices[p] = coords[j + increment - 3];
-                        normals[p] = noormals[j+increment-3]; p++;
+                        normals[p] = noormals[j + increment - 3];
+                        color[p] = coolors[j + increment - 3]; p++;
+
                         vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j+increment-2]; p++;
+                        normals[p] = noormals[j + increment - 2];
+                        color[p] = coolors[j + increment - 2]; p++;
 
                         vertices[p] = coords[j];
-                        normals[p] = noormals[j]; p++;
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j+increment-2]; p++;
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j+1]; p++;
+                        normals[p] = noormals[j];
+                        color[p] = coolors[j]; p++;
 
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + increment - 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1);
+                        vertices[p] = coords[j + increment - 2];
+                        normals[p] = noormals[j + increment - 2];
+                        color[p] = coolors[j + increment - 2]; p++;
+
+                        vertices[p] = coords[j + 1];
+                        normals[p] = noormals[j + 1];
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + 3 * i && j <= endIndex)
                     {
                         if (j != endIndex)
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment - 4];
-                            normals[p] = noormals[j+increment-4]; p++;
+                            normals[p] = noormals[j + increment - 4];
+                            color[p] = coolors[j + increment - 4]; p++;
+
                             vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j+increment-3]; p++;
+                            normals[p] = noormals[j + increment - 3];
+                            color[p] = coolors[j + increment - 3]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j+increment-3]; p++;
+                            normals[p] = noormals[j + increment - 3];
+                            color[p] = coolors[j + increment - 3]; p++;
+
                             vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j+1]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + increment - 3);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + 1);
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
                         }
                         else
                         {
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + increment - 4];
-                            normals[p] = noormals[j+increment-4]; p++;
+                            normals[p] = noormals[j + increment - 4];
+                            color[p] = coolors[j + increment - 4]; p++;
+
                             vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j+1]; p++;
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
 
                             vertices[p] = coords[j];
-                            normals[p] = noormals[j]; p++;
+                            normals[p] = noormals[j];
+                            color[p] = coolors[j]; p++;
+
                             vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j+1]; p++;
+                            normals[p] = noormals[j + 1];
+                            color[p] = coolors[j + 1]; p++;
+
                             vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex]; p++;
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 4, j + 1);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + 1, startIndex); 
+                            normals[p] = noormals[startIndex];
+                            color[p] = coolors[startIndex]; p++;
                         }
                     }
                 }
             }
             #endregion
 
-            for (int i = 0; i < NumOfVertices; i++)
-            {
-                color[i] = new Vector3(1.0f, 0.54901960784f, 0.0f);
-                //if (i % 3 == 0)
-                //    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
-                //if (i % 3 == 1)
-                //    color[i] = new Vector3(0.0f, 1.0f, 0.0f);
-                //if (i % 3 == 2)
-                //    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
-            }
+            //for (int i = 2+NumOfVertices/2; i < NumOfVertices; i++)
+            //{
+            //    color[i] = new Vector3(1.0f, 0.54901960784f, 0.0f);
+            //    //if (i % 3 == 0)
+            //    //    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
+            //    //if (i % 3 == 1)
+            //    //    color[i] = new Vector3(0.0f, 1.0f, 0.0f);
+            //    //if (i % 3 == 2)
+            //    //    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
+            //}
             System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}",NumOfVertices);
         }
 
@@ -1020,10 +1193,10 @@ namespace Kocka
             Vector3 col = new Vector3(1.0f,1.0f,1.0f); // white
             float dv;
 
-            if (height < min)
-                height = min;
-            if (height > max)
-                height = max;
+            //if (height < min)
+            //    height = min;
+            //if (height > max)
+            //    height = max;
             dv = max - min;
 
             if (height < (min + 0.25f * dv))
@@ -1046,6 +1219,7 @@ namespace Kocka
                 col.Y = 1 + 4 * (min + 0.75f * dv - height) / dv;
                 col.Z = 0;
             }
+
             return (col);
         }
 
