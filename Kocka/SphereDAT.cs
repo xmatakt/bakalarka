@@ -1041,9 +1041,11 @@ namespace Kocka
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per pixel
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
+            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.vert", Path.DirectorySeparatorChar);
+            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.frag", Path.DirectorySeparatorChar);
+            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
+            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per vertex
