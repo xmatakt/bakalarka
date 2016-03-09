@@ -21,9 +21,12 @@ namespace Kocka
         private Vector3[] color;
         private List<Vector3> coords;
         private List<Vector3> noormals;
+        private List<Vector3> coolors;
+
         private float RAD, R, scale, min, max;
         private int[] VBO;
         private int[] VAO;
+        private int[,] cmap;
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 modelViewMatrix, projectionMatrix;
@@ -48,6 +51,7 @@ namespace Kocka
 
             coords = new List<Vector3>();
             noormals = new List<Vector3>();
+            coolors = new List<Vector3>();
             VBO = new int[3];//zatial bez normal
             VAO = new int[1];
             VertexShader = new Shaders.Shader();
@@ -55,6 +59,7 @@ namespace Kocka
             spMain = new Shaders.ShaderProgram();
 
             LoadData(pathToFile);
+            SetColorList();
 
             ScaleHeights();
 
@@ -86,11 +91,6 @@ namespace Kocka
             InitScene();
 
             FirstDraw();
-
-            //foreach (var item in coords)
-            //{
-            //    System.Diagnostics.Debug.WriteLine(item.ToString());
-            //}
         }
 
         private void CalculateNormals()
@@ -1009,6 +1009,46 @@ namespace Kocka
             System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}",NumOfVertices);
         }
 
+        private void SetColorList()
+        {
+            for (int i = 0; i < coords.Count; i++)
+                coolors.Add(CalculateColor(coords[i].Z));
+        }
+
+        private Vector3 CalculateColor(float height)
+        {
+            Vector3 col = new Vector3(1.0f,1.0f,1.0f); // white
+            float dv;
+
+            if (height < min)
+                height = min;
+            if (height > max)
+                height = max;
+            dv = max - min;
+
+            if (height < (min + 0.25f * dv))
+            {
+                col.X = 0;
+                col.Y = 4 * (height - min) / dv;
+            }
+            else if (height < (min + 0.5f * dv))
+            {
+                col.X = 0;
+                col.Z = 1 + 4 * (min + 0.25f * dv - height) / dv;
+            }
+            else if (height < (min + 0.75f * dv))
+            {
+                col.X = 4 * (height - min - 0.5f * dv) / dv;
+                col.Z = 0;
+            }
+            else
+            {
+                col.Y = 1 + 4 * (min + 0.75f * dv - height) / dv;
+                col.Z = 0;
+            }
+            return (col);
+        }
+
         private void InitScene()
         {
             SetMatrices(false);
@@ -1041,16 +1081,16 @@ namespace Kocka
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per pixel
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.vert", ShaderType.VertexShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirPerPixelShader.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //per vertex
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.vert", ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\dirShader.frag", ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);

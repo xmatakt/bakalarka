@@ -135,7 +135,7 @@
             // otvorToolStripMenuItem
             // 
             this.otvorToolStripMenuItem.Name = "otvorToolStripMenuItem";
-            this.otvorToolStripMenuItem.Size = new System.Drawing.Size(175, 24);
+            this.otvorToolStripMenuItem.Size = new System.Drawing.Size(124, 24);
             this.otvorToolStripMenuItem.Text = "Otvor...";
             this.otvorToolStripMenuItem.Click += new System.EventHandler(this.otvorToolStripMenuItem_Click);
             // 
@@ -812,7 +812,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Text files |*.txt|Dat files |*.dat";
+            this.openFileDialog1.Filter = "Dat files |*.dat|Text files |*.txt";
             // 
             // Form1
             // 
