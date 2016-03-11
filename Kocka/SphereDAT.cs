@@ -53,7 +53,7 @@ namespace Kocka
             coords = new List<Vector3>();
             noormals = new List<Vector3>();
             coolors = new List<Vector3>();
-            VBO = new int[3];//zatial bez normal
+            VBO = new int[3];
             VAO = new int[1];
             VertexShader = new Shaders.Shader();
             FragmentShader = new Shaders.Shader();
@@ -1191,7 +1191,7 @@ namespace Kocka
 
         private Vector3 CalculateColor(float height)
         {
-            Vector3 col = new Vector3(1.0f,1.0f,1.0f); // white
+            Vector3 col = new Vector3(1.0f,1.0f,1.0f);
             float dv;
             dv = max - min;
 #region funkcie
@@ -1228,28 +1228,6 @@ namespace Kocka
                 col.X = R2.Value(height);
                 col.Y = col.Z = 0.0f;
             }
-
-            //if (height < (min + 0.25f * dv))
-            //{
-            //    col.X = 0;
-            //    col.Y = 4 * (height - min) / dv;
-            //}
-            //else if (height < (min + 0.5f * dv))
-            //{
-            //    col.X = 0;
-            //    col.Z = 1 + 4 * (min + 0.25f * dv - height) / dv;
-            //}
-            //else if (height < (min + 0.75f * dv))
-            //{
-            //    col.X = 4 * (height - min - 0.5f * dv) / dv;
-            //    col.Z = 0;
-            //}
-            //else
-            //{
-            //    col.Y = 1 + 4 * (min + 0.75f * dv - height) / dv;
-            //    col.Z = 0;
-            //}
-
             return (col);
         }
 
@@ -1310,24 +1288,6 @@ namespace Kocka
             spMain.SetUniform("eye", new Vector3(0.0f, 0.0f, 3.5f));//dorobit pri zmene pozicie kamery update
             material.SetMaterialUniforms(spMain);
             light.SetDirectionalLightUniforms(spMain);
-        }
-
-        private void FirstDraw()
-        {
-            Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations);
-            Current = mat * modelViewMatrix;
-            mat = mat.Inverted(); mat.Transpose();
-            GL.BindVertexArray(VAO[0]);
-            spMain.SetUniform("normalMatrix", mat);
-            spMain.SetUniform("modelViewMatrix", Current);
-        }
-
-        public void DrawSphere()
-        {
-            GL.BindVertexArray(VAO[0]);
-            //GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
-            //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
         }
 
         private void LoadData(string pathToFile)
@@ -1453,15 +1413,6 @@ namespace Kocka
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", Current);
         }
-        #endregion
-
-        public void MoveCamera(float dd)
-        {
-            BigBrother.MoveCamera(dd);
-            modelViewMatrix = BigBrother.ReturnCamera();
-            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            spMain.SetUniform("modelViewMatrix", Current);
-        }
 
         public void Ende()
         {
@@ -1472,6 +1423,34 @@ namespace Kocka
             ScaleMatrix = Matrix4.Identity;
             RotationMatrix = Matrix4.Identity;
             TranslationMatrix = Matrix4.Identity;
+        }
+
+        public void MoveCamera(float dd)
+        {
+            BigBrother.MoveCamera(dd);
+            modelViewMatrix = BigBrother.ReturnCamera();
+            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
+            spMain.SetUniform("modelViewMatrix", Current);
+        }
+
+        #endregion
+
+        private void FirstDraw()
+        {
+            Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations);
+            Current = mat * modelViewMatrix;
+            mat = mat.Inverted(); mat.Transpose();
+            GL.BindVertexArray(VAO[0]);
+            spMain.SetUniform("normalMatrix", mat);
+            spMain.SetUniform("modelViewMatrix", Current);
+        }
+
+        public void DrawSphere()
+        {
+            GL.BindVertexArray(VAO[0]);
+            //GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
+            //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
         }
 
         private void SetMatrices(bool co)

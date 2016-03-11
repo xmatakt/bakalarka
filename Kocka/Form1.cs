@@ -18,9 +18,10 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize,sfera,shader; 
+        private bool loaded, resize,sfera,sur,shader; 
         //private Stvorec3D kocka;
         private SphereDAT sdat;
+        private Surface surf;
         float scale;
         float dx, dy;
         float wPol, hPol;
@@ -36,9 +37,11 @@ namespace Kocka
             loaded = false;
             resize = false;
             sfera = false;
+            sur = false;
             shader = PerFragment.Checked;
             scale = 1.0f;
             //sdat = new SphereDAT("..\\..\\Properties\\data\\datFiles\\data_const.dat");
+            //surf = new Surface2(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_cosabs.dat");
         }
 
         private void glControl1_Load(object sender, EventArgs e)
@@ -57,14 +60,6 @@ namespace Kocka
             //GL.FrontFace(FrontFaceDirection.Ccw);
 
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
-            if(sfera)
-            {
-                //sdat = new SphereDAT(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data01.dat");
-                //sdat.DrawSphere();
-                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale,(int)Pi.Value,(int)DvaPi.Value, flat,shader);
-                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, "sfera.txt");
-                //sphere.DrawSphere();
-            }
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
@@ -76,7 +71,8 @@ namespace Kocka
 
             if (sfera)
                 sdat.DrawSphere();
-            //sphere.DrawSphere();
+            if (sur)
+                surf.DrawSurface();
 
             glControl1.SwapBuffers();
         }
@@ -143,10 +139,13 @@ namespace Kocka
                 float tmpy = dy - e.Location.Y;
                 if(sfera)
                 {
-                    //sphere.Scale(scale);
-                    //sphere.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                     sdat.Scale(scale);
                     sdat.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
+                }
+                if (sur)
+                {
+                    surf.Scale(scale);
+                    surf.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                 }
                 glControl1.Invalidate();
             }
@@ -163,6 +162,11 @@ namespace Kocka
                     sdat.Scale(scale);
                     sdat.Rotate(tmpx, tmpy, angle);
                 }
+                if (sur)
+                {
+                    surf.Scale(scale);
+                    surf.Rotate(tmpx, tmpy, angle);
+                }
                 glControl1.Invalidate();
             }
             //skalovanie
@@ -177,6 +181,8 @@ namespace Kocka
 
                 if (sfera)
                     sdat.Scale(scale);
+                if (sur)
+                    surf.Scale(scale);
                     //sphere.Scale(scale);
                
                 glControl1.Invalidate();
@@ -190,6 +196,8 @@ namespace Kocka
             {
                 if (sfera)
                     sdat.Ende();
+                if (sur)
+                    surf.Ende();
             }
         }
 
@@ -283,9 +291,14 @@ namespace Kocka
             //pridat zrusenie geoidu ak uz bol dajaky zobrazeny a ma sa kreslit novy
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                sfera = true;
-                sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
-                sdat.DrawSphere();
+                //sfera = true;
+                //sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                //sdat.DrawSphere();
+                //glControl1.Invalidate();
+
+                sur = true;
+                surf = new Surface(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_cosabs.dat");
+                surf.DrawSurface();
                 glControl1.Invalidate();
             }
         }
