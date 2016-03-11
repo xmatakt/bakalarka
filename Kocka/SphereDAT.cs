@@ -26,13 +26,13 @@ namespace Kocka
         private float RAD, R, scale, min, max;
         private int[] VBO;
         private int[] VAO;
-        private int[,] cmap;
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         DirectionalLight light;
         Material material;
+        Kamera BigBrother;
 
         //nacitanie dat do listu + prevod
         public SphereDAT(int w, int h,string pathToFile)
@@ -47,7 +47,8 @@ namespace Kocka
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
-            material = new Material(0.16f, 0.50f, 0.6f, 128);
+            material = new Material(0.16f, 0.50f, 0.6f, 124);
+            BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
 
             coords = new List<Vector3>();
             noormals = new List<Vector3>();
@@ -1192,33 +1193,62 @@ namespace Kocka
         {
             Vector3 col = new Vector3(1.0f,1.0f,1.0f); // white
             float dv;
-
-            //if (height < min)
-            //    height = min;
-            //if (height > max)
-            //    height = max;
             dv = max - min;
+#region funkcie
+            LinearFunction R1 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 0.0f, 1.0f);
+            LinearFunction R2 = new LinearFunction(min + 0.9f * dv, max, 1.0f, 0.5f);
+            LinearFunction G1 = new LinearFunction(min + 0.1f * dv, min + 0.35f * dv, 0.0f, 1.0f);
+            LinearFunction G2 = new LinearFunction(min + 0.65f * dv, min + 0.9f * dv, 1.0f, 0.0f);
+            LinearFunction B1 = new LinearFunction(0.0f, min + 0.1f * dv, 0.5f, 1.0f);
+            LinearFunction B2 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 1.0f, 0.0f);
+#endregion
 
-            if (height < (min + 0.25f * dv))
+            if(height < min + 0.1f * dv)
             {
-                col.X = 0;
-                col.Y = 4 * (height - min) / dv;
+                col.X = col.Y = 0.0f;
+                col.Z = B1.Value(height);
             }
-            else if (height < (min + 0.5f * dv))
+            else if (height < min + 0.35f * dv)
             {
-                col.X = 0;
-                col.Z = 1 + 4 * (min + 0.25f * dv - height) / dv;
+                col.X = 0.0f;
+                col.Y = G1.Value(height);
             }
-            else if (height < (min + 0.75f * dv))
+            else if (height < min + 0.65f * dv)
             {
-                col.X = 4 * (height - min - 0.5f * dv) / dv;
-                col.Z = 0;
+                col.X = R1.Value(height);
+                col.Z = B2.Value(height);
+            }
+            else if (height < min + 0.9f * dv)
+            {
+                col.Y = G2.Value(height);
+                col.Z = 0.0f;
             }
             else
             {
-                col.Y = 1 + 4 * (min + 0.75f * dv - height) / dv;
-                col.Z = 0;
+                col.X = R2.Value(height);
+                col.Y = col.Z = 0.0f;
             }
+
+            //if (height < (min + 0.25f * dv))
+            //{
+            //    col.X = 0;
+            //    col.Y = 4 * (height - min) / dv;
+            //}
+            //else if (height < (min + 0.5f * dv))
+            //{
+            //    col.X = 0;
+            //    col.Z = 1 + 4 * (min + 0.25f * dv - height) / dv;
+            //}
+            //else if (height < (min + 0.75f * dv))
+            //{
+            //    col.X = 4 * (height - min - 0.5f * dv) / dv;
+            //    col.Z = 0;
+            //}
+            //else
+            //{
+            //    col.Y = 1 + 4 * (min + 0.75f * dv - height) / dv;
+            //    col.Z = 0;
+            //}
 
             return (col);
         }
@@ -1261,6 +1291,14 @@ namespace Kocka
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
             if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+
+            ////per fragment
+            //string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.vert", Path.DirectorySeparatorChar);
+            //string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.frag", Path.DirectorySeparatorChar);
+            //if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            //if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
@@ -1352,18 +1390,7 @@ namespace Kocka
                 cosLxRAD = (float)Math.Cos(coords[i].Y * RAD);
                 sinLxRAD = (float)Math.Sin(coords[i].Y * RAD);
                 coords[i] = new Vector3(rH * cosBxRAD * cosLxRAD, rH * cosBxRAD * sinLxRAD, rH * sinBxRAD);
-                //if (coords[i].Z < min)
-                //    min = coords[i].Z;
-                //if (coords[i].Z > max)
-                //    max = coords[i].Z;
-
-                //if (coords[i].Length < min)
-                //    min = coords[i].Length;
-                //if (coords[i].Length > max)
-                //    max = coords[i].Length;
             }
-            System.Diagnostics.Debug.WriteLine("min = {0}", min);
-            System.Diagnostics.Debug.WriteLine("max = {0}", max);
         }
 
         private void PustiToRychlejsie(float s)
@@ -1427,6 +1454,14 @@ namespace Kocka
             spMain.SetUniform("modelViewMatrix", Current);
         }
         #endregion
+
+        public void MoveCamera(float dd)
+        {
+            BigBrother.MoveCamera(dd);
+            modelViewMatrix = BigBrother.ReturnCamera();
+            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
+            spMain.SetUniform("modelViewMatrix", Current);
+        }
 
         public void Ende()
         {

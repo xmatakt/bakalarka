@@ -83,45 +83,37 @@ namespace Kocka
 
         private void glControl1_KeyDown(object sender, KeyEventArgs e)
         {
-            //switch (e.KeyCode)
-            //{
-            //    //
-            //    case Keys.Escape:
-            //        this.Close();
-            //        break;
-            //    //
-            //    case Keys.W:
-            //        if(sfera)
-            //            sphere.Pohyb(0.1f);
-            //        else
-            //            kocka.Pohyb(0.1f);
-            //        glControl1.Invalidate();
-            //        break;
-            //    case Keys.S:
-            //        if (sfera)
-            //            sphere.Pohyb(-0.1f);
-            //        else
-            //            kocka.Pohyb(-0.1f);
-            //        glControl1.Invalidate();
-            //        break;
-            //    case Keys.A:
-            //        if (sfera)
-            //            sphere.Natoc(-1.3f);
-            //        else
-            //            kocka.Natoc(-1.3f);
-            //        glControl1.Invalidate();
-            //        break;
-            //    case Keys.D:
-            //        if (sfera)
-            //            sphere.Natoc(1.3f);
-            //        else
-            //            kocka.Natoc(1.3f);
-            //        glControl1.Invalidate();
-            //        break;
-            //    //
-            //    default:
-            //        break;
-            //}
+            switch (e.KeyCode)
+            {
+                //
+                case Keys.Escape:
+                    this.Close();
+                    break;
+                //
+                case Keys.W:
+                    if (sfera)
+                        sdat.MoveCamera(0.1f);
+                    glControl1.Invalidate();
+                    break;
+                case Keys.S:
+                    if (sfera)
+                        sdat.MoveCamera(-0.1f);
+                    glControl1.Invalidate();
+                    break;
+                case Keys.A:
+                    if (sfera)
+                        //sdat.Natoc(-1.3f);
+                    glControl1.Invalidate();
+                    break;
+                case Keys.D:
+                    if (sfera)
+                        //sdat.Natoc(1.3f);
+                    glControl1.Invalidate();
+                    break;
+                //
+                default:
+                    break;
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -164,7 +156,7 @@ namespace Kocka
                 float tmpx = (e.Location.X - dx) / wPol;
                 float tmpy = (e.Location.Y - dy) / hPol;
                 float angle = (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
-                if(sfera)
+                if (sfera)
                 {
                     //sphere.Scale(scale);
                     //sphere.Rotate(tmpx, tmpy, angle);
@@ -196,9 +188,8 @@ namespace Kocka
             //posuvanie//skalovanie//rotacia
             if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle || e.Button == MouseButtons.Right)
             {
-                if(sfera)
+                if (sfera)
                     sdat.Ende();
-                    //sphere.Ende();
             }
         }
 
