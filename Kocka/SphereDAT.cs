@@ -15,15 +15,17 @@ namespace Kocka
     {
         private int NumOfParallels;
         private int NumOfVertices;
-        private int width,height, NumOfTriangles;
+        private int width, height, NumOfTriangles;
         private Vector3[] vertices;
         private Vector3[] normals;
         private Vector3[] color;
+        private Vector3[] zaloha;
         private List<Vector3> coords;
         private List<Vector3> noormals;
         private List<Vector3> coolors;
 
-        private float RAD, R, scale, min, max;
+        private float RAD, R, scale, min, max,value;
+        private bool Status;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -35,11 +37,13 @@ namespace Kocka
         Kamera BigBrother;
 
         //nacitanie dat do listu + prevod
-        public SphereDAT(int w, int h,string pathToFile)
+        public SphereDAT(int w, int h, string pathToFile)
         {
+            Status = false;
             min = float.MaxValue;
             max = float.MinValue;
             R = 1.0f;
+            value = 0.0f;
             scale = 1.0f;
             width = w; height = h;
             RAD = (float)Math.PI / 180.0f;
@@ -53,45 +57,86 @@ namespace Kocka
             coords = new List<Vector3>();
             noormals = new List<Vector3>();
             coolors = new List<Vector3>();
+
             VBO = new int[3];
             VAO = new int[1];
             VertexShader = new Shaders.Shader();
             FragmentShader = new Shaders.Shader();
             spMain = new Shaders.ShaderProgram();
 
-            LoadData(pathToFile);
-            SetColorList();
+            Init(pathToFile);  
+        }
 
-            ScaleHeights();
+        private void Init(string pathToFile)
+        {
+            if(LoadData(pathToFile))
+            {
+                zaloha = new Vector3[coords.Count];
+                zaloha = coords.ToArray();
+                //najprv nastavim farby
+                SetColorList();
+                //potom preskalujem vysky
+                value = 0.5f*(max - min);
+                ScaleHeights(10.0f);
+                NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
+                //PustiToRychlejsie(0.033f);
+                GeoToSpatialCoords();
 
-            //StreamWriter sw = new StreamWriter("nove.dat");
-            //Shaders.HeightMapGenerator hmg = new Shaders.HeightMapGenerator();
-            //foreach (var item in coords)
-            //{
-            //    float z = hmg.GetNormalDistributedValue(item.Z, 0.01f);
-            //    sw.WriteLine("{0}\t{1}\t{2}", item.X, item.Y, z);
-            //}
-            //sw.Flush();
-            //sw.Close();
+                GetNumberOfTriangles();
+                NumOfVertices = 3 * NumOfTriangles;
+                vertices = new Vector3[NumOfVertices];
+                color = new Vector3[NumOfVertices];
+                normals = new Vector3[NumOfVertices];
+                
 
-            NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
-            //PustiToRychlejsie(0.033f);
-            GeoToSpatialCoords();
-            
-            GetNumberOfTriangles();
-            NumOfVertices = 3 * NumOfTriangles;
-            vertices = new Vector3[NumOfVertices];
-            color = new Vector3[NumOfVertices];
-            normals = new Vector3[NumOfVertices];
+                CalculateNormals();
+                //triangulacia
+                InitSphere();
+                //nastavenie bufferov a shaderov
+                InitScene(false);
+                FirstDraw();
+            }
+            else System.Windows.Forms.MessageBox.Show("Súbor "+ pathToFile+ " nemá podporu!","Vnimanie!",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Warning);
+        }
 
-            CalculateNormals();
+        private bool LoadData(string pathToFile)
+        {
+            StreamReader sr;
+            Vector3 tmp;
+            char[] separator = { ' ', '\t' };
+            string[] line;
+            try
+            {
+                sr = new StreamReader(pathToFile);
+                while (!sr.EndOfStream)
+                {
+                    //System.Diagnostics.Debug.WriteLine(sr.ReadLine());
+                    line = sr.ReadLine().Split(separator);
+                    //System.Diagnostics.Debug.WriteLine("dlzka = {0}",line.Length);
+                    tmp = new Vector3(float.Parse(line[0]), float.Parse(line[1]), float.Parse(line[2]));
+                    coords.Add(tmp);
+                    if (coords.Last().Z < min)
+                        min = coords.Last().Z;
+                    if (coords.Last().Z > max)
+                        max = coords.Last().Z;
+                }
+                sr.Close();
+                if (coords[0].X == coords[1].X)
+                    Status = false;
+                else
+                    Status = true;
+            }
+            catch (FileNotFoundException)
+            {
+                System.Windows.Forms.MessageBox.Show("Subor sa nenasiel!");
+                Status = false;
+            }
+            return Status;
+        }
 
-            //triangulacia
-            InitSphere();
-            //nastavenie bufferov a shaderov
-            InitScene();
-
-            FirstDraw();
+        public bool Loaded()
+        {
+            return Status;
         }
 
         private void CalculateNormals()
@@ -99,10 +144,10 @@ namespace Kocka
             int startIndex = 0;
             int endIndex = 0;
             int tmp = 0;
-            Vector3 n = new Vector3(0.0f,0.0f,0.0f);
+            Vector3 n = new Vector3(0.0f, 0.0f, 0.0f);
 
             //cepicka
-            n = Vector3.Cross(coords[0]-coords[1],coords[2]-coords[0]);
+            n = Vector3.Cross(coords[0] - coords[1], coords[2] - coords[0]);
             n += Vector3.Cross(coords[0] - coords[2], coords[3] - coords[0]);
             n += Vector3.Cross(coords[0] - coords[3], coords[4] - coords[0]);
             n += Vector3.Cross(coords[0] - coords[4], coords[1] - coords[0]);
@@ -120,21 +165,21 @@ namespace Kocka
                     //System.Diagnostics.Debug.WriteLine(j.ToString());
                     if (j == startIndex)
                     {
-                        if(j == 1)
+                        if (j == 1)
                         {
                             n = Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + 1], coords[0] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[0], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[endIndex+(i+1)*4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex + (i + 1) * 4], coords[j+increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[endIndex + (i + 1) * 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[endIndex + (i + 1) * 4], coords[j + increment] - coords[j]);
                             noormals.Add(-n);
                         }
                         else
                         {
                             n = Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j-(i-1)*4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[endIndex] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[endIndex], coords[endIndex + (i + 1) * 4] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[endIndex + (i + 1) * 4], coords[j + increment] - coords[j]);
@@ -146,7 +191,7 @@ namespace Kocka
                     }
                     if (j == startIndex + i)
                     {
-                        if(j==2)
+                        if (j == 2)
                         {
                             n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
@@ -160,9 +205,9 @@ namespace Kocka
                         {
                             n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j-1-(i-1)*4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1 - (i - 1) * 4], coords[j-1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j-1], coords[j + increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - 1 - (i - 1) * 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1 - (i - 1) * 4], coords[j - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
                             noormals.Add(-n);
                         }
@@ -179,15 +224,15 @@ namespace Kocka
                             n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[endIndex] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[endIndex], coords[0] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[0], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j -1], coords[j + increment + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
                             noormals.Add(-n);
                         }
                         else
                         {
                             n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j+1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j+1], coords[j - (i-1)*4 - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
                             noormals.Add(-n);
@@ -225,7 +270,7 @@ namespace Kocka
                             //n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j + 1] - coords[j]);
                             //n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - increment - 3] - coords[j]);
                             //noormals.Add(-n);
-                            n = Vector3.Cross(coords[j] - coords[j - (i-1)*4 - 3], coords[j - 1] - coords[j]);
+                            n = Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
@@ -241,10 +286,10 @@ namespace Kocka
                     if (j > startIndex && j < startIndex + i)
                     {
                         n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i-1)*4] - coords[j]);
+                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i-1)*4 - 1], coords[j - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j -1], coords[j + increment] - coords[j]);
+                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - 1] - coords[j]);
+                        n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
                         noormals.Add(-n);
                         //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
@@ -256,7 +301,7 @@ namespace Kocka
                         n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j -1] - coords[j]);
+                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - 1] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
                         noormals.Add(-n);
                         //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
@@ -264,11 +309,11 @@ namespace Kocka
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
-                        n = Vector3.Cross(coords[j] - coords[j - (i-1)*4 - 3], coords[j - 1] - coords[j]);
+                        n = Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - 1] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i-1)*4 - 2] - coords[j]);
+                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
                         n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4 - 3] - coords[j]);
                         noormals.Add(-n);
                         //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
@@ -290,11 +335,11 @@ namespace Kocka
                         }
                         else
                         {
-                            n = Vector3.Cross(coords[j] - coords[j-increment+1], coords[j-increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j-increment], coords[j - 1] - coords[j]);
+                            n = Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j - increment] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - increment], coords[j - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 3] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j+1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j + 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - increment + 1] - coords[j]);
                             noormals.Add(-n);
                             //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
@@ -349,8 +394,8 @@ namespace Kocka
                     {
                         if (i == (NumOfParallels - 1) / 2)
                         {
-                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment-1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment-1], coords[j - 1] - coords[j]);
+                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j + 1] - coords[j]);
                             noormals.Add(n);
@@ -361,7 +406,7 @@ namespace Kocka
                             n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j + 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j-1], coords[j - increment - 4] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 4] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j - increment - 4], coords[j - increment - 3] - coords[j]);
                             noormals.Add(n);
                         }
@@ -401,7 +446,7 @@ namespace Kocka
                         }
                         else
                         {
-                            if(j !=endIndex)
+                            if (j != endIndex)
                             {
                                 n = Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
                                 n += Vector3.Cross(coords[j] - coords[j - increment], coords[j + 1] - coords[j]);
@@ -453,10 +498,10 @@ namespace Kocka
                         if (i == (NumOfParallels - 1) / 2)
                         {
                             n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4-1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4-1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment-1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment-1], coords[j + increment - 2] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4 - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j + 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
+                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j + increment - 2] - coords[j]);
                             n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
                             noormals.Add(n);
                         }
@@ -512,7 +557,7 @@ namespace Kocka
                         }
                         else
                         {
-                            if(j != endIndex)
+                            if (j != endIndex)
                             {
                                 n = Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j + increment - 4] - coords[j]);
                                 n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
@@ -537,7 +582,7 @@ namespace Kocka
                 }
             }
             #endregion
-           
+
             //koniec
             n = Vector3.Cross(coords[endIndex + 1] - coords[endIndex], coords[startIndex] - coords[endIndex + 1]);
             n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex], coords[startIndex + 1] - coords[endIndex + 1]);
@@ -605,7 +650,7 @@ namespace Kocka
             #endregion
 
             #region horna polovica
-            for (int i = 1; i < (NumOfParallels - 1) / 2 ; i++)
+            for (int i = 1; i < (NumOfParallels - 1) / 2; i++)
             {
                 startIndex = 2 * i * (i - 1) + 1;
                 endIndex = startIndex + (i * 4) - 1;
@@ -614,7 +659,7 @@ namespace Kocka
                 {
                     if (j == startIndex)
                     {
-                        vertices[p] = coords[j]; 
+                        vertices[p] = coords[j];
                         normals[p] = noormals[j];
                         color[p] = coolors[j]; p++;
 
@@ -622,7 +667,7 @@ namespace Kocka
                         normals[p] = noormals[2 * (i + 1) * i + (i + 1) * 4];
                         color[p] = coolors[2 * (i + 1) * i + (i + 1) * 4]; p++;
 
-                        vertices[p] = coords[j + increment]; 
+                        vertices[p] = coords[j + increment];
                         normals[p] = noormals[j + increment];
                         color[p] = coolors[j + increment]; p++;
 
@@ -632,23 +677,23 @@ namespace Kocka
 
                         vertices[p] = coords[j + increment];
                         normals[p] = noormals[j + increment];
-                        color[p] = coolors[j+increment]; p++;
+                        color[p] = coolors[j + increment]; p++;
 
-                        vertices[p] = coords[j + increment + 1]; 
+                        vertices[p] = coords[j + increment + 1];
                         normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j+increment+1]; p++;
+                        color[p] = coolors[j + increment + 1]; p++;
 
-                        vertices[p] = coords[j]; 
+                        vertices[p] = coords[j];
                         normals[p] = noormals[j];
                         color[p] = coolors[j]; p++;
 
                         vertices[p] = coords[j + increment + 1];
                         normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j+increment+1]; p++;
+                        color[p] = coolors[j + increment + 1]; p++;
 
                         vertices[p] = coords[j + 1];
                         normals[p] = noormals[j + 1];
-                        color[p] = coolors[j+1]; p++;
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + i)
                     {
@@ -658,11 +703,11 @@ namespace Kocka
 
                         vertices[p] = coords[j + increment];
                         normals[p] = noormals[j + increment];
-                        color[p] = coolors[j+increment]; p++;
+                        color[p] = coolors[j + increment]; p++;
 
                         vertices[p] = coords[j + increment + 1];
                         normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j+increment+1]; p++;
+                        color[p] = coolors[j + increment + 1]; p++;
 
                         vertices[p] = coords[j];
                         normals[p] = noormals[j];
@@ -682,11 +727,11 @@ namespace Kocka
 
                         vertices[p] = coords[j + increment + 2];
                         normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j+increment+2]; p++;
+                        color[p] = coolors[j + increment + 2]; p++;
 
                         vertices[p] = coords[j + 1];
                         normals[p] = noormals[j + 1];
-                        color[p] = coolors[j+1]; p++;
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + 2 * i)
                     {
@@ -786,7 +831,7 @@ namespace Kocka
 
                             vertices[p] = coords[j + increment + 3];
                             normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j+increment+3]; p++;
+                            color[p] = coolors[j + increment + 3]; p++;
 
                             vertices[p] = coords[j + increment + 4];
                             normals[p] = noormals[j + increment + 4];
@@ -855,7 +900,7 @@ namespace Kocka
 
                         vertices[p] = coords[j + 1];
                         normals[p] = noormals[j + 1];
-                        color[p] = coolors[j+1]; p++;
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
@@ -967,8 +1012,8 @@ namespace Kocka
                         color[p] = coolors[j]; p++;
 
                         vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j+increment];
-                        color[p] = coolors[j+increment]; p++;
+                        normals[p] = noormals[j + increment];
+                        color[p] = coolors[j + increment]; p++;
 
                         vertices[p] = coords[j + 1];
                         normals[p] = noormals[j + 1];
@@ -1000,7 +1045,7 @@ namespace Kocka
 
                         vertices[p] = coords[j + 1];
                         normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++; 
+                        color[p] = coolors[j + 1]; p++;
                     }
                     if (j == startIndex + 3 * i)
                     {
@@ -1170,17 +1215,7 @@ namespace Kocka
             }
             #endregion
 
-            //for (int i = 2+NumOfVertices/2; i < NumOfVertices; i++)
-            //{
-            //    color[i] = new Vector3(1.0f, 0.54901960784f, 0.0f);
-            //    //if (i % 3 == 0)
-            //    //    color[i] = new Vector3(1.0f, 0.0f, 0.0f);
-            //    //if (i % 3 == 1)
-            //    //    color[i] = new Vector3(0.0f, 1.0f, 0.0f);
-            //    //if (i % 3 == 2)
-            //    //    color[i] = new Vector3(0.0f, 0.0f, 1.0f);
-            //}
-            System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}",NumOfVertices);
+            System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}", NumOfVertices);
         }
 
         private void SetColorList()
@@ -1191,19 +1226,19 @@ namespace Kocka
 
         private Vector3 CalculateColor(float height)
         {
-            Vector3 col = new Vector3(1.0f,1.0f,1.0f);
+            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f);
             float dv;
             dv = max - min;
-#region funkcie
+            #region funkcie
             LinearFunction R1 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 0.0f, 1.0f);
             LinearFunction R2 = new LinearFunction(min + 0.9f * dv, max, 1.0f, 0.5f);
             LinearFunction G1 = new LinearFunction(min + 0.1f * dv, min + 0.35f * dv, 0.0f, 1.0f);
             LinearFunction G2 = new LinearFunction(min + 0.65f * dv, min + 0.9f * dv, 1.0f, 0.0f);
             LinearFunction B1 = new LinearFunction(0.0f, min + 0.1f * dv, 0.5f, 1.0f);
             LinearFunction B2 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 1.0f, 0.0f);
-#endregion
+            #endregion
 
-            if(height < min + 0.1f * dv)
+            if (height < min + 0.1f * dv)
             {
                 col.X = col.Y = 0.0f;
                 col.Z = B1.Value(height);
@@ -1231,9 +1266,9 @@ namespace Kocka
             return (col);
         }
 
-        private void InitScene()
+        private void InitScene(bool b)
         {
-            SetMatrices(false);
+            SetMatrices(b);
             GL.GenBuffers(3, VBO);
             GL.GenVertexArrays(1, VAO);
 
@@ -1284,58 +1319,22 @@ namespace Kocka
             spMain.LinkProgram();
             spMain.UseProgram();
 
-            spMain.SetUniform("projectionMatrix", projectionMatrix);//iba toto pri jednoduchom
+            spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("eye", new Vector3(0.0f, 0.0f, 3.5f));//dorobit pri zmene pozicie kamery update
             material.SetMaterialUniforms(spMain);
             light.SetDirectionalLightUniforms(spMain);
         }
 
-        private void LoadData(string pathToFile)
+        private void ScaleHeights(float value)
         {
-            StreamReader sr;
-            Vector3 tmp;
-            char[] separator={' ','\t'};
-            string[] line;
-            try
-            {
-                sr = new StreamReader(pathToFile);
-                while(!sr.EndOfStream)
-                {
-                    //System.Diagnostics.Debug.WriteLine(sr.ReadLine());
-                    line = sr.ReadLine().Split(separator);
-                    //System.Diagnostics.Debug.WriteLine("dlzka = {0}",line.Length);
-                    tmp=new Vector3(float.Parse(line[0]),float.Parse(line[1]),float.Parse(line[2]));
-                    coords.Add(tmp);
-                    if (coords.Last().Z < min)
-                        min = coords.Last().Z;
-                    if (coords.Last().Z > max)
-                        max = coords.Last().Z;
-                }
-                sr.Close();
-            }
-            catch(FileNotFoundException)
-            {
-                System.Windows.Forms.MessageBox.Show("Subor sa nenasiel!");
-            }
-        }
-
-        private void ScaleHeights()
-        {
-            //for (int i = 0; i < coords.Count; i++)
-            //{
-            //    if (coords[i].Z < min)
-            //        min = coords[i].Z;
-            //    if (coords[i].Z > max)
-            //        max = coords[i].Z;
-            //}
             System.Diagnostics.Debug.WriteLine("min = {0}", min);
             System.Diagnostics.Debug.WriteLine("max = {0}", max);
 
-            float L = Math.Abs(max - min)*5.0f;
-            for (int i = 0; i < coords.Count; i++)
+            //float L = Math.Abs(max - min) * 5.0f;
+            for (int i = 0; i < zaloha.Length; i++)
             {
-                //coords[i] = new Vector3(coords[i].X, coords[i].Y, coords[i].Z / (float)L);
-                coords[i] = new Vector3(coords[i].X, coords[i].Y, (coords[i].Z-min) / (float)L);
+                coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, zaloha[i].Z / (value*this.value));
+                //coords[i] = new Vector3(coords[i].X, coords[i].Y, (coords[i].Z - min) / (float)L);
             }
         }
 
@@ -1355,28 +1354,22 @@ namespace Kocka
 
         private void PustiToRychlejsie(float s)
         {
-            Shaders.HeightMapGenerator hmg= new Shaders.HeightMapGenerator();
+            Shaders.HeightMapGenerator hmg = new Shaders.HeightMapGenerator();
             for (int i = 0; i < coords.Count; i++)
                 coords[i] = new Vector3(coords[i].X, coords[i].Y, hmg.GetNormalDistributedValue(coords[i].Z, s));
         }
 
         private void GetNumberOfTriangles()
         {
-            //(NumOfParallels-1)/2 --> (pocet rovnobeciek - rovnik)/2
-            //nad i-tou rovnobezkou je 4*(2*(i-1)+1) trojuholnikov
             for (int i = (NumOfParallels - 1) / 2; i > 0; i--)
-            {
-                //NumOfTriangles += (i - 1);
-                //NumOfTriangles += 4 * (2 * (i - 1) + 1);
                 NumOfTriangles += i;
-            }
-            //NumOfTriangles = 2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
+
             NumOfTriangles = -2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
             NumOfTriangles *= 2;//dve polgule
             System.Diagnostics.Debug.WriteLine("NumOfTriangles = {0}", NumOfTriangles);
         }
 
-        #region ovladanie mysou
+        #region ovladanie mysou + rescale
         public void Transalte(float x, float y)
         {
             TranslationMatrix = Matrix4.CreateTranslation(x, y, 0.0f);
@@ -1433,6 +1426,23 @@ namespace Kocka
             spMain.SetUniform("modelViewMatrix", Current);
         }
 
+        public void Rescale(float value)
+        {
+            this.Delete(false);
+            VBO = new int[3];
+            VAO = new int[1];
+            vertices=new Vector3[NumOfVertices];
+            normals = new Vector3[NumOfVertices];
+            color = new Vector3[NumOfVertices];
+            noormals.Clear();
+            noormals = new List<Vector3>();
+            ScaleHeights(value);
+            GeoToSpatialCoords();
+            CalculateNormals();
+            InitSphere();
+            InitScene(true);
+        }
+
         #endregion
 
         private void FirstDraw()
@@ -1451,6 +1461,12 @@ namespace Kocka
             //GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
             GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
             //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
+        }
+
+        public void ChangeMaterialProperties(float amb, float spec, float diff, int shin)
+        {
+            material = new Material(amb, spec, diff, shin);
+            material.SetMaterialUniforms(spMain);
         }
 
         private void SetMatrices(bool co)
@@ -1474,15 +1490,25 @@ namespace Kocka
                 projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
         }
 
-        public void Delete()
+        public void Delete(bool b)
         {
             //zrejme by tu tiez mohla prist kontrola, ci znicenie programov prebehlo v poriadku, resp. ju zakomponovat do Shaders.dll
-            GL.DeleteBuffers(3, VBO);
-            GL.DeleteVertexArrays(1, VAO);
-            coords.Clear();
-            spMain.DeleteProgram();
-            VertexShader.DeleteShader();
-            FragmentShader.DeleteShader();
+            if (b)
+            {
+                GL.DeleteBuffers(3, VBO);
+                GL.DeleteVertexArrays(1, VAO);
+                coords.Clear();
+                noormals.Clear();
+                coolors.Clear();
+                spMain.DeleteProgram();
+                VertexShader.DeleteShader();
+                FragmentShader.DeleteShader();
+            }
+            else
+            {
+                GL.DeleteBuffers(3, VBO);
+                GL.DeleteVertexArrays(1, VAO);
+            }
         }
     }
 }

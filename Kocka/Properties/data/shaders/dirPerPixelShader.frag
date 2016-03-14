@@ -25,13 +25,18 @@ void main()
 	NdotL = max(dot(n,-lightDirection),0.0);
 
 	//vypocet odrazeneho luca R
-	R = 2.0 * NdotL * n - lightDirection;
+	R = 2.0 * NdotL * n + lightDirection;
 	R = normalize(R);
+	//RdotEye = max(dot(R,normalize(EyeVector)),0.0);
+	RdotEye = dot(R,normalize(EyeVector));
 
 	if(NdotL > 0.0)
 	{
 		color += diffuse * NdotL;
-		RdotEye = max(dot(R,normalize(EyeVector)),0.0);
+	}
+
+	if(RdotEye > 0.0)
+	{
 		color += specular * pow(RdotEye,shininess);
 	}
 
@@ -40,6 +45,3 @@ void main()
 	gl_FragColor = vec4(color, 1.0);
 	//outputColor=vec4(TheColor, 1.0);
 }
-
-// inspiracia:
-// http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/directional-light-per-pixel/

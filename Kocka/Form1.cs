@@ -18,14 +18,16 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize,sfera,sur,shader; 
-        //private Stvorec3D kocka;
+        private bool loaded, resize, sfera,sur;
         private SphereDAT sdat;
         private Surface surf;
+        private float Pi180;
         float scale;
         float dx, dy;
         float wPol, hPol;
         float wLomeno2, hLomeno2;
+        float amb, spec, diff;
+        int shin;
 
         public Form1()
         {
@@ -33,15 +35,14 @@ namespace Kocka
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
             Thread.CurrentThread.CurrentUICulture = CultureInfo.CreateSpecificCulture("en-US");
+            RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
 
+            amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             loaded = false;
             resize = false;
-            sfera = false;
-            sur = false;
-            shader = PerFragment.Checked;
+            sfera = sur = false; 
+            Pi180 = (float)Math.PI / 180.0f;
             scale = 1.0f;
-            //sdat = new SphereDAT("..\\..\\Properties\\data\\datFiles\\data_const.dat");
-            //surf = new Surface2(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_cosabs.dat");
         }
 
         private void glControl1_Load(object sender, EventArgs e)
@@ -49,15 +50,12 @@ namespace Kocka
             loaded = true;
             wPol = glControl1.Width / 2.0f;
             hPol = glControl1.Height / 2.0f;
-            wLomeno2 = 2.0f / (float)glControl1.Width;
-            hLomeno2 = 2.0f / (float)glControl1.Height;
+            wLomeno2 = 10.0f / (float)glControl1.Width;
+            hLomeno2 = 10.0f / (float)glControl1.Height;
             GL.ClearColor(Color.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
             GL.ClearDepth(1.0);
-            //GL.Enable(EnableCap.CullFace);
-            //GL.CullFace(CullFaceMode.Back);
-            //GL.FrontFace(FrontFaceDirection.Ccw);
 
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
         }
@@ -99,12 +97,12 @@ namespace Kocka
                 case Keys.A:
                     if (sfera)
                         //sdat.Natoc(-1.3f);
-                    glControl1.Invalidate();
+                        glControl1.Invalidate();
                     break;
                 case Keys.D:
                     if (sfera)
                         //sdat.Natoc(1.3f);
-                    glControl1.Invalidate();
+                        glControl1.Invalidate();
                     break;
                 //
                 default:
@@ -115,9 +113,9 @@ namespace Kocka
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (sfera)
-                sdat.Delete();
-            //sphere.Delete();
-           
+                sdat.Delete(true);
+            if (sur)
+                surf.Delete(true);
         }
 
         private void glControl1_MouseDown(object sender, MouseEventArgs e)
@@ -133,15 +131,21 @@ namespace Kocka
         private void glControl1_MouseMove(object sender, MouseEventArgs e)
         {
             //posuvanie
-            if (e.Button == MouseButtons.Middle)
+            if (e.Button == MouseButtons.Middle && sfera)
             {
                 float tmpx = e.Location.X - dx;
                 float tmpy = dy - e.Location.Y;
-                if(sfera)
+                if (sfera)
                 {
                     sdat.Scale(scale);
                     sdat.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                 }
+                glControl1.Invalidate();
+            }
+            if (e.Button == MouseButtons.Left && sur)
+            {
+                float tmpx = e.Location.X - dx;
+                float tmpy = dy - e.Location.Y;
                 if (sur)
                 {
                     surf.Scale(scale);
@@ -149,24 +153,15 @@ namespace Kocka
                 }
                 glControl1.Invalidate();
             }
+
             //rotacia
-            if (e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left && sfera)
             {
                 float tmpx = (e.Location.X - dx) / wPol;
                 float tmpy = (e.Location.Y - dy) / hPol;
                 float angle = (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
-                if (sfera)
-                {
-                    //sphere.Scale(scale);
-                    //sphere.Rotate(tmpx, tmpy, angle);
-                    sdat.Scale(scale);
-                    sdat.Rotate(tmpx, tmpy, angle);
-                }
-                if (sur)
-                {
-                    surf.Scale(scale);
-                    surf.Rotate(tmpx, tmpy, angle);
-                }
+                sdat.Scale(scale);
+                sdat.Rotate(tmpx, tmpy, angle);
                 glControl1.Invalidate();
             }
             //skalovanie
@@ -183,8 +178,7 @@ namespace Kocka
                     sdat.Scale(scale);
                 if (sur)
                     surf.Scale(scale);
-                    //sphere.Scale(scale);
-               
+
                 glControl1.Invalidate();
             }
         }
@@ -196,8 +190,42 @@ namespace Kocka
             {
                 if (sfera)
                     sdat.Ende();
+            }
+            if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right)
+            {
                 if (sur)
                     surf.Ende();
+            }
+        }
+
+        private void ZScale_ValueChanged(object sender, EventArgs e)
+        {
+            ZScale_value.Text = ZScale.Value.ToString();
+        }
+
+        private void RekresliBtn_Click(object sender, EventArgs e)
+        {
+            if (sur)
+            {
+                surf.Rescale(ZScale.Value);
+                surf.Scale(scale);
+                glControl1.Invalidate();
+            }
+            if (sfera)
+            {
+                sdat.Rescale(ZScale.Value);
+                sdat.Scale(scale);
+                glControl1.Invalidate();
+            }
+        }
+
+        private void RotX_trackBar2_ValueChanged(object sender, EventArgs e)
+        {
+            if (sur)
+            {
+                surf.Rotate(RotY_trackBar1.Value * Pi180, -RotX_trackBar2.Value * Pi180);
+                surf.Scale(scale);
+                glControl1.Invalidate();
             }
         }
 
@@ -210,10 +238,14 @@ namespace Kocka
             else
             {
                 GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
-                if(sfera)
+                if (sfera)
                 {
                     sdat.Resize(glControl1.Width, glControl1.Height);
-                    //sphere.Resize(glControl1.Width, glControl1.Height);
+                    glControl1.Invalidate();
+                }
+                if (sur)
+                {
+                    surf.Resize(glControl1.Width, glControl1.Height);
                     glControl1.Invalidate();
                 }
             }
@@ -221,86 +253,81 @@ namespace Kocka
 
         private void Reset()
         {
+            amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             wPol = glControl1.Width / 2.0f;
             hPol = glControl1.Height / 2.0f;
-            wLomeno2 = 2.0f / (float)glControl1.Width;
-            hLomeno2 = 2.0f / (float)glControl1.Height;
+            if(sfera)
+            {
+                ZScale.Value = 10;
+                wLomeno2 = 2.0f / (float)glControl1.Width;
+                hLomeno2 = 2.0f / (float)glControl1.Height;
+            }
+            if(sur)
+            {
+                ZScale.Value = 50;
+                wLomeno2 = 10.0f / (float)glControl1.Width;
+                hLomeno2 = 10.0f / (float)glControl1.Height;
+            }
             scale = 1.0f;
         }
 
-        private void SpecLx_ValueChanged(object sender, EventArgs e)
-        {
-            if(sfera)
-            {
-                Vector3 specular = new Vector3((float)SpecLx.Value, (float)SpecLy.Value,(float)SpecLz.Value);
-                Vector3 ambient = new Vector3((float)AmbLx.Value, (float)AmbLy.Value, (float)AmbLz.Value);
-                Vector3 diffuse = new Vector3((float)DiffLx.Value, (float)DiffLy.Value, (float)DiffLz.Value);
-                Vector3 direction = new Vector3((float)DirLx.Value, (float)DirLy.Value, (float)DirLz.Value);
-                //sphere.SetLight(specular,ambient,diffuse,direction);
-            }
-            glControl1.Invalidate();
-        }
-
-        private void SpecMx_ValueChanged(object sender, EventArgs e)
-        {
-            if (sfera)
-            {
-                float specCoeff = (float)this.specCoeff.Value;
-                float ambCoeff = (float)this.ambCoeff.Value;
-                float diffCoef = (float)this.diffCoef.Value;
-                int shininess = (int)this.shininess.Value;
-                //sphere.SetMaterial(specCoeff,ambCoeff,diffCoef,shininess);
-            }
-            glControl1.Invalidate();
-        }
-
-        private void PerFragment_CheckedChanged(object sender, EventArgs e)
-        {
-            shader = PerFragment.Checked;
-            if(sfera)
-            {
-                if(PerFragment.Checked)
-                {
-                    //sphere.Delete();
-                    Reset();
-                    //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
-                }
-                else
-                {
-                    //sphere.Delete();
-                    Reset();
-                    //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
-                }
-                glControl1.Invalidate();
-            }
-        }
-
-        private void Pi_ValueChanged(object sender, EventArgs e)
-        {
-            if(sfera)
-            {
-                //sphere.Delete();
-                Reset();
-                //sphere = new Sphere(glControl1.Width, glControl1.Height, scale, (int)Pi.Value, (int)DvaPi.Value, flat, shader);
-                glControl1.Invalidate();
-            }
-        }
-
+        //FilterIndex=1-->sfericke
+        //FilterIndex=2-->obdlznikove
         private void otvorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //pridat zrusenie geoidu ak uz bol dajaky zobrazeny a ma sa kreslit novy
+            openFileDialog1.FileName = "";
+
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                //sfera = true;
-                //sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
-                //sdat.DrawSphere();
-                //glControl1.Invalidate();
+                if(sfera)
+                    sdat.Delete(true);
+                if(sur)
+                    surf.Delete(true);
 
-                sur = true;
-                surf = new Surface(glControl1.Width, glControl1.Height, "..\\..\\Properties\\data\\datFiles\\data_cosabs.dat");
-                surf.DrawSurface();
+                if (openFileDialog1.FilterIndex == 1)
+                {
+                    sur = false;
+                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                    sfera = sdat.Loaded();
+                    ZScale.Enabled = RekresliBtn.Enabled = sfera;
+                    Reset();
+                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = false;
+                    RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+                }
+                if (openFileDialog1.FilterIndex == 2)
+                {
+                    sfera = false;
+                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                    sur = surf.Loaded();
+                    ZScale.Enabled = RekresliBtn.Enabled = sur;
+                    Reset();
+                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = true;
+                }
                 glControl1.Invalidate();
             }
+        }
+
+        public void ChangeMaterialProperties(float amb,float spec,float diff,int shin)
+        {
+            if(sur)
+                surf.ChangeMaterialProperties(amb, spec, diff, shin);
+            if (sfera)
+                sdat.ChangeMaterialProperties(amb, spec, diff, shin);
+            glControl1.Invalidate();
+        }
+
+        public void CloseMaterialWindow(MaterialControl mc)
+        {
+            spec = mc.ReturnSpec();
+            diff = mc.ReturnSDiff();
+            amb = mc.ReturnAmb();
+            shin = mc.ReturnShin();
+        }
+
+        private void materiálToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MaterialControl lc = new MaterialControl(this, amb, spec, diff, shin); 
+            lc.Show();
         }
     }
 }

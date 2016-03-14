@@ -13,16 +13,16 @@ namespace Kocka
 {
     class Surface
     {
-        private int width, height, NumOfVertices, NumOfTriangles, NumOfIndices, Xwidth, Ywidth;
+        private int width, height, NumOfVertices, NumOfTriangles, NumOfIndices, NumOfIndexes, Xwidth, Ywidth;
         private Vector3[] vertices;
         private Vector3[] normals;
         private Vector3[] color;
         private int[] Indices;
+        private int[] Indexes;
         private List<Vector3> coords;
-        //private List<Vector3> noormals;
-        //private List<Vector3> coolors;
 
-        private float scale, min, max;
+        private float scale, min, max, minX, maxX, minY, maxY, angleX, angleY;
+        private bool Status;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -34,20 +34,20 @@ namespace Kocka
 
         public Surface(int w, int h, string pathToFile)
         {
-            min = float.MaxValue;
-            max = float.MinValue;
+            Status = false;
+            minX = minY = min = float.MaxValue;
+            maxX = maxY = max = float.MinValue;
             scale = 1.0f;
+            angleX = angleY = 0.0f;
             width = w; height = h;
-            NumOfTriangles = NumOfVertices = Xwidth = Ywidth = 0;
+            NumOfIndexes = NumOfTriangles = NumOfVertices = Xwidth = Ywidth = 0;
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
-            material = new Material(0.16f, 0.50f, 0.6f, 124);
+            material = new Material(0.29f, 0.86f, 0.57f, 128);
             //BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
 
             coords = new List<Vector3>();
-            //noormals = new List<Vector3>();
-            //coolors = new List<Vector3>();
             VBO = new int[4];
             VAO = new int[1];
             VertexShader = new Shaders.Shader();
@@ -56,17 +56,14 @@ namespace Kocka
 
             //nacitam data a zistim rozmery
             LoadData(pathToFile);
-            GetWidth();
 
-            InitSurface();
-            InitScene();
-            FirstDraw();
+            InitSurface(pathToFile);
         }
 
         #region nacitanie/nastavenie plochy a fsetkeho potrebneho
-        private void InitScene()
+        private void InitScene(bool b)
         {
-            SetMatrices(false);
+            SetMatrices(b);
 
             GL.GenBuffers(4, VBO);
             GL.GenVertexArrays(1, VAO);
@@ -125,8 +122,8 @@ namespace Kocka
             spMain.LinkProgram();
             spMain.UseProgram();
 
-            spMain.SetUniform("projectionMatrix", projectionMatrix);//iba toto pri jednoduchom
-            spMain.SetUniform("eye", new Vector3(0.0f, 0.0f, 30.0f));//dorobit pri zmene pozicie kamery update
+            spMain.SetUniform("projectionMatrix", projectionMatrix);
+            spMain.SetUniform("eye", new Vector3(0.0f, 0.0f, 30.0f));
             material.SetMaterialUniforms(spMain);
             light.SetDirectionalLightUniforms(spMain);
         }
@@ -145,13 +142,20 @@ namespace Kocka
                     line = sr.ReadLine().Split(separator);
                     tmp = new Vector3(float.Parse(line[0]), float.Parse(line[1]), float.Parse(line[2]));
                     coords.Add(tmp);
+                    if (coords.Last().X < minX)
+                        minX = coords.Last().X;
+                    if (coords.Last().X > maxX)
+                        maxX = coords.Last().X;
+                    if (coords.Last().Y < minY)
+                        minY = coords.Last().Y;
+                    if (coords.Last().Y > maxY)
+                        maxY = coords.Last().Y;
                     if (coords.Last().Z < min)
                         min = coords.Last().Z;
                     if (coords.Last().Z > max)
                         max = coords.Last().Z;
                 }
                 sr.Close();
-                NumOfVertices = coords.Count;
             }
             catch (FileNotFoundException)
             {
@@ -159,217 +163,169 @@ namespace Kocka
             }
         }
 
-        private void GetWidth()
+        public bool Loaded()
+        {
+            return Status;
+        }
+
+        private void InitSurface(string pathToFile)
+        {
+            if(Status = SetWidth())
+            {
+                vertices = new Vector3[NumOfVertices];
+                color = new Vector3[NumOfVertices];
+                normals = new Vector3[NumOfVertices];
+                Indices = new int[NumOfIndices];
+                Indexes = new int[NumOfIndexes];
+
+                SetIndices();
+                SetIndexes();
+                CalculateColor();
+                ScaleHeights(50.0f);
+                CalculateNormals();
+                InitScene(false);
+
+                if (Ywidth > Xwidth)
+                    MatrixStore_Rotations = Matrix4.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), 90.0f * (float)Math.PI / 180.0f);
+
+                FirstDraw();
+            }
+            else System.Windows.Forms.MessageBox.Show("Súbor " + pathToFile + " nemá podporu!", "Vnimanie!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+        }
+
+        #region nastavovanie bazmekov
+
+        private bool SetWidth()
         {
             int p = 0;
             while (coords[p].X == coords[p + 1].X)
                 p++;
             p++;
-            Xwidth = p;
-            Ywidth = NumOfVertices / p;
-            //NumOfIndices=(pocetRiadkov-1)*pocetIndicisNaRiadok + pocetRestartov
-            NumOfIndices = (Xwidth - 1) * (Ywidth * 2) + (Xwidth - 2);
 
-            System.Diagnostics.Debug.WriteLine("Xwidth = {0}", Xwidth);
-            System.Diagnostics.Debug.WriteLine("Ywidth = {0}", Ywidth);
-            System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}", NumOfVertices);
+            if (p == 1)
+                return false;
+            else
+            {
+                NumOfVertices = coords.Count;
+                Ywidth = p;
+                Xwidth = NumOfVertices / p;
+                //NumOfIndices=(pocetRiadkov-1)*pocetIndicisNaRiadok + pocetRestartov
+                NumOfIndices = (Xwidth - 1) * (Ywidth * 2) + (Xwidth - 2);
+                NumOfIndexes = (Xwidth - 1) * (Ywidth - 1) * 2 * 3;
+
+                System.Diagnostics.Debug.WriteLine("Xwidth = {0}", Xwidth);
+                System.Diagnostics.Debug.WriteLine("Ywidth = {0}", Ywidth);
+                System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}", NumOfVertices);
+                return true;
+            }
         }
 
-        private void InitSurface()
+        private void SetIndices()
         {
-            vertices = new Vector3[NumOfVertices];
-            color = new Vector3[NumOfVertices];
-            normals = new Vector3[NumOfVertices];
-            Indices = new int[NumOfIndices];
-
-            GetIndices();
-            CalculateColor();
-            ScaleHeights();
-            vertices = coords.ToArray();
-            CalculateNormals();
-        }
-
-        private void GetIndices()
-        {
-            //Xwidth = Ywidth = 5;
-            //NumOfVertices = Xwidth * Ywidth;
-            //NumOfIndices = (Xwidth - 1) * (Ywidth * 2) + (Xwidth - 2);
-            //System.Diagnostics.Debug.WriteLine("NumOfIndices = {0}", NumOfIndices);
-
             int p = 0;
             for (int i = 0; i < NumOfVertices - Ywidth; i++)
             {
                 Indices[p] = i; p++;
-                //System.Diagnostics.Debug.Write(i + ",");
                 Indices[p] = i + Ywidth; p++;
-                //System.Diagnostics.Debug.Write((i + Ywidth) + ",");
                 if (i % Ywidth == (Ywidth - 1) && i != NumOfVertices - Ywidth - 1)
                 {
-                    //System.Diagnostics.Debug.Write(NumOfVertices + "\n");
                     Indices[p] = NumOfVertices; p++;
                 }
-                //if(i<20)
-                //{
-                //    System.Diagnostics.Debug.Write(i + ",");
-                //    System.Diagnostics.Debug.Write((i + Ywidth) + ",");
-                //}
             }
-            //System.Diagnostics.Debug.WriteLine("NumOfIndices vol2 = {0}", p);
+        }
+
+        private void SetIndexes()
+        {
+            System.Diagnostics.Debug.WriteLine("NumOfIndexes = {0}", NumOfIndexes);
+            int p = 0;
+            for (int x = 0; x < Xwidth - 1; x++)
+            {
+                for (int y = 0; y < Ywidth - 1; y++)
+                {
+                    int pos1 = x * Ywidth + y;//0
+                    int pos2 = (x + 1) * Ywidth + y;//5
+                    int pos3 = x * Ywidth + y + 1;//1
+                    int pos4 = (x + 1) * Ywidth + y + 1;//6
+                    Indexes[p] = pos1; p++;
+                    Indexes[p] = pos2; p++;
+                    Indexes[p] = pos3; p++;
+                    Indexes[p] = pos3; p++;
+                    Indexes[p] = pos2; p++;
+                    Indexes[p] = pos4; p++;
+                }
+            }
+            System.Diagnostics.Debug.WriteLine("NumOfIndexes vol2 = {0}", p);
         }
 
         private void CalculateNormals()
         {
-            Vector3 n = new Vector3();
-            int p = 0;
-
-            #region spodna rada
-            for (int i = 0; i < Ywidth; i++)
+            for (int i = 0; i < NumOfIndexes / 3; i++)
             {
-                if (i == 0)
-                {
-                    n = Vector3.Cross(coords[0] - coords[1], coords[Ywidth] - coords[0]);
-                    normals[p] = -n; p++;
+                int index1 = Indexes[i * 3];
+                int index2 = Indexes[i * 3 + 1];
+                int index3 = Indexes[i * 3 + 2];
 
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", 1, i, Ywidth);
-                }
-                else if (i == Ywidth - 1)
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - 1], coords[i + Ywidth - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + Ywidth - 1], coords[i + Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
+                Vector3 side1 = vertices[index1] - vertices[index3];
+                Vector3 side2 = vertices[index2] - vertices[index1];
+                Vector3 normal = Vector3.Cross(side1, side2);
 
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i + Ywidth - 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + Ywidth - 1, i, i + Ywidth);
-                }
-                else
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - 1], coords[i + Ywidth - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + Ywidth - 1], coords[i + Ywidth] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + 1], coords[i + Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i + Xwidth - 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + Ywidth - 1, i, i + Ywidth);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + 1, i, i + Ywidth);
-                }
+                normals[index1] += normal;
+                normals[index2] += normal;
+                normals[index3] += normal;
             }
-            #endregion
+        }
 
-            #region stred
-            //System.Diagnostics.Debug.WriteLine("-----------STRED----------------");
-            for (int i = Ywidth; i < NumOfVertices - Ywidth; i++)
+        private Vector3 M(Matrix4 m, Vector3 v)
+        {
+            Vector3 tmp = new Vector3();
+            tmp.X = m.M11 * v.X + m.M12 * v.Y + m.M13 * v.Z + m.M14;
+            tmp.Y = m.M21 * v.X + m.M22 * v.Y + m.M23 * v.Z + m.M24;
+            tmp.Z = m.M31 * v.X + m.M32 * v.Y + m.M33 * v.Z + m.M34;
+            return tmp;
+        }
+
+        private void DrawNormals()
+        {
+            GL.Begin(PrimitiveType.Lines);
+            GL.LineWidth(1.0f);
+
+            for (int i = 0; i < vertices.Length; i++)
             {
-                //lavy okraj
-                if (i % Ywidth == 0)
-                {
-                    //System.Diagnostics.Debug.WriteLine("-----------LAVY OKRAJ----------------");
-                    n = Vector3.Cross(coords[i] - coords[i - Ywidth], coords[i - Ywidth + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - Ywidth + 1], coords[i + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + 1], coords[i + Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth, i, i - Ywidth + 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth + 1, i, i + 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + 1, i, i + Ywidth);
-                }
-                //pravy okraj
-                else if (i % Ywidth == Ywidth - 1)
-                {
-                    //System.Diagnostics.Debug.WriteLine("-----------PRAVY OKRAJ----------------");
-                    n = Vector3.Cross(coords[i] - coords[i - Ywidth], coords[i - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - 1], coords[i + Ywidth - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + Ywidth - 1], coords[i + Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth, i, i - 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i + Ywidth - 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + Ywidth - 1, i, i + Ywidth);
-                }
-                //inak
-                else
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - Ywidth], coords[i - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - 1], coords[i + Ywidth - 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + Ywidth - 1], coords[i + Ywidth] - coords[i]);
-
-                    n += Vector3.Cross(coords[i] - coords[i + Ywidth], coords[i + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i + 1], coords[i - Ywidth + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - Ywidth + 1], coords[i - Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth, i, i - 1);
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i + Ywidth - 1);
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + Ywidth - 1, i, i + Ywidth);
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + Ywidth, i, i + 1);
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i + 1, i, i - Ywidth + 1);
-                    //    System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth + 1, i, i - Ywidth);
-                }
+                Vector3 start = vertices[i];
+                //start = M(modelViewMatrix * projectionMatrix, start);
+                Vector3 end = vertices[i] + 0.01f * normals[i].Normalized();
+                //Vector3 end = start + M(modelViewMatrix * projectionMatrix, -0.01f * normals[i].Normalized());
+                //end = M(projectionMatrix * modelViewMatrix, end);
+                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Vertex3(start);
+                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Vertex3(end);
             }
-            #endregion
-
-            #region vrchna rada
-            for (int i = NumOfVertices - Ywidth; i < NumOfVertices; i++)
-            {
-                //lavy okraj
-                if (i == NumOfVertices - Ywidth)
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - Ywidth], coords[i - Ywidth + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - Ywidth + 1], coords[i + 1] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth, i, i - Ywidth + 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth + 1, i, i + 1);
-                }
-                //pravy okraj
-                else if (i == NumOfVertices - 1)
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - 1], coords[i - Ywidth] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i - Ywidth);
-                }
-                //inak
-                else
-                {
-                    n = Vector3.Cross(coords[i] - coords[i - 1], coords[i - Ywidth] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - Ywidth], coords[i - Ywidth + 1] - coords[i]);
-                    n += Vector3.Cross(coords[i] - coords[i - Ywidth + 1], coords[i + 1] - coords[i]);
-                    normals[p] = -n; p++;
-
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - 1, i, i - Ywidth);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth, i, i - Ywidth + 1);
-                    //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", i - Ywidth + 1, i, i + 1);
-                }
-            }
-            #endregion
-            //System.Diagnostics.Debug.WriteLine("MEGAPEEEEE = {0}", p);
+            GL.End();
         }
 
         private void CalculateColor()
         {
             for (int i = 0; i < NumOfVertices; i++)
-            {
                 color[i] = CalculateColor(coords[i].Z);
-            }
         }
 
-        private void ScaleHeights()
+        private void ScaleHeights(float L)
         {
             System.Diagnostics.Debug.WriteLine("min = {0}", min);
             System.Diagnostics.Debug.WriteLine("max = {0}", max);
 
-            //float L = Math.Abs(max - min);
-            float L = 10.0f;
+            float dx = minX + (maxX - minX) / 2.0f;
+            float dy = minY + (maxY - minY) / 2.0f;
+            float dz = min / L + (max - min) / (L * 2.0f);
+
             for (int i = 0; i < coords.Count; i++)
-            {
-                coords[i] = new Vector3(coords[i].X, coords[i].Y, (coords[i].Z - min) / (float)L);
-                //coords[i] = new Vector3(coords[i].X, coords[i].Y, 0.0f);
-            }
+                vertices[i] = new Vector3(coords[i].X - dx, coords[i].Y - dy, coords[i].Z / L - dz);
         }
 
         private Vector3 CalculateColor(float height)
         {
-            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f); 
+            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f);
             float dv;
             dv = max - min;
             #region funkcie
@@ -409,22 +365,56 @@ namespace Kocka
             return (col);
         }
 
+        private void SetMatrices(bool co)
+        {
+            //prvotny resize
+            if (!co)
+            {
+                modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 50.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
+
+                ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
+                TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+                RotationMatrix = Matrix4.Identity;
+                MatrixStore_Rotations = Matrix4.Identity;
+                MatrixStore_Translations = Matrix4.Identity;
+                MatrixStore_Scales = Matrix4.Identity;
+                Current = Matrix4.Identity;
+            }
+            //resize vyvolany pouzivatelom
+            else
+                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
+        }
+        #endregion
         #endregion
 
-        #region ovladanie mysou
+        public void Rescale(float value)
+        {
+            this.Delete(false);
+            ScaleHeights(value);
+            CalculateNormals();
+            InitScene(true);
+            Rotate(angleX, angleY);
+        }
+
+        #region ovladanie
+
         public void Transalte(float x, float y)
         {
             TranslationMatrix = Matrix4.CreateTranslation(x, y, 0.0f);
-            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            spMain.SetUniform("modelViewMatrix", Current);
+            Rotate(angleX, angleY);
         }
 
-        public void Rotate(float x, float y, float angle)
+        public void Rotate(float angleX, float angleY)
         {
-            RotationMatrix = Matrix4.CreateFromAxisAngle(new Vector3(y, x, 0.0f), angle);
+            this.angleX = angleX;
+            this.angleY = angleY;
+            RotationMatrix = Matrix4.CreateFromAxisAngle(new Vector3(1.0f, 0.0f, 0.0f), angleY);
+            RotationMatrix *= Matrix4.CreateFromAxisAngle(new Vector3(0.0f, 1.0f, 0.0f), angleX);
             Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix);
             Current = mat * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
             mat = mat.Inverted(); mat = Matrix4.Transpose(mat);
+            GL.BindVertexArray(VAO[0]);
             spMain.SetUniform("normalMatrix", mat);
             spMain.SetUniform("modelViewMatrix", Current);
         }
@@ -433,11 +423,13 @@ namespace Kocka
         {
             scale = s;
             ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
-            Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix);
-            Current = mat * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            mat = mat.Inverted(); mat = Matrix4.Transpose(mat);
-            spMain.SetUniform("normalMatrix", mat);
-            spMain.SetUniform("modelViewMatrix", Current);
+            Rotate(angleX, angleY);
+        }
+
+        public void ChangeMaterialProperties(float amb, float spec, float diff, int shin)
+        {
+            material = new Material(amb, spec, diff, shin);
+            material.SetMaterialUniforms(spMain);
         }
 
         public void Resize(int w, int h)
@@ -452,8 +444,7 @@ namespace Kocka
         public void Ende()
         {
             MatrixStore_Translations = MatrixStore_Translations * TranslationMatrix;
-            MatrixStore_Rotations = MatrixStore_Rotations * RotationMatrix;
-
+            GL.BindVertexArray(VAO[0]);
             spMain.SetUniform("modelViewMatrix", Current);
             ScaleMatrix = Matrix4.Identity;
             RotationMatrix = Matrix4.Identity;
@@ -483,40 +474,28 @@ namespace Kocka
         public void DrawSurface()
         {
             GL.BindVertexArray(VAO[0]);
-            GL.DrawElements(PrimitiveType.TriangleStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
-            //GL.DrawElements(PrimitiveType.LineStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawElements(PrimitiveType.TriangleStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.LineStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+            //DrawNormals();
         }
 
-        private void SetMatrices(bool co)
-        {
-            //prvotny resize
-            if (!co)
-            {
-                modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 30.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-
-                ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
-                TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
-                RotationMatrix = Matrix4.Identity;
-                MatrixStore_Rotations = Matrix4.Identity;
-                MatrixStore_Translations = Matrix4.Identity;
-                MatrixStore_Scales = Matrix4.Identity;
-                Current = Matrix4.Identity;
-            }
-            //resize vyvolany pouzivatelom
-            else
-                projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-        }
-
-        public void Delete()
+        public void Delete(bool b)
         {
             //zrejme by tu tiez mohla prist kontrola, ci znicenie programov prebehlo v poriadku, resp. ju zakomponovat do Shaders.dll
-            GL.DeleteBuffers(3, VBO);
-            GL.DeleteVertexArrays(1, VAO);
-            coords.Clear();
-            spMain.DeleteProgram();
-            VertexShader.DeleteShader();
-            FragmentShader.DeleteShader();
+            if (b)
+            {
+                GL.DeleteBuffers(4, VBO);
+                GL.DeleteVertexArrays(1, VAO);
+                coords.Clear();
+                spMain.DeleteProgram();
+                VertexShader.DeleteShader();
+                FragmentShader.DeleteShader();
+            }
+            else
+            {
+                GL.DeleteBuffers(4, VBO);
+                GL.DeleteVertexArrays(1, VAO);
+            }
         }
     }
 }
