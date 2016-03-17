@@ -13,16 +13,17 @@ namespace Kocka
 {
     class Surface
     {
-        private int width, height, NumOfVertices, NumOfTriangles, NumOfIndices, NumOfIndexes, Xwidth, Ywidth;
+        private int width, height, NumOfVertices, NumOfTriangles, NumOfIndices, NumOfIndexes, Xwidth, Ywidth, WhatToDraw;
         private Vector3[] vertices;
         private Vector3[] normals;
         private Vector3[] color;
         private int[] Indices;
         private int[] Indexes;
         private List<Vector3> coords;
+        private ColorScale colorScale;
 
         private float scale, min, max, minX, maxX, minY, maxY, angleX, angleY;
-        private bool Status;
+        private bool Status, colrscl;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -34,7 +35,8 @@ namespace Kocka
 
         public Surface(int w, int h, string pathToFile)
         {
-            Status = false;
+            WhatToDraw = 1;
+            Status = colrscl = false;
             minX = minY = min = float.MaxValue;
             maxX = maxY = max = float.MinValue;
             scale = 1.0f;
@@ -177,6 +179,7 @@ namespace Kocka
                 normals = new Vector3[NumOfVertices];
                 Indices = new int[NumOfIndices];
                 Indexes = new int[NumOfIndexes];
+                colorScale = new ColorScale(min, max, width, height);
 
                 SetIndices();
                 SetIndexes();
@@ -275,15 +278,6 @@ namespace Kocka
             }
         }
 
-        private Vector3 M(Matrix4 m, Vector3 v)
-        {
-            Vector3 tmp = new Vector3();
-            tmp.X = m.M11 * v.X + m.M12 * v.Y + m.M13 * v.Z + m.M14;
-            tmp.Y = m.M21 * v.X + m.M22 * v.Y + m.M23 * v.Z + m.M24;
-            tmp.Z = m.M31 * v.X + m.M32 * v.Y + m.M33 * v.Z + m.M34;
-            return tmp;
-        }
-
         private void DrawNormals()
         {
             GL.Begin(PrimitiveType.Lines);
@@ -292,10 +286,7 @@ namespace Kocka
             for (int i = 0; i < vertices.Length; i++)
             {
                 Vector3 start = vertices[i];
-                //start = M(modelViewMatrix * projectionMatrix, start);
                 Vector3 end = vertices[i] + 0.01f * normals[i].Normalized();
-                //Vector3 end = start + M(modelViewMatrix * projectionMatrix, -0.01f * normals[i].Normalized());
-                //end = M(projectionMatrix * modelViewMatrix, end);
                 GL.Color3(1.0f, 0.0f, 0.0f);
                 GL.Vertex3(start);
                 GL.Color3(1.0f, 0.0f, 0.0f);
@@ -306,8 +297,9 @@ namespace Kocka
 
         private void CalculateColor()
         {
-            for (int i = 0; i < NumOfVertices; i++)
-                color[i] = CalculateColor(coords[i].Z);
+            color = colorScale.SetColorList(coords).ToArray();
+            //for (int i = 0; i < NumOfVertices; i++)
+                //color[i] = CalculateColor(coords[i].Z);
         }
 
         private void ScaleHeights(float L)
@@ -436,9 +428,21 @@ namespace Kocka
         {
             width = w; height = h;
             SetMatrices(true);
-            GL.BindVertexArray(VAO[0]);
+            colorScale.ResizeScale(w, h);
+            spMain.UseProgram();
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", Current);
+        }
+
+        public void SetColorScaleOption(bool b)
+        {
+            colrscl = b;
+        }
+
+        public void SetWhatToDraw(int what)
+        {
+            //sem by mohla prist kontrola ci je what z {1,2,3}
+            WhatToDraw = what;
         }
 
         public void Ende()
@@ -459,6 +463,12 @@ namespace Kocka
         //    spMain.SetUniform("modelViewMatrix", Current);
         //}
 
+        public void ResetViewport()
+        {
+            SetMatrices(false);
+            FirstDraw();
+        }
+
         #endregion
 
         private void FirstDraw()
@@ -473,9 +483,27 @@ namespace Kocka
 
         public void DrawSurface()
         {
+            if (colrscl)
+            {
+                colorScale.DrawColorScale();
+                spMain.UseProgram();
+            }
+
             GL.BindVertexArray(VAO[0]);
-            //GL.DrawElements(PrimitiveType.TriangleStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
-            GL.DrawElements(PrimitiveType.LineStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+            switch (WhatToDraw)
+            {
+                case 1:
+                    GL.DrawElements(PrimitiveType.TriangleStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    break;
+                case 2:
+                    GL.DrawElements(PrimitiveType.LineStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    break;
+                case 3:
+                    GL.DrawElements(PrimitiveType.Points, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    break;
+                default:
+                    break;
+            }
             //DrawNormals();
         }
 

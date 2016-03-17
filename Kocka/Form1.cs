@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Globalization;
+using System.Drawing.Imaging;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -28,6 +29,7 @@ namespace Kocka
         float wLomeno2, hLomeno2;
         float amb, spec, diff;
         int shin;
+        //ColorScale cs;
 
         public Form1()
         {
@@ -58,6 +60,8 @@ namespace Kocka
             GL.ClearDepth(1.0);
 
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
+
+            //cs = new ColorScale(0, 0, glControl1.Width, glControl1.Height);
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
@@ -256,6 +260,7 @@ namespace Kocka
             amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             wPol = glControl1.Width / 2.0f;
             hPol = glControl1.Height / 2.0f;
+            TrianglesRadioButton.Checked = true;
             if(sfera)
             {
                 ZScale.Value = 10;
@@ -328,6 +333,82 @@ namespace Kocka
         {
             MaterialControl lc = new MaterialControl(this, amb, spec, diff, shin); 
             lc.Show();
+        }
+
+        private void bielePozadieToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (bielePozadieToolStripMenuItem.Checked)
+                GL.ClearColor(Color.White);
+            else
+                GL.ClearColor(Color.Black);
+            glControl1.Invalidate();
+        }
+
+        private void bielePozadieToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bielePozadieToolStripMenuItem.Checked = !bielePozadieToolStripMenuItem.Checked;
+        }
+
+        private void ulozObrazokToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            glControl1.Invalidate();
+            saveFileDialog1.FileName = "obrazok.png";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap bmp = new Bitmap(this.glControl1.Width, this.glControl1.Height);
+                System.Drawing.Imaging.BitmapData data =
+                    bmp.LockBits(glControl1.ClientRectangle, System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                GL.ReadPixels(0, 0, this.glControl1.Width, this.glControl1.Height, OpenTK.Graphics.OpenGL.PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
+                bmp.UnlockBits(data);
+                bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                bmp.Save(saveFileDialog1.FileName, ImageFormat.Png);
+                bmp.Dispose();
+            }
+        }
+
+        private void farebnaSkalaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            farebnaSkalaToolStripMenuItem.Checked = !farebnaSkalaToolStripMenuItem.Checked;
+            if (sfera)
+                sdat.SetColorScaleOption(farebnaSkalaToolStripMenuItem.Checked);
+            if(sur)
+                surf.SetColorScaleOption(farebnaSkalaToolStripMenuItem.Checked);
+            glControl1.Invalidate();
+        }
+
+        private void resetujPohladToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sfera)
+                sdat.ResetViewport();
+            if (sur)
+                surf.ResetViewport();
+            glControl1.Invalidate();
+        }
+
+        private void TrianglesRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if(TrianglesRadioButton.Checked)
+            {
+                if (sfera)
+                    sdat.SetWhatToDraw(1);
+                if (sur)
+                    surf.SetWhatToDraw(1);
+            }
+            else if (WireframeRadioButton.Checked)
+            {
+                if (sfera)
+                    sdat.SetWhatToDraw(2);
+                if (sur)
+                    surf.SetWhatToDraw(2);
+            }
+            else
+            {
+                if (sfera)
+                    sdat.SetWhatToDraw(3);
+                if (sur)
+                    surf.SetWhatToDraw(3);
+            }
+            glControl1.Invalidate();
         }
     }
 }

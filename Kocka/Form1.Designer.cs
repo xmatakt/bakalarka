@@ -28,9 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            //this.glControl1 = new OpenTK.GLControl();
-            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
-
+            this.glControl1 = new OpenTK.GLControl();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RotY_trackBar1 = new System.Windows.Forms.TrackBar();
@@ -42,7 +40,15 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.volacoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.otvorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ulozObrazokToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nastaveniaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bielePozadieToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.farebnaSkalaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetujPohladToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.TrianglesRadioButton = new System.Windows.Forms.RadioButton();
+            this.WireframeRadioButton = new System.Windows.Forms.RadioButton();
+            this.PointsRadioButton = new System.Windows.Forms.RadioButton();
             this.materiálToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).BeginInit();
@@ -60,7 +66,7 @@
             this.glControl1.Location = new System.Drawing.Point(0, 0);
             this.glControl1.Margin = new System.Windows.Forms.Padding(5);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(916, 703);
+            this.glControl1.Size = new System.Drawing.Size(981, 703);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
@@ -86,7 +92,7 @@
             this.panel1.Location = new System.Drawing.Point(48, 41);
             this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(920, 707);
+            this.panel1.Size = new System.Drawing.Size(985, 707);
             this.panel1.TabIndex = 30;
             // 
             // RotY_trackBar1
@@ -97,7 +103,7 @@
             this.RotY_trackBar1.Maximum = 90;
             this.RotY_trackBar1.Minimum = -90;
             this.RotY_trackBar1.Name = "RotY_trackBar1";
-            this.RotY_trackBar1.Size = new System.Drawing.Size(918, 56);
+            this.RotY_trackBar1.Size = new System.Drawing.Size(983, 56);
             this.RotY_trackBar1.TabIndex = 40;
             this.RotY_trackBar1.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.RotY_trackBar1.ValueChanged += new System.EventHandler(this.RotX_trackBar2_ValueChanged);
@@ -119,7 +125,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(977, 42);
+            this.label1.Location = new System.Drawing.Point(1042, 42);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 17);
             this.label1.TabIndex = 41;
@@ -128,7 +134,7 @@
             // ZScale
             // 
             this.ZScale.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ZScale.Location = new System.Drawing.Point(976, 62);
+            this.ZScale.Location = new System.Drawing.Point(1041, 62);
             this.ZScale.Maximum = 50;
             this.ZScale.Minimum = 1;
             this.ZScale.Name = "ZScale";
@@ -142,7 +148,7 @@
             // 
             this.ZScale_value.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ZScale_value.AutoSize = true;
-            this.ZScale_value.Location = new System.Drawing.Point(1024, 89);
+            this.ZScale_value.Location = new System.Drawing.Point(1089, 89);
             this.ZScale_value.Name = "ZScale_value";
             this.ZScale_value.Size = new System.Drawing.Size(24, 17);
             this.ZScale_value.TabIndex = 43;
@@ -151,7 +157,7 @@
             // RekresliBtn
             // 
             this.RekresliBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.RekresliBtn.Location = new System.Drawing.Point(998, 109);
+            this.RekresliBtn.Location = new System.Drawing.Point(1063, 109);
             this.RekresliBtn.Name = "RekresliBtn";
             this.RekresliBtn.Size = new System.Drawing.Size(75, 28);
             this.RekresliBtn.TabIndex = 44;
@@ -167,14 +173,15 @@
             this.nastaveniaToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1085, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1150, 28);
             this.menuStrip1.TabIndex = 45;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // volacoToolStripMenuItem
             // 
             this.volacoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.otvorToolStripMenuItem});
+            this.otvorToolStripMenuItem,
+            this.ulozObrazokToolStripMenuItem});
             this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
             this.volacoToolStripMenuItem.Size = new System.Drawing.Size(67, 24);
             this.volacoToolStripMenuItem.Text = "Volaco";
@@ -182,22 +189,96 @@
             // otvorToolStripMenuItem
             // 
             this.otvorToolStripMenuItem.Name = "otvorToolStripMenuItem";
-            this.otvorToolStripMenuItem.Size = new System.Drawing.Size(124, 24);
+            this.otvorToolStripMenuItem.Size = new System.Drawing.Size(166, 24);
             this.otvorToolStripMenuItem.Text = "Otvor...";
             this.otvorToolStripMenuItem.Click += new System.EventHandler(this.otvorToolStripMenuItem_Click);
+            // 
+            // ulozObrazokToolStripMenuItem
+            // 
+            this.ulozObrazokToolStripMenuItem.Name = "ulozObrazokToolStripMenuItem";
+            this.ulozObrazokToolStripMenuItem.Size = new System.Drawing.Size(166, 24);
+            this.ulozObrazokToolStripMenuItem.Text = "Uloz obrazok";
+            this.ulozObrazokToolStripMenuItem.Click += new System.EventHandler(this.ulozObrazokToolStripMenuItem_Click);
             // 
             // nastaveniaToolStripMenuItem
             // 
             this.nastaveniaToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.bielePozadieToolStripMenuItem,
+            this.farebnaSkalaToolStripMenuItem,
+            this.resetujPohladToolStripMenuItem,
             this.materiálToolStripMenuItem});
             this.nastaveniaToolStripMenuItem.Name = "nastaveniaToolStripMenuItem";
             this.nastaveniaToolStripMenuItem.Size = new System.Drawing.Size(94, 24);
             this.nastaveniaToolStripMenuItem.Text = "Nastavenia";
             // 
+            // bielePozadieToolStripMenuItem
+            // 
+            this.bielePozadieToolStripMenuItem.Name = "bielePozadieToolStripMenuItem";
+            this.bielePozadieToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.bielePozadieToolStripMenuItem.Text = "Biele pozadie";
+            this.bielePozadieToolStripMenuItem.CheckedChanged += new System.EventHandler(this.bielePozadieToolStripMenuItem_CheckedChanged);
+            this.bielePozadieToolStripMenuItem.Click += new System.EventHandler(this.bielePozadieToolStripMenuItem_Click);
+            // 
+            // farebnaSkalaToolStripMenuItem
+            // 
+            this.farebnaSkalaToolStripMenuItem.Name = "farebnaSkalaToolStripMenuItem";
+            this.farebnaSkalaToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.farebnaSkalaToolStripMenuItem.Text = "Farebna skala";
+            this.farebnaSkalaToolStripMenuItem.Click += new System.EventHandler(this.farebnaSkalaToolStripMenuItem_Click);
+            // 
+            // resetujPohladToolStripMenuItem
+            // 
+            this.resetujPohladToolStripMenuItem.Name = "resetujPohladToolStripMenuItem";
+            this.resetujPohladToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.resetujPohladToolStripMenuItem.Text = "Resetuj pohlad...";
+            this.resetujPohladToolStripMenuItem.Click += new System.EventHandler(this.resetujPohladToolStripMenuItem_Click);
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.Filter = " \"PNG files(*.png)|*.png";
+            // 
+            // TrianglesRadioButton
+            // 
+            this.TrianglesRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.TrianglesRadioButton.AutoSize = true;
+            this.TrianglesRadioButton.Checked = true;
+            this.TrianglesRadioButton.Location = new System.Drawing.Point(1063, 160);
+            this.TrianglesRadioButton.Name = "TrianglesRadioButton";
+            this.TrianglesRadioButton.Size = new System.Drawing.Size(72, 21);
+            this.TrianglesRadioButton.TabIndex = 46;
+            this.TrianglesRadioButton.TabStop = true;
+            this.TrianglesRadioButton.Text = "povrch";
+            this.TrianglesRadioButton.UseVisualStyleBackColor = true;
+            this.TrianglesRadioButton.CheckedChanged += new System.EventHandler(this.TrianglesRadioButton_CheckedChanged);
+            // 
+            // WireframeRadioButton
+            // 
+            this.WireframeRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.WireframeRadioButton.AutoSize = true;
+            this.WireframeRadioButton.Location = new System.Drawing.Point(1063, 188);
+            this.WireframeRadioButton.Name = "WireframeRadioButton";
+            this.WireframeRadioButton.Size = new System.Drawing.Size(59, 21);
+            this.WireframeRadioButton.TabIndex = 47;
+            this.WireframeRadioButton.Text = "#siet";
+            this.WireframeRadioButton.UseVisualStyleBackColor = true;
+            this.WireframeRadioButton.CheckedChanged += new System.EventHandler(this.TrianglesRadioButton_CheckedChanged);
+            // 
+            // PointsRadioButton
+            // 
+            this.PointsRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.PointsRadioButton.AutoSize = true;
+            this.PointsRadioButton.Location = new System.Drawing.Point(1063, 215);
+            this.PointsRadioButton.Name = "PointsRadioButton";
+            this.PointsRadioButton.Size = new System.Drawing.Size(60, 21);
+            this.PointsRadioButton.TabIndex = 48;
+            this.PointsRadioButton.Text = "body";
+            this.PointsRadioButton.UseVisualStyleBackColor = true;
+            this.PointsRadioButton.CheckedChanged += new System.EventHandler(this.TrianglesRadioButton_CheckedChanged);
+            // 
             // materiálToolStripMenuItem
             // 
             this.materiálToolStripMenuItem.Name = "materiálToolStripMenuItem";
-            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(133, 24);
+            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
             this.materiálToolStripMenuItem.Text = "Materiál";
             this.materiálToolStripMenuItem.Click += new System.EventHandler(this.materiálToolStripMenuItem_Click);
             // 
@@ -205,7 +286,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1085, 795);
+            this.ClientSize = new System.Drawing.Size(1150, 795);
+            this.Controls.Add(this.PointsRadioButton);
+            this.Controls.Add(this.WireframeRadioButton);
+            this.Controls.Add(this.TrianglesRadioButton);
             this.Controls.Add(this.RekresliBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
@@ -244,6 +328,14 @@
         private System.Windows.Forms.ToolStripMenuItem volacoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem otvorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem nastaveniaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bielePozadieToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ulozObrazokToolStripMenuItem;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.ToolStripMenuItem farebnaSkalaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetujPohladToolStripMenuItem;
+        private System.Windows.Forms.RadioButton TrianglesRadioButton;
+        private System.Windows.Forms.RadioButton WireframeRadioButton;
+        private System.Windows.Forms.RadioButton PointsRadioButton;
         private System.Windows.Forms.ToolStripMenuItem materiálToolStripMenuItem;
     }
 }

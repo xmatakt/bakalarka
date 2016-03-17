@@ -15,6 +15,7 @@ namespace Kocka
     {
         private int NumOfParallels;
         private int NumOfVertices;
+        private int WhatToDraw;
         private int width, height, NumOfTriangles;
         private Vector3[] vertices;
         private Vector3[] normals;
@@ -25,13 +26,14 @@ namespace Kocka
         private List<Vector3> coolors;
 
         private float RAD, R, scale, min, max,value;
-        private bool Status;
+        private bool Status,colrscl;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
+        private ColorScale colorScale;
         DirectionalLight light;
         Material material;
         Kamera BigBrother;
@@ -39,7 +41,8 @@ namespace Kocka
         //nacitanie dat do listu + prevod
         public SphereDAT(int w, int h, string pathToFile)
         {
-            Status = false;
+            WhatToDraw = 1;
+            Status = colrscl = false;
             min = float.MaxValue;
             max = float.MinValue;
             R = 1.0f;
@@ -53,6 +56,7 @@ namespace Kocka
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
             material = new Material(0.16f, 0.50f, 0.6f, 124);
             BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
+            //colorScale = new ColorScale(-100, 100, width, height);
 
             coords = new List<Vector3>();
             noormals = new List<Vector3>();
@@ -73,6 +77,7 @@ namespace Kocka
             {
                 zaloha = new Vector3[coords.Count];
                 zaloha = coords.ToArray();
+                colorScale = new ColorScale(min, max, width, height);
                 //najprv nastavim farby
                 SetColorList();
                 //potom preskalujem vysky
@@ -1220,8 +1225,12 @@ namespace Kocka
 
         private void SetColorList()
         {
-            for (int i = 0; i < coords.Count; i++)
-                coolors.Add(CalculateColor(coords[i].Z));
+            //for (int i = 0; i < coords.Count; i++)
+            //    coolors.Add(new Vector3(1.0f,0.0f,0.0f));
+                //coolors.Add(CalculateColor(coords[i].Z));
+            ////for (int i = 0; i < coords.Count; i++)
+            ////    coolors.Add(colorScale.SetColor(coords[i].Z));
+            coolors = colorScale.SetColorList(coords);
         }
 
         private Vector3 CalculateColor(float height)
@@ -1402,7 +1411,8 @@ namespace Kocka
         {
             width = w; height = h;
             SetMatrices(true);
-            GL.BindVertexArray(VAO[0]);
+            colorScale.ResizeScale(w, h);
+            spMain.UseProgram();
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", Current);
         }
@@ -1443,6 +1453,23 @@ namespace Kocka
             InitScene(true);
         }
 
+        public void SetColorScaleOption(bool b)
+        {
+            colrscl = b;
+        }
+
+        public void SetWhatToDraw(int what)
+        {
+            //sem by mohla prist kontrola ci je what z {1,2,3}
+            WhatToDraw = what;
+        }
+
+        public void ResetViewport()
+        {
+            SetMatrices(false);
+            FirstDraw();
+        }
+
         #endregion
 
         private void FirstDraw()
@@ -1457,10 +1484,26 @@ namespace Kocka
 
         public void DrawSphere()
         {
+            if (colrscl)
+           {
+               colorScale.DrawColorScale();
+               spMain.UseProgram();
+           }
             GL.BindVertexArray(VAO[0]);
-            //GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
-            //GL.DrawArrays(PrimitiveType.LineLoop, 0, NumOfVertices);
+            switch (WhatToDraw)
+            {
+                case 1:
+                    GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
+                    break;
+                case 2:
+                    GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
+                    break;
+                case 3:
+                    GL.DrawArrays(PrimitiveType.Points, 0, NumOfVertices);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void ChangeMaterialProperties(float amb, float spec, float diff, int shin)
@@ -1476,6 +1519,7 @@ namespace Kocka
             {
                 modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 3.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
                 projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
+                //projectionMatrix = Matrix4.CreateOrthographic(10, 10, -100, 100);
 
                 ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
                 TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
