@@ -33,8 +33,13 @@ namespace Kocka
         DirectionalLight light;
         Material material;
 
-        public Surface(int w, int h, string pathToFile)
+        System.Windows.Forms.ToolStripProgressBar toolStripBar;
+        System.Windows.Forms.ToolStripLabel toolStripLabel;
+
+        public Surface(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null)
         {
+            toolStripBar = bar;
+            toolStripLabel = label;
             WhatToDraw = 1;
             Status = colrscl = false;
             minX = minY = min = float.MaxValue;
@@ -58,11 +63,11 @@ namespace Kocka
 
             //nacitam data a zistim rozmery
             LoadData(pathToFile);
-
             InitSurface(pathToFile);
         }
 
         #region nacitanie/nastavenie plochy a fsetkeho potrebneho
+
         private void InitScene(bool b)
         {
             SetMatrices(b);
@@ -132,6 +137,9 @@ namespace Kocka
 
         private void LoadData(string pathToFile)
         {
+            SetToolStrip("Prebieha načítavanie dát...");
+            int count = File.ReadLines(pathToFile).Count();
+            int d = count / 100;
             StreamReader sr;
             Vector3 tmp;
             char[] separator = { ' ', '\t' };
@@ -156,6 +164,9 @@ namespace Kocka
                         min = coords.Last().Z;
                     if (coords.Last().Z > max)
                         max = coords.Last().Z;
+
+                    if (coords.Count % d == 0)
+                        SetToolStrip(100 * coords.Count / count);
                 }
                 sr.Close();
             }
@@ -225,6 +236,7 @@ namespace Kocka
 
         private void SetIndices()
         {
+            SetToolStrip("Prebieha nastavovanie vrcholov...");
             int p = 0;
             for (int i = 0; i < NumOfVertices - Ywidth; i++)
             {
@@ -234,17 +246,19 @@ namespace Kocka
                 {
                     Indices[p] = NumOfVertices; p++;
                 }
+                SetToolStrip(100 * i / (NumOfVertices - Ywidth));
             }
         }
 
         private void SetIndexes()
         {
-            System.Diagnostics.Debug.WriteLine("NumOfIndexes = {0}", NumOfIndexes);
+            SetToolStrip("Prebieha nastavovanie indexov...");
             int p = 0;
             for (int x = 0; x < Xwidth - 1; x++)
             {
                 for (int y = 0; y < Ywidth - 1; y++)
                 {
+                    SetToolStrip(100 * p / NumOfIndexes);
                     int pos1 = x * Ywidth + y;//0
                     int pos2 = (x + 1) * Ywidth + y;//5
                     int pos3 = x * Ywidth + y + 1;//1
@@ -262,6 +276,9 @@ namespace Kocka
 
         private void CalculateNormals()
         {
+            SetToolStrip("Prebieha výpočet normál...");
+            int d = NumOfIndexes / 300;
+
             for (int i = 0; i < NumOfIndexes / 3; i++)
             {
                 int index1 = Indexes[i * 3];
@@ -275,6 +292,11 @@ namespace Kocka
                 normals[index1] += normal;
                 normals[index2] += normal;
                 normals[index3] += normal;
+                if (i % d == 0)
+                {
+                    float tmp = (3 * i / (float)NumOfIndexes);
+                    SetToolStrip((int)(100 * tmp));
+                }
             }
         }
 
@@ -297,6 +319,7 @@ namespace Kocka
 
         private void CalculateColor()
         {
+            SetToolStrip("Prebieha nastavovanie farieb...");
             color = colorScale.SetColorList(coords).ToArray();
             //for (int i = 0; i < NumOfVertices; i++)
                 //color[i] = CalculateColor(coords[i].Z);
@@ -304,57 +327,19 @@ namespace Kocka
 
         private void ScaleHeights(float L)
         {
-            System.Diagnostics.Debug.WriteLine("min = {0}", min);
-            System.Diagnostics.Debug.WriteLine("max = {0}", max);
-
+            SetToolStrip("Prebieha škálovanie výšok...");
+            int d = coords.Count / 100;
             float dx = minX + (maxX - minX) / 2.0f;
             float dy = minY + (maxY - minY) / 2.0f;
             float dz = min / L + (max - min) / (L * 2.0f);
 
             for (int i = 0; i < coords.Count; i++)
+            {
                 vertices[i] = new Vector3(coords[i].X - dx, coords[i].Y - dy, coords[i].Z / L - dz);
-        }
-
-        private Vector3 CalculateColor(float height)
-        {
-            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f);
-            float dv;
-            dv = max - min;
-            #region funkcie
-            LinearFunction R1 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 0.0f, 1.0f);
-            LinearFunction R2 = new LinearFunction(min + 0.9f * dv, max, 1.0f, 0.5f);
-            LinearFunction G1 = new LinearFunction(min + 0.1f * dv, min + 0.35f * dv, 0.0f, 1.0f);
-            LinearFunction G2 = new LinearFunction(min + 0.65f * dv, min + 0.9f * dv, 1.0f, 0.0f);
-            LinearFunction B1 = new LinearFunction(0.0f, min + 0.1f * dv, 0.5f, 1.0f);
-            LinearFunction B2 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 1.0f, 0.0f);
-            #endregion
-
-            if (height < min + 0.1f * dv)
-            {
-                col.X = col.Y = 0.0f;
-                col.Z = B1.Value(height);
+                if (i % d == 0)
+                    SetToolStrip(i * 100 / coords.Count);
             }
-            else if (height < min + 0.35f * dv)
-            {
-                col.X = 0.0f;
-                col.Y = G1.Value(height);
-            }
-            else if (height < min + 0.65f * dv)
-            {
-                col.X = R1.Value(height);
-                col.Z = B2.Value(height);
-            }
-            else if (height < min + 0.9f * dv)
-            {
-                col.Y = G2.Value(height);
-                col.Z = 0.0f;
-            }
-            else
-            {
-                col.X = R2.Value(height);
-                col.Y = col.Z = 0.0f;
-            }
-            return (col);
+                
         }
 
         private void SetMatrices(bool co)
@@ -379,6 +364,15 @@ namespace Kocka
         }
         #endregion
         #endregion
+
+        private void SetToolStrip(int v)
+        {
+            toolStripBar.Value = v;
+        }
+        private void SetToolStrip(string s)
+        {
+            toolStripLabel.Text = s;
+        }
 
         public void Rescale(float value)
         {

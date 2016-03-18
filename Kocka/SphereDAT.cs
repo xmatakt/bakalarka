@@ -17,30 +17,36 @@ namespace Kocka
         private int NumOfVertices;
         private int WhatToDraw;
         private int width, height, NumOfTriangles;
-        private Vector3[] vertices;
-        private Vector3[] normals;
-        private Vector3[] color;
         private Vector3[] zaloha;
+        private Vector3[] normals;
+        private Vector3[] colors;
         private List<Vector3> coords;
-        private List<Vector3> noormals;
-        private List<Vector3> coolors;
+        private List<int> Indices;
 
-        private float RAD, R, scale, min, max,value;
-        private bool Status,colrscl;
+        private float RAD, R, scale, min, max, value;
+        private bool Status, colrscl;
         private int[] VBO;
         private int[] VAO;
+        private int[] Indexes;
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         private ColorScale colorScale;
+        private Form1 form;
         DirectionalLight light;
         Material material;
         Kamera BigBrother;
+        System.Windows.Forms.ToolStripProgressBar toolStripBar;
+        System.Windows.Forms.ToolStripLabel toolStripLabel;
 
         //nacitanie dat do listu + prevod
-        public SphereDAT(int w, int h, string pathToFile)
+        public SphereDAT(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null)
         {
+            toolStripBar = bar;
+            toolStripLabel = label;
+            this.form = form;
+            bar.Value = 100;
             WhatToDraw = 1;
             Status = colrscl = false;
             min = float.MaxValue;
@@ -59,29 +65,28 @@ namespace Kocka
             //colorScale = new ColorScale(-100, 100, width, height);
 
             coords = new List<Vector3>();
-            noormals = new List<Vector3>();
-            coolors = new List<Vector3>();
+            Indices = new List<int>();
 
-            VBO = new int[3];
+            VBO = new int[4];
             VAO = new int[1];
             VertexShader = new Shaders.Shader();
             FragmentShader = new Shaders.Shader();
             spMain = new Shaders.ShaderProgram();
 
-            Init(pathToFile);  
+            Init(pathToFile);
         }
 
         private void Init(string pathToFile)
         {
-            if(LoadData(pathToFile))
+            if (LoadData(pathToFile))
             {
                 zaloha = new Vector3[coords.Count];
                 zaloha = coords.ToArray();
                 colorScale = new ColorScale(min, max, width, height);
                 //najprv nastavim farby
-                SetColorList();
+                SetColors();
                 //potom preskalujem vysky
-                value = 0.5f*(max - min);
+                value = 0.5f * (max - min);
                 ScaleHeights(10.0f);
                 NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
                 //PustiToRychlejsie(0.033f);
@@ -89,25 +94,37 @@ namespace Kocka
 
                 GetNumberOfTriangles();
                 NumOfVertices = 3 * NumOfTriangles;
-                vertices = new Vector3[NumOfVertices];
-                color = new Vector3[NumOfVertices];
-                normals = new Vector3[NumOfVertices];
-                
+                Indexes = new int[NumOfVertices];
 
-                CalculateNormals();
+
                 //triangulacia
-                InitSphere();
+                SetIndices();
+                SetIndexes();
+                CalculateNormals();
                 //nastavenie bufferov a shaderov
                 InitScene(false);
                 FirstDraw();
             }
-            else System.Windows.Forms.MessageBox.Show("Súbor "+ pathToFile+ " nemá podporu!","Vnimanie!",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Warning);
+            else System.Windows.Forms.MessageBox.Show("Súbor " + pathToFile + " nemá podporu!", "Vnimanie!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+        }
+
+        private void SetToolStrip(int v)
+        {
+
+            toolStripBar.Value = v;
+        }
+        private void SetToolStrip(string s)
+        {
+            toolStripLabel.Text = s;
         }
 
         private bool LoadData(string pathToFile)
         {
+            SetToolStrip("Prebieha načítavanie dát...");
             StreamReader sr;
             Vector3 tmp;
+            int count = File.ReadLines(pathToFile).Count();
+            int d = count / 100;
             char[] separator = { ' ', '\t' };
             string[] line;
             try
@@ -115,21 +132,24 @@ namespace Kocka
                 sr = new StreamReader(pathToFile);
                 while (!sr.EndOfStream)
                 {
-                    //System.Diagnostics.Debug.WriteLine(sr.ReadLine());
                     line = sr.ReadLine().Split(separator);
-                    //System.Diagnostics.Debug.WriteLine("dlzka = {0}",line.Length);
                     tmp = new Vector3(float.Parse(line[0]), float.Parse(line[1]), float.Parse(line[2]));
                     coords.Add(tmp);
                     if (coords.Last().Z < min)
                         min = coords.Last().Z;
                     if (coords.Last().Z > max)
                         max = coords.Last().Z;
+
+                    if (coords.Count % d == 0)
+                        SetToolStrip(100 * coords.Count / count);
                 }
                 sr.Close();
                 if (coords[0].X == coords[1].X)
                     Status = false;
                 else
                     Status = true;
+                SetToolStrip(100);
+                SetToolStrip("");
             }
             catch (FileNotFoundException)
             {
@@ -144,220 +164,94 @@ namespace Kocka
             return Status;
         }
 
-        private void CalculateNormals()
+        private void SetIndices()
         {
+            SetToolStrip("Prebieha nastavovanie vrcholov...");
             int startIndex = 0;
             int endIndex = 0;
             int tmp = 0;
-            Vector3 n = new Vector3(0.0f, 0.0f, 0.0f);
+            int restartIndex = coords.Count;
 
-            //cepicka
-            n = Vector3.Cross(coords[0] - coords[1], coords[2] - coords[0]);
-            n += Vector3.Cross(coords[0] - coords[2], coords[3] - coords[0]);
-            n += Vector3.Cross(coords[0] - coords[3], coords[4] - coords[0]);
-            n += Vector3.Cross(coords[0] - coords[4], coords[1] - coords[0]);
-            noormals.Add(-n);
+            //Timova triangulacia
+            #region cepicka
+            Indices.Add(0);
+            Indices.Add(1);
+            Indices.Add(2);
+            Indices.Add(restartIndex);
+
+            Indices.Add(0);
+            Indices.Add(2);
+            Indices.Add(3);
+            Indices.Add(restartIndex);
+
+            Indices.Add(0);
+            Indices.Add(3);
+            Indices.Add(4);
+            Indices.Add(restartIndex);
+
+            Indices.Add(0);
+            Indices.Add(4);
+            Indices.Add(1);
+            Indices.Add(restartIndex);
+            #endregion
 
             #region horna polovica
             for (int i = 1; i < (NumOfParallels - 1) / 2; i++)
             {
+                SetToolStrip(100 * i / NumOfParallels);
                 startIndex = 2 * i * (i - 1) + 1;
-                endIndex = startIndex + (i * 4) - 1;
                 int increment = i * 4;
-                //System.Diagnostics.Debug.WriteLine("{0} ", i);
-                for (int j = startIndex; j <= endIndex; j++)
+                endIndex = startIndex + increment - 1;
+                for (int j = startIndex; j <= startIndex + i; j++)
                 {
-                    //System.Diagnostics.Debug.WriteLine(j.ToString());
-                    if (j == startIndex)
-                    {
-                        if (j == 1)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[0] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[0], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[endIndex + (i + 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex + (i + 1) * 4], coords[j + increment] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[endIndex + (i + 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex + (i + 1) * 4], coords[j + increment] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, 2 * (i + 1) * i + (i + 1) * 4, j + increment);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + 1);
-                    }
+                    Indices.Add(j + increment);
+                    Indices.Add(j);
                     if (j == startIndex + i)
                     {
-                        if (j == 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[0] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[0], coords[startIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[startIndex], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - 1 - (i - 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1 - (i - 1) * 4], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + 1);
+                        Indices.Add(j + increment + 1);
+                        Indices.Add(restartIndex);
                     }
+                }
+                for (int j = startIndex + i; j <= startIndex + 2 * i; j++)
+                {
+                    Indices.Add(j + increment + 1);
+                    Indices.Add(j);
                     if (j == startIndex + 2 * i)
                     {
-                        if (j == 3)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[0] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[0], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
-                            noormals.Add(-n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + 1);
+                        Indices.Add(j + increment + 2);
+                        Indices.Add(restartIndex);
                     }
+                }
+                for (int j = startIndex + 2 * i; j <= startIndex + 3 * i; j++)
+                {
+                    Indices.Add(j + increment + 2);
+                    Indices.Add(j);
                     if (j == startIndex + 3 * i)
                     {
-                        if (j == endIndex)
-                        {
-                            //n = Vector3.Cross(coords[j] - coords[0], coords[j - 1] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[startIndex] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[startIndex], coords[0] - coords[j]);
-                            //noormals.Add(-n);
-                            n = Vector3.Cross(coords[j] - coords[0], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[1], coords[0] - coords[j]);
-                            noormals.Add(-n);
-                            //noormals.Add(new Vector3(0.0f, 0.0f, 0.0f));
-                        }
-                        else
-                        {
-                            //n = Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j - 1] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j + 1] - coords[j]);
-                            //n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - increment - 3] - coords[j]);
-                            //noormals.Add(-n);
-                            n = Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 3] - coords[j]);
-                            noormals.Add(-n);
-                            //noormals.Add(new Vector3(0.0f, 0.0f, 0.0f));
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, j + 1);
-                        }
+                        Indices.Add(j + increment + 3);
+                        Indices.Add(restartIndex);
                     }
-                    if (j > startIndex && j < startIndex + i)
+                }
+                for (int j = startIndex + 3 * i; j <= endIndex; j++)
+                {
+                    Indices.Add(j + increment + 3);
+                    Indices.Add(j);
+                    if (j == endIndex)
                     {
-                        n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment + 1] - coords[j]);
-                        noormals.Add(-n);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + increment + 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + 1);
-                    }
-                    if (j > startIndex + i && j < startIndex + 2 * i)
-                    {
-                        n = Vector3.Cross(coords[j] - coords[j + increment + 1], coords[j + increment + 2] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 1] - coords[j]);
-                        noormals.Add(-n);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 1, j + increment + 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + 1);
-                    }
-                    if (j > startIndex + 2 * i && j < startIndex + 3 * i)
-                    {
-                        n = Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + 1] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                        n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4 - 3] - coords[j]);
-                        noormals.Add(-n);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 2, j + increment + 3);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + 1);
-                    }
-                    if (j > startIndex + 3 * i && j <= endIndex)
-                    {
-                        if (j != endIndex)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 2], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4 - 3] - coords[j]);
-                            noormals.Add(-n);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, j + 1);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j - increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j + increment + 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 3], coords[j + increment + 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment + 4], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - increment + 1] - coords[j]);
-                            noormals.Add(-n);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 3, j + increment + 4);
-                            //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment + 4, startIndex);
-                        }
+                        Indices.Add(j + increment + 4);
+                        Indices.Add(startIndex);
+                        Indices.Add(startIndex + increment);
+                        Indices.Add(restartIndex);
                     }
                 }
             }
             #endregion
 
             #region dolna polovica
+
             for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
             {
+                SetToolStrip(100 * i / NumOfParallels);
                 if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
                 {
                     startIndex = 2 * i * (i - 1) + 1;
@@ -371,233 +265,70 @@ namespace Kocka
                     tmp = startIndex;
                 }
                 int increment = i * 4;
-                for (int j = startIndex; j <= endIndex; j++)
+
+                for (int j = startIndex; j <= startIndex + i; j++)
                 {
-                    if (j == startIndex)
-                    {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[j - (i - 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - increment - 4], coords[j - increment - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[endIndex] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[endIndex], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 4] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
-                    }
                     if (j == startIndex + i)
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j - increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 4], coords[j - increment - 3] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                        Indices.Add(j);
+                        Indices.Add(restartIndex);
                     }
+                    else
+                    {
+                        Indices.Add(j);
+                        Indices.Add(j + increment);
+                    }
+                }
+                for (int j = startIndex + i; j <= startIndex + 2 * i; j++)
+                {
                     if (j == startIndex + 2 * i)
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment + 2], coords[j + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 3], coords[j - increment - 2] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1); 
+                        Indices.Add(j);
+                        Indices.Add(restartIndex);
                     }
+                    else
+                    {
+                        Indices.Add(j);
+                        Indices.Add(j + increment - 1);
+                    }
+                }
+                for (int j = startIndex + 2 * i; j <= startIndex + 3 * i; j++)
+                {
                     if (j == startIndex + 3 * i)
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            if (j != endIndex)
-                            {
-                                n = Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[j + 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
-                                noormals.Add(n);
-                            }
-                            else
-                            {
-                                n = Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[startIndex] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[startIndex], coords[j + 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
-                                noormals.Add(n);
-                            }
-                        }
+                        Indices.Add(j);
+                        Indices.Add(restartIndex);
                     }
-                    if (j > startIndex && j < startIndex + i)
+                    else
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j - (i - 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i + 1) * 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i + 1) * 4], coords[j - (i + 1) * 4 + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + increment);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment, j + 1);
+                        Indices.Add(j);
+                        Indices.Add(j + increment - 2);
                     }
-                    if (j > startIndex + i && j < startIndex + 2 * i)
+                }
+                for (int j = startIndex + 3 * i; j <= endIndex; j++)
+                {
+                    if (j == endIndex)
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j - (i - 1) * 4 - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 1], coords[j - (i + 1) * 4 + 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i + 1) * 4 + 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i + 1) * 4 + 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + increment - 1);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 1, j + 1);
+                        Indices.Add(j);
+                        Indices.Add(j + 1);
+                        Indices.Add(startIndex);
+                        Indices.Add(restartIndex);
                     }
-                    if (j > startIndex + 2 * i && j < startIndex + 3 * i)
+                    else
                     {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - (i - 1) * 4 - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 3], coords[j - (i - 1) * 4 - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - (i - 1) * 4 - 2], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j + increment - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 2], coords[j - increment - 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 2] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 2], coords[j + increment - 3] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 3, j + increment - 2);
-                        //System.Diagnostics.Debug.WriteLine("{0}-->{1}-->{2}", j, j + increment - 2, j + 1);
-                    }
-                    if (j > startIndex + 3 * i && j <= endIndex)
-                    {
-                        if (i == (NumOfParallels - 1) / 2)
-                        {
-                            n = Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment], coords[j - increment + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j - increment + 1], coords[j + 1] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j + increment - 4] - coords[j]);
-                            n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
-                            noormals.Add(n);
-                        }
-                        else
-                        {
-                            if (j != endIndex)
-                            {
-                                n = Vector3.Cross(coords[j] - coords[j + increment - 3], coords[j + increment - 4] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[j + 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 3] - coords[j]);
-                                noormals.Add(n);
-                            }
-                            else
-                            {
-                                n = Vector3.Cross(coords[j] - coords[j + 1], coords[j + increment - 4] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j + increment - 4], coords[j - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - 1], coords[j - increment - 1] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment - 1], coords[j - increment] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[j - increment], coords[startIndex] - coords[j]);
-                                n += Vector3.Cross(coords[j] - coords[startIndex], coords[j + 1] - coords[j]);
-                                noormals.Add(n);
-                            }
-                        }
+                        Indices.Add(j);
+                        Indices.Add(j + increment - 3);
                     }
                 }
             }
-            #endregion
 
-            //koniec
-            n = Vector3.Cross(coords[endIndex + 1] - coords[endIndex], coords[startIndex] - coords[endIndex + 1]);
-            n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex], coords[startIndex + 1] - coords[endIndex + 1]);
-            n += Vector3.Cross(coords[endIndex + 1] - coords[startIndex + 1], coords[endIndex - 1] - coords[endIndex + 1]);
-            n += Vector3.Cross(coords[endIndex + 1] - coords[endIndex - 1], coords[endIndex] - coords[endIndex + 1]);
-            noormals.Add(n);
+            #endregion
+            SetToolStrip("");
         }
 
-        private void InitSphere()
+        private void SetIndexes()
         {
+            SetToolStrip("Prebieha nastavovanie indexov...");
             int p = 0;
             int startIndex = 0;
             int endIndex = 0;
@@ -605,58 +336,27 @@ namespace Kocka
 
             //Timova triangulacia
             #region cepicka
-            vertices[p] = coords[0];
-            normals[p] = noormals[0];
-            color[p] = coolors[0]; p++;
+            Indexes[p] = 0; p++;
+            Indexes[p] = 1; p++;
+            Indexes[p] = 2; p++;
 
-            vertices[p] = coords[1];
-            normals[p] = noormals[1];
-            color[p] = coolors[1]; p++;
+            Indexes[p] = 0; p++;
+            Indexes[p] = 2; p++;
+            Indexes[p] = 3; p++;
 
-            vertices[p] = coords[2];
-            normals[p] = noormals[2];
-            color[p] = coolors[2]; p++;
+            Indexes[p] = 0; p++;
+            Indexes[p] = 3; p++;
+            Indexes[p] = 4; p++;
 
-            vertices[p] = coords[0];
-            normals[p] = noormals[0];
-            color[p] = coolors[0]; p++;
-
-            vertices[p] = coords[2];
-            normals[p] = noormals[2];
-            color[p] = coolors[2]; p++;
-
-            vertices[p] = coords[3];
-            normals[p] = noormals[3];
-            color[p] = coolors[3]; p++;
-
-            vertices[p] = coords[0];
-            normals[p] = noormals[0];
-            color[p] = coolors[0]; p++;
-
-            vertices[p] = coords[3];
-            normals[p] = noormals[3];
-            color[p] = coolors[3]; p++;
-
-            vertices[p] = coords[4];
-            normals[p] = noormals[4];
-            color[p] = coolors[4]; p++;
-
-            vertices[p] = coords[0];
-            normals[p] = noormals[0];
-            color[p] = coolors[0]; p++;
-
-            vertices[p] = coords[4];
-            normals[p] = noormals[4];
-            color[p] = coolors[4]; p++;
-
-            vertices[p] = coords[1];
-            normals[p] = noormals[1];
-            color[p] = coolors[1]; p++;
+            Indexes[p] = 0; p++;
+            Indexes[p] = 4; p++;
+            Indexes[p] = 1; p++;
             #endregion
 
             #region horna polovica
             for (int i = 1; i < (NumOfParallels - 1) / 2; i++)
             {
+                SetToolStrip(100 * i / NumOfParallels);
                 startIndex = 2 * i * (i - 1) + 1;
                 endIndex = startIndex + (i * 4) - 1;
                 int increment = i * 4;
@@ -664,328 +364,128 @@ namespace Kocka
                 {
                     if (j == startIndex)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = 2 * (i + 1) * i + (i + 1) * 4; p++;
+                        Indexes[p] = j + increment; p++;
 
-                        vertices[p] = coords[2 * (i + 1) * i + (i + 1) * 4];
-                        normals[p] = noormals[2 * (i + 1) * i + (i + 1) * 4];
-                        color[p] = coolors[2 * (i + 1) * i + (i + 1) * 4]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment; p++;
+                        Indexes[p] = j + increment + 1; p++;
 
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 1; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment; p++;
+                        Indexes[p] = j + increment + 1; p++;
 
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 1; p++;
+                        Indexes[p] = j + increment + 2; p++;
 
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 2; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + 2 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 1; p++;
+                        Indexes[p] = j + increment + 2; p++;
 
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 2; p++;
+                        Indexes[p] = j + increment + 3; p++;
 
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3];
-                        color[p] = coolors[j + increment + 3]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3];
-                        color[p] = coolors[j + increment + 3]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 3; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + 3 * i)
                     {
                         if (j == endIndex)//toto by malo nastat 2 krat
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 2; p++;
+                            Indexes[p] = j + increment + 3; p++;
 
-                            vertices[p] = coords[j + increment + 2];
-                            normals[p] = noormals[j + increment + 2];
-                            color[p] = coolors[j + increment + 2]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 3; p++;
+                            Indexes[p] = j + increment + 4; p++;
 
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex];
-                            color[p] = coolors[startIndex]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 4; p++;
+                            Indexes[p] = startIndex; p++;
                         }
                         else
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 2; p++;
+                            Indexes[p] = j + increment + 3; p++;
 
-                            vertices[p] = coords[j + increment + 2];
-                            normals[p] = noormals[j + increment + 2];
-                            color[p] = coolors[j + increment + 2]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 3; p++;
+                            Indexes[p] = j + increment + 4; p++;
 
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 4; p++;
+                            Indexes[p] = j + 1; p++;
                         }
                     }
                     if (j > startIndex && j < startIndex + i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment; p++;
+                        Indexes[p] = j + increment + 1; p++;
 
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 1; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + i && j < startIndex + 2 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 1; p++;
+                        Indexes[p] = j + increment + 2; p++;
 
-                        vertices[p] = coords[j + increment + 1];
-                        normals[p] = noormals[j + increment + 1];
-                        color[p] = coolors[j + increment + 1]; p++;
-
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + increment + 2]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 2; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 2; p++;
+                        Indexes[p] = j + increment + 3; p++;
 
-                        vertices[p] = coords[j + increment + 2];
-                        normals[p] = noormals[j + increment + 2];
-                        color[p] = coolors[j + 2]; p++;
-
-                        vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3];
-                        color[p] = coolors[j + increment + 3]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment + 3];
-                        normals[p] = noormals[j + increment + 3];
-                        color[p] = coolors[j + increment + 3]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment + 3; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + 3 * i && j <= endIndex)
                     {
                         if (j != endIndex)
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 3; p++;
+                            Indexes[p] = j + increment + 4; p++;
 
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 4; p++;
+                            Indexes[p] = j + 1; p++;
                         }
                         else
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 3; p++;
+                            Indexes[p] = j + increment + 4; p++;
 
-                            vertices[p] = coords[j + increment + 3];
-                            normals[p] = noormals[j + increment + 3];
-                            color[p] = coolors[j + increment + 3]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment + 4];
-                            normals[p] = noormals[j + increment + 4];
-                            color[p] = coolors[j + increment + 4]; p++;
-
-                            vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex];
-                            color[p] = coolors[startIndex]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment + 4; p++;
+                            Indexes[p] = startIndex; p++;
                         }
                     }
                 }
@@ -995,6 +495,7 @@ namespace Kocka
             #region dolna polovica
             for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
             {
+                SetToolStrip(100 * i / NumOfParallels);
                 if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
                 {
                     startIndex = 2 * i * (i - 1) + 1;
@@ -1012,295 +513,161 @@ namespace Kocka
                 {
                     if (j == startIndex)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j + increment - 1];
-                        color[p] = coolors[j + increment - 1]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 1; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + 2 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j + increment - 2];
-                        color[p] = coolors[j + increment - 2]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 2; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j == startIndex + 3 * i)
                     {
                         if (j == endIndex)
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
-
-                            vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex];
-                            color[p] = coolors[startIndex]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + 1; p++;
+                            Indexes[p] = startIndex; p++;
                         }
                         else
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j + increment - 3];
-                            color[p] = coolors[j + increment - 3]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment - 3; p++;
+                            Indexes[p] = j + 1; p++;
                         }
                     }
                     if (j > startIndex && j < startIndex + i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 1; p++;
+                        Indexes[p] = j + increment; p++;
 
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j + increment - 1];
-                        color[p] = coolors[j + increment - 1]; p++;
-
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment];
-                        normals[p] = noormals[j + increment];
-                        color[p] = coolors[j + increment]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + i && j < startIndex + 2 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 2; p++;
+                        Indexes[p] = j + increment - 1; p++;
 
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j + increment - 2];
-                        color[p] = coolors[j + increment - 2]; p++;
-
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j + increment - 1];
-                        color[p] = coolors[j + increment - 1]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment - 1];
-                        normals[p] = noormals[j + increment - 1];
-                        color[p] = coolors[j + increment - 1]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 1; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + 2 * i && j < startIndex + 3 * i)
                     {
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 3; p++;
+                        Indexes[p] = j + increment - 2; p++;
 
-                        vertices[p] = coords[j + increment - 3];
-                        normals[p] = noormals[j + increment - 3];
-                        color[p] = coolors[j + increment - 3]; p++;
-
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j + increment - 2];
-                        color[p] = coolors[j + increment - 2]; p++;
-
-                        vertices[p] = coords[j];
-                        normals[p] = noormals[j];
-                        color[p] = coolors[j]; p++;
-
-                        vertices[p] = coords[j + increment - 2];
-                        normals[p] = noormals[j + increment - 2];
-                        color[p] = coolors[j + increment - 2]; p++;
-
-                        vertices[p] = coords[j + 1];
-                        normals[p] = noormals[j + 1];
-                        color[p] = coolors[j + 1]; p++;
+                        Indexes[p] = j; p++;
+                        Indexes[p] = j + increment - 2; p++;
+                        Indexes[p] = j + 1; p++;
                     }
                     if (j > startIndex + 3 * i && j <= endIndex)
                     {
                         if (j != endIndex)
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment - 4; p++;
+                            Indexes[p] = j + increment - 3; p++;
 
-                            vertices[p] = coords[j + increment - 4];
-                            normals[p] = noormals[j + increment - 4];
-                            color[p] = coolors[j + increment - 4]; p++;
-
-                            vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j + increment - 3];
-                            color[p] = coolors[j + increment - 3]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + increment - 3];
-                            normals[p] = noormals[j + increment - 3];
-                            color[p] = coolors[j + increment - 3]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment - 3; p++;
+                            Indexes[p] = j + 1; p++;
                         }
                         else
                         {
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + increment - 4; p++;
+                            Indexes[p] = j + 1; p++;
 
-                            vertices[p] = coords[j + increment - 4];
-                            normals[p] = noormals[j + increment - 4];
-                            color[p] = coolors[j + increment - 4]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
-
-                            vertices[p] = coords[j];
-                            normals[p] = noormals[j];
-                            color[p] = coolors[j]; p++;
-
-                            vertices[p] = coords[j + 1];
-                            normals[p] = noormals[j + 1];
-                            color[p] = coolors[j + 1]; p++;
-
-                            vertices[p] = coords[startIndex];
-                            normals[p] = noormals[startIndex];
-                            color[p] = coolors[startIndex]; p++;
+                            Indexes[p] = j; p++;
+                            Indexes[p] = j + 1; p++;
+                            Indexes[p] = startIndex; p++;
                         }
                     }
                 }
             }
             #endregion
 
-            System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}", NumOfVertices);
+            SetToolStrip("");
         }
 
-        private void SetColorList()
+        private void CalculateNormals()
         {
-            //for (int i = 0; i < coords.Count; i++)
-            //    coolors.Add(new Vector3(1.0f,0.0f,0.0f));
-                //coolors.Add(CalculateColor(coords[i].Z));
-            ////for (int i = 0; i < coords.Count; i++)
-            ////    coolors.Add(colorScale.SetColor(coords[i].Z));
-            coolors = colorScale.SetColorList(coords);
+            normals = new Vector3[coords.Count];
+            SetToolStrip("Prebieha výpočet normál...");
+            int d = NumOfVertices / 300;
+
+            for (int i = 0; i < NumOfVertices / 3; i++)
+            {
+                int index1 = Indexes[i * 3];
+                int index2 = Indexes[i * 3 + 1];
+                int index3 = Indexes[i * 3 + 2];
+
+                Vector3 side1 = coords[index1] - coords[index3];
+                Vector3 side2 = coords[index2] - coords[index1];
+                Vector3 normal = Vector3.Cross(side1, side2);
+
+                normals[index1] += normal;
+                normals[index2] += normal;
+                normals[index3] += normal;
+                if (i % d == 0)
+                {
+                    float tmp = (3 * i / (float)NumOfVertices);
+                    SetToolStrip((int)(100 * tmp));
+                }
+            }
         }
 
-        private Vector3 CalculateColor(float height)
+        private void SetColors()
         {
-            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f);
-            float dv;
-            dv = max - min;
-            #region funkcie
-            LinearFunction R1 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 0.0f, 1.0f);
-            LinearFunction R2 = new LinearFunction(min + 0.9f * dv, max, 1.0f, 0.5f);
-            LinearFunction G1 = new LinearFunction(min + 0.1f * dv, min + 0.35f * dv, 0.0f, 1.0f);
-            LinearFunction G2 = new LinearFunction(min + 0.65f * dv, min + 0.9f * dv, 1.0f, 0.0f);
-            LinearFunction B1 = new LinearFunction(0.0f, min + 0.1f * dv, 0.5f, 1.0f);
-            LinearFunction B2 = new LinearFunction(min + 0.35f * dv, min + 0.65f * dv, 1.0f, 0.0f);
-            #endregion
-
-            if (height < min + 0.1f * dv)
-            {
-                col.X = col.Y = 0.0f;
-                col.Z = B1.Value(height);
-            }
-            else if (height < min + 0.35f * dv)
-            {
-                col.X = 0.0f;
-                col.Y = G1.Value(height);
-            }
-            else if (height < min + 0.65f * dv)
-            {
-                col.X = R1.Value(height);
-                col.Z = B2.Value(height);
-            }
-            else if (height < min + 0.9f * dv)
-            {
-                col.Y = G2.Value(height);
-                col.Z = 0.0f;
-            }
-            else
-            {
-                col.X = R2.Value(height);
-                col.Y = col.Z = 0.0f;
-            }
-            return (col);
+            colors = new Vector3[coords.Count];
+            colors = colorScale.SetColorList(coords, toolStripBar, toolStripLabel).ToArray();
         }
 
         private void InitScene(bool b)
         {
             SetMatrices(b);
-            GL.GenBuffers(3, VBO);
+            GL.GenBuffers(4, VBO);
             GL.GenVertexArrays(1, VAO);
 
             GL.BindVertexArray(VAO[0]);
 
             //vrcholy
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(NumOfVertices * Vector3.SizeInBytes), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(coords.Count * Vector3.SizeInBytes), coords.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
 
             //farby
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[1]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(NumOfVertices * Vector3.SizeInBytes), color, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(colors.Length * Vector3.SizeInBytes), colors, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
 
             //normaly
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[2]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(NumOfVertices * Vector3.SizeInBytes), normals, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(normals.Length * Vector3.SizeInBytes), normals, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(2);
             GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 0, 0);
 
+            //indices
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, VBO[3]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Count), Indices.ToArray(), BufferUsageHint.StaticDraw);
+            GL.Enable(EnableCap.PrimitiveRestart);
+            GL.PrimitiveRestartIndex(coords.Count);
             //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.vert", ShaderType.VertexShader))
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
             //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.frag", ShaderType.FragmentShader))
@@ -1339,17 +706,23 @@ namespace Kocka
             System.Diagnostics.Debug.WriteLine("min = {0}", min);
             System.Diagnostics.Debug.WriteLine("max = {0}", max);
 
+            int d = zaloha.Length / 100;
             //float L = Math.Abs(max - min) * 5.0f;
+            SetToolStrip("Prebieha škálovanie výšok...");
             for (int i = 0; i < zaloha.Length; i++)
             {
-                coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, zaloha[i].Z / (value*this.value));
-                //coords[i] = new Vector3(coords[i].X, coords[i].Y, (coords[i].Z - min) / (float)L);
+                coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, zaloha[i].Z / (value * this.value));
+                if (i % d == 0)
+                    SetToolStrip(i * 100 / zaloha.Length);
             }
+            SetToolStrip("");
         }
 
         private void GeoToSpatialCoords()
         {
             float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
+            int d = coords.Count / 100;
+            SetToolStrip("Prebieha prepočet koordinátov...");
             for (int i = 0; i < coords.Count; i++)
             {
                 rH = R + coords[i].Z;
@@ -1358,14 +731,10 @@ namespace Kocka
                 cosLxRAD = (float)Math.Cos(coords[i].Y * RAD);
                 sinLxRAD = (float)Math.Sin(coords[i].Y * RAD);
                 coords[i] = new Vector3(rH * cosBxRAD * cosLxRAD, rH * cosBxRAD * sinLxRAD, rH * sinBxRAD);
+                if (i % d == 0)
+                    SetToolStrip(100 * i / coords.Count);
             }
-        }
-
-        private void PustiToRychlejsie(float s)
-        {
-            Shaders.HeightMapGenerator hmg = new Shaders.HeightMapGenerator();
-            for (int i = 0; i < coords.Count; i++)
-                coords[i] = new Vector3(coords[i].X, coords[i].Y, hmg.GetNormalDistributedValue(coords[i].Z, s));
+            SetToolStrip("");
         }
 
         private void GetNumberOfTriangles()
@@ -1439,17 +808,12 @@ namespace Kocka
         public void Rescale(float value)
         {
             this.Delete(false);
-            VBO = new int[3];
+            VBO = new int[4];
             VAO = new int[1];
-            vertices=new Vector3[NumOfVertices];
-            normals = new Vector3[NumOfVertices];
-            color = new Vector3[NumOfVertices];
-            noormals.Clear();
-            noormals = new List<Vector3>();
             ScaleHeights(value);
             GeoToSpatialCoords();
             CalculateNormals();
-            InitSphere();
+            //SetIndices();
             InitScene(true);
         }
 
@@ -1482,18 +846,36 @@ namespace Kocka
             spMain.SetUniform("modelViewMatrix", Current);
         }
 
+        private void DrawNormals()
+        {
+            GL.Begin(PrimitiveType.Lines);
+            GL.LineWidth(1.0f);
+
+            for (int i = 0; i < coords.Count; i++)
+            {
+                Vector3 start = coords[i];
+                Vector3 end = coords[i] + 0.01f * normals[i].Normalized();
+                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Vertex3(start);
+                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Vertex3(end);
+            }
+            GL.End();
+        }
+
         public void DrawSphere()
         {
             if (colrscl)
-           {
-               colorScale.DrawColorScale();
-               spMain.UseProgram();
-           }
+            {
+                colorScale.DrawColorScale();
+                spMain.UseProgram();
+            }
+            //DrawNormals();
             GL.BindVertexArray(VAO[0]);
             switch (WhatToDraw)
             {
                 case 1:
-                    GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
+                    GL.DrawElements(PrimitiveType.TriangleStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 2:
                     GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
@@ -1539,18 +921,17 @@ namespace Kocka
             //zrejme by tu tiez mohla prist kontrola, ci znicenie programov prebehlo v poriadku, resp. ju zakomponovat do Shaders.dll
             if (b)
             {
-                GL.DeleteBuffers(3, VBO);
+                GL.DeleteBuffers(4, VBO);
                 GL.DeleteVertexArrays(1, VAO);
                 coords.Clear();
-                noormals.Clear();
-                coolors.Clear();
+                Indices.Clear();
                 spMain.DeleteProgram();
                 VertexShader.DeleteShader();
                 FragmentShader.DeleteShader();
             }
             else
             {
-                GL.DeleteBuffers(3, VBO);
+                GL.DeleteBuffers(4, VBO);
                 GL.DeleteVertexArrays(1, VAO);
             }
         }

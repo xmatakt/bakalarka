@@ -27,7 +27,7 @@ namespace Kocka
         private Shaders.ShaderProgram spMain;
         private Matrix4 projectionMatrix, modelViewMatrix;
 
-        public ColorScale(float min, float max, int width,int height)
+        public ColorScale(float min, float max, int width, int height)
         {
             this.width = width;
             this.height = height;
@@ -107,16 +107,16 @@ namespace Kocka
             Vector3 f5 = new Vector3(1.0f, 0.0f, 0.0f); float x5 = 0.9f; cm.Add(x5, f5);
             Vector3 f6 = new Vector3(0.5f, 0.0f, 0.0f); float x6 = 1.0f; cm.Add(x6, f6);
             //
-            keys=cm.Keys.ToArray();
+            keys = cm.Keys.ToArray();
             NumOfVertices = (cm.Count - 1) * 6;
             vertices = new Vector3[NumOfVertices];
             colors = new Vector3[NumOfVertices];
 
             float z = 0.0f, y1 = bottom, y2 = bottom + barHeight;
-            for (int i = 0; i < cm.Count-1; i++)
+            for (int i = 0; i < cm.Count - 1; i++)
             {
                 x1 = left + length * keys[i];
-                x2 = left + length * keys[i+1];
+                x2 = left + length * keys[i + 1];
                 int i1 = i * 6; int i2 = i * 6 + 1; int i3 = i * 6 + 2;
                 int i4 = i * 6 + 3; int i5 = i * 6 + 4; int i6 = i * 6 + 5;
                 //
@@ -128,7 +128,7 @@ namespace Kocka
                 vertices[i6] = new Vector3(x2, y2, z);
                 //
                 colors[i1] = colors[i4] = colors[i5] = cm[keys[i]];
-                colors[i2] = colors[i3] = colors[i6] = cm[keys[i+1]];
+                colors[i2] = colors[i3] = colors[i6] = cm[keys[i + 1]];
             }
         }
 
@@ -148,7 +148,7 @@ namespace Kocka
                 vertices[i5] = new Vector3(vertices[i5].X, y2, z);
                 vertices[i6] = new Vector3(vertices[i6].X, y2, z);
                 //
-            }                
+            }
         }
 
         public void DrawColorScale()
@@ -169,7 +169,7 @@ namespace Kocka
                     LinearFunction R = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].X, cm[keys[i]].X);
                     LinearFunction G = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].Y, cm[keys[i]].Y);
                     LinearFunction B = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].Z, cm[keys[i]].Z);
-                    col = new Vector3(R.Value(height),G.Value(height),B.Value(height));
+                    col = new Vector3(R.Value(height), G.Value(height), B.Value(height));
                     return col;
                 }
             }
@@ -199,7 +199,34 @@ namespace Kocka
             return colors;
         }
 
-        public void ResizeScale(int width,int height)
+        public List<Vector3> SetColorList(List<Vector3> heights, System.Windows.Forms.ToolStripProgressBar toolStripBar, System.Windows.Forms.ToolStripLabel toolStripLabel)
+        {
+            toolStripLabel.Text = "Prebieha nastavovanie farieb...";
+            List<Vector3> colors = new List<Vector3>();
+            Vector3 col = new Vector3();
+            float dv = max - min;
+            for (int j = 0; j < heights.Count; j++)
+            {
+                for (int i = 1; i < keys.Length; i++)
+                {
+                    if (heights[j].Z < min + keys[i] * dv)
+                    {
+                        LinearFunction R = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].X, cm[keys[i]].X);
+                        LinearFunction G = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].Y, cm[keys[i]].Y);
+                        LinearFunction B = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].Z, cm[keys[i]].Z);
+                        col = new Vector3(R.Value(heights[j].Z), G.Value(heights[j].Z), B.Value(heights[j].Z));
+                        i = keys.Length;
+                    }
+                }
+                colors.Add(col);
+                if (j % 100 == 0)
+                    toolStripBar.Value = 100 * j / heights.Count;
+            }
+            toolStripLabel.Text = "";
+            return colors;
+        }
+
+        public void ResizeScale(int width, int height)
         {
             this.width = width;
             this.height = height;

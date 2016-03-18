@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.glControl1 = new OpenTK.GLControl();
+            //this.glControl1 = new OpenTK.GLControl();
+            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
+
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RotY_trackBar1 = new System.Windows.Forms.TrackBar();
@@ -45,16 +47,20 @@
             this.bielePozadieToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.farebnaSkalaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetujPohladToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.materiálToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.TrianglesRadioButton = new System.Windows.Forms.RadioButton();
             this.WireframeRadioButton = new System.Windows.Forms.RadioButton();
             this.PointsRadioButton = new System.Windows.Forms.RadioButton();
-            this.materiálToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ZScale)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // glControl1
@@ -66,7 +72,7 @@
             this.glControl1.Location = new System.Drawing.Point(0, 0);
             this.glControl1.Margin = new System.Windows.Forms.Padding(5);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(981, 703);
+            this.glControl1.Size = new System.Drawing.Size(981, 683);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
@@ -89,17 +95,17 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel1.Controls.Add(this.glControl1);
-            this.panel1.Location = new System.Drawing.Point(48, 41);
+            this.panel1.Location = new System.Drawing.Point(48, 32);
             this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(985, 707);
+            this.panel1.Size = new System.Drawing.Size(985, 687);
             this.panel1.TabIndex = 30;
             // 
             // RotY_trackBar1
             // 
             this.RotY_trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.RotY_trackBar1.Location = new System.Drawing.Point(48, 743);
+            this.RotY_trackBar1.Location = new System.Drawing.Point(48, 717);
             this.RotY_trackBar1.Maximum = 90;
             this.RotY_trackBar1.Minimum = -90;
             this.RotY_trackBar1.Name = "RotY_trackBar1";
@@ -112,12 +118,12 @@
             // 
             this.RotX_trackBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.RotX_trackBar2.Location = new System.Drawing.Point(12, 41);
+            this.RotX_trackBar2.Location = new System.Drawing.Point(12, 31);
             this.RotX_trackBar2.Maximum = 90;
             this.RotX_trackBar2.Minimum = -90;
             this.RotX_trackBar2.Name = "RotX_trackBar2";
             this.RotX_trackBar2.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.RotX_trackBar2.Size = new System.Drawing.Size(56, 708);
+            this.RotX_trackBar2.Size = new System.Drawing.Size(56, 689);
             this.RotX_trackBar2.TabIndex = 39;
             this.RotX_trackBar2.ValueChanged += new System.EventHandler(this.RotX_trackBar2_ValueChanged);
             // 
@@ -233,6 +239,13 @@
             this.resetujPohladToolStripMenuItem.Text = "Resetuj pohlad...";
             this.resetujPohladToolStripMenuItem.Click += new System.EventHandler(this.resetujPohladToolStripMenuItem_Click);
             // 
+            // materiálToolStripMenuItem
+            // 
+            this.materiálToolStripMenuItem.Name = "materiálToolStripMenuItem";
+            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.materiálToolStripMenuItem.Text = "Materiál";
+            this.materiálToolStripMenuItem.Click += new System.EventHandler(this.materiálToolStripMenuItem_Click);
+            // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.Filter = " \"PNG files(*.png)|*.png";
@@ -275,29 +288,49 @@
             this.PointsRadioButton.UseVisualStyleBackColor = true;
             this.PointsRadioButton.CheckedChanged += new System.EventHandler(this.TrianglesRadioButton_CheckedChanged);
             // 
-            // materiálToolStripMenuItem
+            // statusStrip1
             // 
-            this.materiálToolStripMenuItem.Name = "materiálToolStripMenuItem";
-            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
-            this.materiálToolStripMenuItem.Text = "Materiál";
-            this.materiálToolStripMenuItem.Click += new System.EventHandler(this.materiálToolStripMenuItem_Click);
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripProgressBar1,
+            this.toolStripStatusLabel1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 763);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1150, 25);
+            this.statusStrip1.TabIndex = 50;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.Margin = new System.Windows.Forms.Padding(10, 3, 1, 3);
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 19);
+            this.toolStripProgressBar1.Step = 1;
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(151, 20);
+            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.TextChanged += new System.EventHandler(this.toolStripStatusLabel1_TextChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1150, 795);
+            this.ClientSize = new System.Drawing.Size(1150, 788);
             this.Controls.Add(this.PointsRadioButton);
             this.Controls.Add(this.WireframeRadioButton);
             this.Controls.Add(this.TrianglesRadioButton);
             this.Controls.Add(this.RekresliBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.RotY_trackBar1);
             this.Controls.Add(this.RotX_trackBar2);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.ZScale_value);
             this.Controls.Add(this.ZScale);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.RotY_trackBar1);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -308,6 +341,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.ZScale)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -337,6 +372,9 @@
         private System.Windows.Forms.RadioButton WireframeRadioButton;
         private System.Windows.Forms.RadioButton PointsRadioButton;
         private System.Windows.Forms.ToolStripMenuItem materiálToolStripMenuItem;
+        public System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
 

@@ -19,7 +19,7 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize, sfera,sur;
+        private bool loaded, resize, sfera, sur;
         private SphereDAT sdat;
         private Surface surf;
         private float Pi180;
@@ -214,12 +214,16 @@ namespace Kocka
                 surf.Rescale(ZScale.Value);
                 surf.Scale(scale);
                 glControl1.Invalidate();
+                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripProgressBar1.Value = 0;
             }
             if (sfera)
             {
                 sdat.Rescale(ZScale.Value);
                 sdat.Scale(scale);
                 glControl1.Invalidate();
+                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripProgressBar1.Value = 0;
             }
         }
 
@@ -261,6 +265,7 @@ namespace Kocka
             wPol = glControl1.Width / 2.0f;
             hPol = glControl1.Height / 2.0f;
             TrianglesRadioButton.Checked = true;
+            RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
             if(sfera)
             {
                 ZScale.Value = 10;
@@ -292,7 +297,7 @@ namespace Kocka
                 if (openFileDialog1.FilterIndex == 1)
                 {
                     sur = false;
-                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1);
                     sfera = sdat.Loaded();
                     ZScale.Enabled = RekresliBtn.Enabled = sfera;
                     Reset();
@@ -302,13 +307,18 @@ namespace Kocka
                 if (openFileDialog1.FilterIndex == 2)
                 {
                     sfera = false;
-                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString());
+                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1);
                     sur = surf.Loaded();
                     ZScale.Enabled = RekresliBtn.Enabled = sur;
                     Reset();
                     RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = true;
                 }
                 glControl1.Invalidate();
+                if (sfera || sur)
+                {
+                    toolStripStatusLabel1.Text = "Fertig...";
+                    toolStripProgressBar1.Value = 0;
+                }
             }
         }
 
@@ -409,6 +419,11 @@ namespace Kocka
                     surf.SetWhatToDraw(3);
             }
             glControl1.Invalidate();
+        }
+
+        private void toolStripStatusLabel1_TextChanged(object sender, EventArgs e)
+        {
+            this.Update();
         }
     }
 }
