@@ -19,7 +19,8 @@ namespace Kocka
 {
     public partial class Form1 : Form
     {
-        private bool loaded, resize, sfera, sur;
+        private bool loaded, resize, sur;
+        public bool sfera;
         private SphereDAT sdat;
         private Surface surf;
         private float Pi180;
@@ -42,7 +43,7 @@ namespace Kocka
             amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             loaded = false;
             resize = false;
-            sfera = sur = false; 
+            sfera = sur = false;
             Pi180 = (float)Math.PI / 180.0f;
             scale = 1.0f;
         }
@@ -213,17 +214,16 @@ namespace Kocka
             {
                 surf.Rescale(ZScale.Value);
                 surf.Scale(scale);
-                glControl1.Invalidate();
-                toolStripStatusLabel1.Text = "Fertig...";
-                toolStripProgressBar1.Value = 0;
+                //toolStripStatusLabel1.Text = "Fertig...";
+                //toolStripProgressBar1.Value = 0;
             }
             if (sfera)
             {
                 sdat.Rescale(ZScale.Value);
                 sdat.Scale(scale);
-                glControl1.Invalidate();
-                toolStripStatusLabel1.Text = "Fertig...";
-                toolStripProgressBar1.Value = 0;
+                //glControl1.Invalidate();
+                //toolStripStatusLabel1.Text = "Fertig...";
+                //toolStripProgressBar1.Value = 0;
             }
         }
 
@@ -266,15 +266,15 @@ namespace Kocka
             hPol = glControl1.Height / 2.0f;
             TrianglesRadioButton.Checked = true;
             RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
-            if(sfera)
+            if (sfera)
             {
                 ZScale.Value = 10;
                 wLomeno2 = 2.0f / (float)glControl1.Width;
                 hLomeno2 = 2.0f / (float)glControl1.Height;
             }
-            if(sur)
+            if (sur)
             {
-                ZScale.Value = 50;
+                ZScale.Value = 1;
                 wLomeno2 = 10.0f / (float)glControl1.Width;
                 hLomeno2 = 10.0f / (float)glControl1.Height;
             }
@@ -289,42 +289,76 @@ namespace Kocka
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                if(sfera)
+                if (sfera)
                     sdat.Delete(true);
-                if(sur)
+                if (sur)
                     surf.Delete(true);
 
                 if (openFileDialog1.FilterIndex == 1)
                 {
                     sur = false;
-                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1);
-                    sfera = sdat.Loaded();
-                    ZScale.Enabled = RekresliBtn.Enabled = sfera;
-                    Reset();
-                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = false;
-                    RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
+                    SetMenuStrip_Enabled(false);
+                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this);
                 }
                 if (openFileDialog1.FilterIndex == 2)
                 {
+                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
+                    SetMenuStrip_Enabled(false);
                     sfera = false;
-                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1);
-                    sur = surf.Loaded();
-                    ZScale.Enabled = RekresliBtn.Enabled = sur;
-                    Reset();
-                    RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = true;
-                }
-                glControl1.Invalidate();
-                if (sfera || sur)
-                {
-                    toolStripStatusLabel1.Text = "Fertig...";
-                    toolStripProgressBar1.Value = 0;
+                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this);
                 }
             }
         }
 
-        public void ChangeMaterialProperties(float amb,float spec,float diff,int shin)
+        //koli threadingu
+        public void SetBoolean_sfera(bool reset)
         {
-            if(sur)
+            if (sfera = sdat.Loaded())
+            {
+                //sur = false;
+                ZScale.Enabled = RekresliBtn.Enabled = sfera;
+                if (reset)
+                    Reset();
+                RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = false;
+                RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripProgressBar1.Value = 0;
+                sdat.Scale(scale);
+                ZScale.Enabled = RekresliBtn.Enabled = true;
+                SetMenuStrip_Enabled(true);
+                glControl1.Invalidate();
+            }
+            SetMenuStrip_Enabled(true);
+        }
+
+        public void SetBoolean_surface(bool reset)
+        {
+            if (sur = surf.Loaded())
+            {
+                ZScale.Enabled = RekresliBtn.Enabled = sur;
+                if (reset)
+                {
+                    Reset();
+                    RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+                }
+                RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = true;
+                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripProgressBar1.Value = 0;
+                surf.Scale(scale);
+                RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = true;
+                glControl1.Invalidate();
+            }
+            //else
+            //{
+
+            //}
+            SetMenuStrip_Enabled(true);
+        }
+
+        public void ChangeMaterialProperties(float amb, float spec, float diff, int shin)
+        {
+            if (sur)
                 surf.ChangeMaterialProperties(amb, spec, diff, shin);
             if (sfera)
                 sdat.ChangeMaterialProperties(amb, spec, diff, shin);
@@ -341,7 +375,7 @@ namespace Kocka
 
         private void materiálToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MaterialControl lc = new MaterialControl(this, amb, spec, diff, shin); 
+            MaterialControl lc = new MaterialControl(this, amb, spec, diff, shin);
             lc.Show();
         }
 
@@ -381,7 +415,7 @@ namespace Kocka
             farebnaSkalaToolStripMenuItem.Checked = !farebnaSkalaToolStripMenuItem.Checked;
             if (sfera)
                 sdat.SetColorScaleOption(farebnaSkalaToolStripMenuItem.Checked);
-            if(sur)
+            if (sur)
                 surf.SetColorScaleOption(farebnaSkalaToolStripMenuItem.Checked);
             glControl1.Invalidate();
         }
@@ -389,15 +423,22 @@ namespace Kocka
         private void resetujPohladToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (sfera)
+            {
                 sdat.ResetViewport();
+                scale = 1.0f;
+            }
             if (sur)
+            {
                 surf.ResetViewport();
+                scale = 1.0f;
+                RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+            }
             glControl1.Invalidate();
         }
 
         private void TrianglesRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            if(TrianglesRadioButton.Checked)
+            if (TrianglesRadioButton.Checked)
             {
                 if (sfera)
                     sdat.SetWhatToDraw(1);
@@ -421,9 +462,20 @@ namespace Kocka
             glControl1.Invalidate();
         }
 
+        public void SetMenuStrip_Enabled(bool enabled)
+        {
+            menuStrip1.Enabled = enabled;
+        }
+
         private void toolStripStatusLabel1_TextChanged(object sender, EventArgs e)
         {
-            this.Update();
+            //toto tu uz nemoze byt lebo thready
+            //this.Update();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            menuStrip1.Enabled = !menuStrip1.Enabled;
         }
     }
 }

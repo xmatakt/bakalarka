@@ -23,7 +23,7 @@ namespace Kocka
         private ColorScale colorScale;
 
         private float scale, min, max, minX, maxX, minY, maxY, angleX, angleY;
-        private bool Status, colrscl;
+        private bool Status, colrscl, rotate;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -32,16 +32,18 @@ namespace Kocka
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         DirectionalLight light;
         Material material;
+        Form1 form;
 
         System.Windows.Forms.ToolStripProgressBar toolStripBar;
         System.Windows.Forms.ToolStripLabel toolStripLabel;
 
-        public Surface(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null)
+        public Surface(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null)
         {
+            this.form = form;
             toolStripBar = bar;
             toolStripLabel = label;
             WhatToDraw = 1;
-            Status = colrscl = false;
+            Status = colrscl = rotate = false;
             minX = minY = min = float.MaxValue;
             maxX = maxY = max = float.MinValue;
             scale = 1.0f;
@@ -61,15 +63,70 @@ namespace Kocka
             FragmentShader = new Shaders.Shader();
             spMain = new Shaders.ShaderProgram();
 
-            //nacitam data a zistim rozmery
-            LoadData(pathToFile);
-            InitSurface(pathToFile);
+
+            var bw = new System.ComponentModel.BackgroundWorker();
+
+            bw.DoWork += (sender, args) =>
+            {
+                // do your lengthy stuff here -- this will happen in a separate thread
+                LoadData(pathToFile);
+                if (Status = SetWidth())
+                {
+                    vertices = new Vector3[NumOfVertices];
+                    color = new Vector3[NumOfVertices];
+                    normals = new Vector3[NumOfVertices];
+                    Indices = new int[NumOfIndices];
+                    Indexes = new int[NumOfIndexes];
+                    SetIndices();
+                    SetIndexes();
+                    if (Ywidth > Xwidth)
+                    {
+                        rotate = true;
+                        MatrixStore_Rotations = Matrix4.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), -90.0f * (float)Math.PI / 180.0f);
+                    }
+                }
+                else
+                {
+                    //dorobit sem este resetovanie progressBaru/labelu
+                    System.Windows.Forms.MessageBox.Show("Súbor " + pathToFile + " nemá podporu!", "Vnimanie!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                    label lab = new label(SetToolStripLabel);
+                    progres progres = new progres(SetProgressBar);
+                    form.statusStrip1.Invoke(lab, "Súbor nemá podporu...");
+                    form.statusStrip1.Invoke(progres, 0);
+                }
+            };
+
+            bw.RunWorkerCompleted += (sender, args) =>
+            {
+                if (args.Error != null)  // if an exception occurred during DoWork,
+                    System.Windows.Forms.MessageBox.Show(args.Error.ToString());  // do your error handling here
+
+                if (Status)
+                {
+                    colorScale = new ColorScale(min, max, width, height);
+                    CalculateColor();
+                    ScaleHeights(1.0f);
+                    CalculateNormals();
+                    InitScene(false);
+                    FirstDraw();
+                    form.SetBoolean_surface(true);
+                }
+                else
+                    form.SetMenuStrip_Enabled(true);
+            };
+
+            bw.RunWorkerAsync(); // starts the background worker
         }
 
         #region nacitanie/nastavenie plochy a fsetkeho potrebneho
 
         private void InitScene(bool b)
         {
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha nastavovanie scény...");
+            form.statusStrip1.Invoke(progres, 0);
+
             SetMatrices(b);
 
             GL.GenBuffers(4, VBO);
@@ -137,7 +194,9 @@ namespace Kocka
 
         private void LoadData(string pathToFile)
         {
-            SetToolStrip("Prebieha načítavanie dát...");
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha načítavanie dát...");
             int count = File.ReadLines(pathToFile).Count();
             int d = count / 100;
             StreamReader sr;
@@ -166,7 +225,7 @@ namespace Kocka
                         max = coords.Last().Z;
 
                     if (coords.Count % d == 0)
-                        SetToolStrip(100 * coords.Count / count);
+                        form.statusStrip1.Invoke(progres, 100 * coords.Count / count);
                 }
                 sr.Close();
             }
@@ -179,32 +238,6 @@ namespace Kocka
         public bool Loaded()
         {
             return Status;
-        }
-
-        private void InitSurface(string pathToFile)
-        {
-            if(Status = SetWidth())
-            {
-                vertices = new Vector3[NumOfVertices];
-                color = new Vector3[NumOfVertices];
-                normals = new Vector3[NumOfVertices];
-                Indices = new int[NumOfIndices];
-                Indexes = new int[NumOfIndexes];
-                colorScale = new ColorScale(min, max, width, height);
-
-                SetIndices();
-                SetIndexes();
-                CalculateColor();
-                ScaleHeights(50.0f);
-                CalculateNormals();
-                InitScene(false);
-
-                if (Ywidth > Xwidth)
-                    MatrixStore_Rotations = Matrix4.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), 90.0f * (float)Math.PI / 180.0f);
-
-                FirstDraw();
-            }
-            else System.Windows.Forms.MessageBox.Show("Súbor " + pathToFile + " nemá podporu!", "Vnimanie!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
         }
 
         #region nastavovanie bazmekov
@@ -226,17 +259,16 @@ namespace Kocka
                 //NumOfIndices=(pocetRiadkov-1)*pocetIndicisNaRiadok + pocetRestartov
                 NumOfIndices = (Xwidth - 1) * (Ywidth * 2) + (Xwidth - 2);
                 NumOfIndexes = (Xwidth - 1) * (Ywidth - 1) * 2 * 3;
-
-                System.Diagnostics.Debug.WriteLine("Xwidth = {0}", Xwidth);
-                System.Diagnostics.Debug.WriteLine("Ywidth = {0}", Ywidth);
-                System.Diagnostics.Debug.WriteLine("NumOfVertices = {0}", NumOfVertices);
                 return true;
             }
         }
 
         private void SetIndices()
         {
-            SetToolStrip("Prebieha nastavovanie vrcholov...");
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha nastavovanie vrcholov...");
+
             int p = 0;
             for (int i = 0; i < NumOfVertices - Ywidth; i++)
             {
@@ -245,20 +277,22 @@ namespace Kocka
                 if (i % Ywidth == (Ywidth - 1) && i != NumOfVertices - Ywidth - 1)
                 {
                     Indices[p] = NumOfVertices; p++;
+                    form.statusStrip1.Invoke(progres, 100 * i / (NumOfVertices - Ywidth));
                 }
-                SetToolStrip(100 * i / (NumOfVertices - Ywidth));
             }
         }
 
         private void SetIndexes()
         {
-            SetToolStrip("Prebieha nastavovanie indexov...");
+            //label label = new label(SetToolStripLabel);
+            //progres progres = new progres(SetProgressBar);
+            //form.statusStrip1.Invoke(label, "Prebieha nastavovanie indexov...");
+
             int p = 0;
             for (int x = 0; x < Xwidth - 1; x++)
             {
                 for (int y = 0; y < Ywidth - 1; y++)
                 {
-                    SetToolStrip(100 * p / NumOfIndexes);
                     int pos1 = x * Ywidth + y;//0
                     int pos2 = (x + 1) * Ywidth + y;//5
                     int pos3 = x * Ywidth + y + 1;//1
@@ -270,13 +304,16 @@ namespace Kocka
                     Indexes[p] = pos2; p++;
                     Indexes[p] = pos4; p++;
                 }
+                float tmp = p / (float)NumOfIndexes;
+                //form.statusStrip1.Invoke(progres, (int)(100 * tmp));
             }
-            System.Diagnostics.Debug.WriteLine("NumOfIndexes vol2 = {0}", p);
         }
 
         private void CalculateNormals()
         {
-            SetToolStrip("Prebieha výpočet normál...");
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha výpočet normál...");
             int d = NumOfIndexes / 300;
 
             for (int i = 0; i < NumOfIndexes / 3; i++)
@@ -287,7 +324,7 @@ namespace Kocka
 
                 Vector3 side1 = vertices[index1] - vertices[index3];
                 Vector3 side2 = vertices[index2] - vertices[index1];
-                Vector3 normal = Vector3.Cross(side1, side2);
+                Vector3 normal = -Vector3.Cross(side1, side2);
 
                 normals[index1] += normal;
                 normals[index2] += normal;
@@ -295,7 +332,7 @@ namespace Kocka
                 if (i % d == 0)
                 {
                     float tmp = (3 * i / (float)NumOfIndexes);
-                    SetToolStrip((int)(100 * tmp));
+                    form.statusStrip1.Invoke(progres, (int)(100 * tmp));
                 }
             }
         }
@@ -319,27 +356,33 @@ namespace Kocka
 
         private void CalculateColor()
         {
-            SetToolStrip("Prebieha nastavovanie farieb...");
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha nastavovanie farieb...");
             color = colorScale.SetColorList(coords).ToArray();
             //for (int i = 0; i < NumOfVertices; i++)
-                //color[i] = CalculateColor(coords[i].Z);
+            //color[i] = CalculateColor(coords[i].Z);
         }
 
         private void ScaleHeights(float L)
         {
-            SetToolStrip("Prebieha škálovanie výšok...");
+            label label = new label(SetToolStripLabel);
+            progres progres = new progres(SetProgressBar);
+            form.statusStrip1.Invoke(label, "Prebieha škálovanie výšok...");
+
             int d = coords.Count / 100;
             float dx = minX + (maxX - minX) / 2.0f;
             float dy = minY + (maxY - minY) / 2.0f;
             float dz = min / L + (max - min) / (L * 2.0f);
+            float dl = max - min;
+            L = L / 10;
 
             for (int i = 0; i < coords.Count; i++)
             {
-                vertices[i] = new Vector3(coords[i].X - dx, coords[i].Y - dy, coords[i].Z / L - dz);
+                vertices[i] = new Vector3(-coords[i].X + dx, coords[i].Y - dy, coords[i].Z / (L * dl) - dz / (L * dl));
                 if (i % d == 0)
-                    SetToolStrip(i * 100 / coords.Count);
+                    form.statusStrip1.Invoke(progres, i * 100 / coords.Count);
             }
-                
         }
 
         private void SetMatrices(bool co)
@@ -349,11 +392,14 @@ namespace Kocka
             {
                 modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 50.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
                 projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-
+                scale = 1.0f;
                 ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
                 TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
                 RotationMatrix = Matrix4.Identity;
-                MatrixStore_Rotations = Matrix4.Identity;
+                if (!rotate)
+                    MatrixStore_Rotations = Matrix4.Identity;
+                else
+                    MatrixStore_Rotations = Matrix4.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), -90.0f * (float)Math.PI / 180.0f);
                 MatrixStore_Translations = Matrix4.Identity;
                 MatrixStore_Scales = Matrix4.Identity;
                 Current = Matrix4.Identity;
@@ -377,10 +423,30 @@ namespace Kocka
         public void Rescale(float value)
         {
             this.Delete(false);
-            ScaleHeights(value);
-            CalculateNormals();
-            InitScene(true);
-            Rotate(angleX, angleY);
+            VBO = new int[4];
+            VAO = new int[1];
+            Status = false;
+            form.SetBoolean_surface(false);
+
+            var bw = new System.ComponentModel.BackgroundWorker();
+            bw.DoWork += (sender, args) =>
+            {
+                ScaleHeights(value);
+                CalculateNormals();
+            };
+
+            bw.RunWorkerCompleted += (sender, args) =>
+            {
+                if (args.Error != null)
+                    System.Windows.Forms.MessageBox.Show(args.Error.ToString());
+                InitScene(true);
+                //System.Windows.Forms.MessageBox.Show("rotateX = " + angleX +"\nrotateY = " + angleY);
+                Rotate(angleX, angleY);
+                //FirstDraw();
+                Status = true;
+                form.SetBoolean_surface(false);
+            };
+            bw.RunWorkerAsync();
         }
 
         #region ovladanie
@@ -518,6 +584,19 @@ namespace Kocka
                 GL.DeleteBuffers(4, VBO);
                 GL.DeleteVertexArrays(1, VAO);
             }
+        }
+
+        public delegate void progres(int value);
+        public delegate void label(string label);
+        public delegate void menu(bool enabled);
+
+        private void SetProgressBar(int v)
+        {
+            toolStripBar.Value = v;
+        }
+        private void SetToolStripLabel(string s)
+        {
+            toolStripLabel.Text = s;
         }
     }
 }

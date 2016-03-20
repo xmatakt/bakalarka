@@ -199,13 +199,12 @@ namespace Kocka
             return colors;
         }
 
-        public List<Vector3> SetColorList(List<Vector3> heights, System.Windows.Forms.ToolStripProgressBar toolStripBar, System.Windows.Forms.ToolStripLabel toolStripLabel)
+        public Vector3[] SetColorArray(Vector3[] heights)
         {
-            toolStripLabel.Text = "Prebieha nastavovanie farieb...";
-            List<Vector3> colors = new List<Vector3>();
+            Vector3[] colors = new Vector3[heights.Length];
             Vector3 col = new Vector3();
             float dv = max - min;
-            for (int j = 0; j < heights.Count; j++)
+            for (int j = 0; j < heights.Length; j++)
             {
                 for (int i = 1; i < keys.Length; i++)
                 {
@@ -218,11 +217,8 @@ namespace Kocka
                         i = keys.Length;
                     }
                 }
-                colors.Add(col);
-                if (j % 100 == 0)
-                    toolStripBar.Value = 100 * j / heights.Count;
+                colors[j] = col;
             }
-            toolStripLabel.Text = "";
             return colors;
         }
 
