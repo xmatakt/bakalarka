@@ -39,6 +39,9 @@ namespace Kocka
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
             Thread.CurrentThread.CurrentUICulture = CultureInfo.CreateSpecificCulture("en-US");
             RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
+            //font = new QFont("..//..//Properties//data//Fonts//Anonymous.ttf", 10);
+            
+            
 
             amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             loaded = false;
@@ -56,13 +59,13 @@ namespace Kocka
             wLomeno2 = 10.0f / (float)glControl1.Width;
             hLomeno2 = 10.0f / (float)glControl1.Height;
             GL.ClearColor(Color.Black);
+
+            //toto by si mohol nastavovat kazdy objekt samostatne
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
             GL.ClearDepth(1.0);
-
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
-
-            //cs = new ColorScale(0, 0, glControl1.Width, glControl1.Height);
+            //a aj vypinat
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
@@ -476,6 +479,11 @@ namespace Kocka
         private void button1_Click(object sender, EventArgs e)
         {
             menuStrip1.Enabled = !menuStrip1.Enabled;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            glControl1.Invalidate();
         }
     }
 }

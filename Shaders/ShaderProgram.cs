@@ -28,6 +28,14 @@ namespace Shaders
             return true;
         }
 
+        public bool AddShaderToProgram(int shaderID)
+        {
+            if (shaderID < 0)//sejker nie je nacitany
+                return false;
+            GL.AttachShader(ProgramHandle, shaderID);
+            return true;
+        }
+
         public bool LinkProgram()
         {
             int LinkStatus;
@@ -53,6 +61,12 @@ namespace Shaders
                 GL.UseProgram(ProgramHandle);
         }
 
+        public void UseProgram(int val)
+        {
+            //if (Linked)
+            GL.UseProgram(val);
+        }
+
         public int GetProgramHandle()
         {
             return ProgramHandle;
@@ -69,9 +83,12 @@ namespace Shaders
         public void SetUniform(string uniformName, Matrix4 matrix)
         {
             if (!Linked)
-                return; 
+                return;
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
-            GL.UniformMatrix4(location,false, ref matrix);
+            if (location >= 0)
+                GL.UniformMatrix4(location, false, ref matrix);
+            else
+                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
 
         public void SetUniform(string uniformName, int value)
@@ -79,7 +96,10 @@ namespace Shaders
             if (!Linked)
                 return;
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
-            GL.Uniform1(location, value);
+            if (location >= 0)
+                GL.Uniform1(location, value);
+            else
+                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
 
 
@@ -88,15 +108,32 @@ namespace Shaders
             if (!Linked)
                 return;
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
-            GL.Uniform1(location, value);
+            if (location >= 0)
+                GL.Uniform1(location, value);
+            else
+                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
 
         public void SetUniform(string uniformName, Vector3 vector)
         {
             if (!Linked)
-                return; 
+                return;
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
-            GL.Uniform3(location,vector);
+            if (location >= 0)
+                GL.Uniform3(location, vector);
+            else
+                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
+        }
+
+        public void SetUniform(string uniformName, float v1, float v2)
+        {
+            if (!Linked)
+                return;
+            int location = GL.GetUniformLocation(ProgramHandle, uniformName);
+            if (location >= 0)
+                GL.Uniform2(location, v1, v2);
+            else
+                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
     }
 }

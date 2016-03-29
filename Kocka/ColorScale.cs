@@ -153,8 +153,8 @@ namespace Kocka
 
         public void DrawColorScale()
         {
-            GL.BindVertexArray(VAO[0]);
             spMain.UseProgram();
+            GL.BindVertexArray(VAO[0]);
             GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
         }
 
