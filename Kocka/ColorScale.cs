@@ -103,13 +103,14 @@ namespace Kocka
         private void SetText()
         {
             float len = max - min;
-            popis_dic.Add(min.ToString(), new Vector4(left-30.0f,bottom-barHeight, 0.7f, 0.7f));
-            popis_dic.Add((min + len * 0.25f).ToString(), new Vector4(left + 0.25f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
-            popis_dic.Add((min + len * 0.5f).ToString(), new Vector4(left + 0.5f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
-            popis_dic.Add((min + len * 0.75f).ToString(), new Vector4(left + 0.75f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
-            popis_dic.Add(max.ToString(), new Vector4(left + length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
-            popis_dic.Add("Pokusny_text_nepozna_medzery_a_pismena_ako_yjpq_pise_nepekne_aj_minus(-)", new Vector4(-width/2, height/2-20, 1, 1));
-            popis_dic.Add("Dalsia_chyba_je,_ze_nebude_vidiet_na_bielom_pozadi", new Vector4(-width / 2, -height / 2 +100, 1, 1));
+            popis_dic.Add(min.ToString(), new Vector4(left-30.0f,bottom, 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.25f).ToString(), new Vector4(left + 0.25f * length - 30.0f, bottom, 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.5f).ToString(), new Vector4(left + 0.5f * length - 30.0f, bottom , 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.75f).ToString(), new Vector4(left + 0.75f * length - 30.0f, bottom , 0.7f, 0.7f));
+            popis_dic.Add(max.ToString(), new Vector4(left + length - 30.0f, bottom , 0.7f, 0.7f));
+            popis_dic.Add("Text prebehol upravou, uz pozna medzery a pqkj- atd. pise normalne", new Vector4(-width/2, height/2-20, 1, 1));
+            popis_dic.Add("Viditelnost na bielom pozadi zrejme vyriesim dalsou", new Vector4(-width / 2, -height / 2 + 100, 1, 1));
+            popis_dic.Add("bitmapou s ciernymi pismenami na bielom podklade", new Vector4(-width / 2 +3, -height / 2 + 75, 0.7f, 0.7f));
             popis_txt.PrintText2D(popis_dic);
         }
 

@@ -13,6 +13,16 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Kocka
 {
+    struct CharacterProperties
+    {
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int xoffset;
+        public int yoffset;
+    };
+
     class Text2D
     {
         private Shaders.Shader VertexShader, FragmentShader;
@@ -27,7 +37,7 @@ namespace Kocka
         private List<Vector3> vertices;
         private List<Vector2> uvs;
         //slovnik na ulozenie polohy a velkosti jednotlivych pismen
-        private Dictionary<char, Vector4> charMap;
+        private Dictionary<char, CharacterProperties> charMap;
 
         public Text2D(int width, int height)
         {
@@ -35,7 +45,7 @@ namespace Kocka
             this.height = height;
             modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
             projectionMatrix = Matrix4.CreateOrthographic(width, height, 1, 100);
-            charMap = new Dictionary<char, Vector4>();
+            charMap = new Dictionary<char, CharacterProperties>();
 
             GL.GenBuffers(1, out VertexBufferID);
             GL.GenBuffers(1, out UVBufferID);
@@ -114,13 +124,17 @@ namespace Kocka
                 if (fnt[i].StartsWith("char id="))
                 {
                     string[] line = fnt[i].Split(separator2);
+                    CharacterProperties chp = new CharacterProperties();
+
                     char id = (char)int.Parse(line[1].Substring(0, line[1].IndexOf(" ")));
-                    int x = int.Parse(line[2].Substring(0, line[2].IndexOf(" ")));
-                    int y = int.Parse(line[3].Substring(0, line[3].IndexOf(" ")));
-                    int w = int.Parse(line[4].Substring(0, line[4].IndexOf(" ")));
-                    int h = int.Parse(line[5].Substring(0, line[5].IndexOf(" ")));
+                    chp.x = int.Parse(line[2].Substring(0, line[2].IndexOf(" ")));
+                    chp.y = int.Parse(line[3].Substring(0, line[3].IndexOf(" ")));
+                    chp.width = int.Parse(line[4].Substring(0, line[4].IndexOf(" ")));
+                    chp.height = int.Parse(line[5].Substring(0, line[5].IndexOf(" ")));
+                    chp.xoffset = int.Parse(line[6].Substring(0, line[6].IndexOf(" ")));
+                    chp.yoffset = int.Parse(line[7].Substring(0, line[7].IndexOf(" ")));
                     if (!charMap.ContainsKey(id))
-                        charMap.Add(id, new Vector4(x, y, w, h));
+                        charMap.Add(id, chp);
                 }
             }
             sr.Close();
@@ -138,6 +152,7 @@ namespace Kocka
             {
                 float dx = dic[arr[j]].X;
                 float dy = dic[arr[j]].Y;
+
                 float size_x = dic[arr[j]].Z;
                 float size_y = dic[arr[j]].W;
                 string text = arr[j];
@@ -146,15 +161,17 @@ namespace Kocka
                 {
                     if (charMap.ContainsKey(text[i]))
                     {
-                        float char_x = charMap[text[i]].X;
-                        float char_y = charMap[text[i]].Y;
-                        float char_w = charMap[text[i]].Z;
-                        float char_h = charMap[text[i]].W;
+                        dx += charMap[text[i]].xoffset * size_x;
+                        dy = dic[arr[j]].Y - charMap[text[i]].yoffset * size_y;
+                        float char_x = charMap[text[i]].x;
+                        float char_y = charMap[text[i]].y;
+                        float char_w = charMap[text[i]].width;
+                        float char_h = charMap[text[i]].height;
 
-                        Vector3 vert_DownLeft = new Vector3(dx, dy, 0.0f);
-                        Vector3 vert_DownRight = new Vector3(dx + size_x * char_w, dy, 0.0f);
-                        Vector3 vert_UpRight = new Vector3(dx + size_x * char_w, dy + size_y * char_h, 0.0f);
-                        Vector3 vert_UpLeft = new Vector3(dx, dy + size_y * char_h, 0.0f);
+                        Vector3 vert_UpLeft = new Vector3(dx, dy, 0.0f);
+                        Vector3 vert_UpRight = new Vector3(dx + size_x * char_w, dy, 0.0f);
+                        Vector3 vert_DownRight = new Vector3(dx + size_x * char_w, dy - size_y * char_h, 0.0f);
+                        Vector3 vert_DownLeft = new Vector3(dx, dy - size_y * char_h, 0.0f);
                         dx += size_x * char_w;
 
                         vertices.Add(vert_UpLeft);
@@ -195,10 +212,8 @@ namespace Kocka
 
             if (pravda)
             {
-                //spMain.UseProgram();
                 GL.BindVertexArray(vaoID);
                 GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D,TextureID);
 
                 //vertices
                 GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferID);
@@ -210,14 +225,13 @@ namespace Kocka
                 GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(uvs.Count * Vector2.SizeInBytes), uvs.ToArray(), BufferUsageHint.StaticDraw);
                 GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 0, 0);
 
-                //spMain.UseProgram(0);
                 pocet = vertices.Count();
                 vertices.Clear();
                 uvs.Clear();
             }
         }
 
-        //string s - co sa ma napisat; (x,y) kde to zacina (lavy dolny), size_x,size_y - ake velke
+        //string s --> co sa ma napisat; (x,y) kde to zacina (lavy horny), size_x,size_y - ake velke
         private void LoadText2D(string text, int x, int y, int size_x, int size_y)
         {
             bool pravda = true;
@@ -230,15 +244,17 @@ namespace Kocka
             {
                 if (charMap.ContainsKey(text[i]))
                 {
-                    float char_x = charMap[text[i]].X;
-                    float char_y = charMap[text[i]].Y;
-                    float char_w = charMap[text[i]].Z;
-                    float char_h = charMap[text[i]].W;
+                    dx += charMap[text[i]].xoffset * size_x;
+                    dy = y - charMap[text[i]].yoffset * size_y;
+                    float char_x = charMap[text[i]].x;
+                    float char_y = charMap[text[i]].y;
+                    float char_w = charMap[text[i]].width;
+                    float char_h = charMap[text[i]].height;
 
-                    Vector3 vert_DownLeft = new Vector3(dx, dy, 0.0f);
-                    Vector3 vert_DownRight = new Vector3(dx + size_x * char_w, dy, 0.0f);
-                    Vector3 vert_UpRight = new Vector3(dx + size_x * char_w, dy + size_y * char_h, 0.0f);
-                    Vector3 vert_UpLeft = new Vector3(dx, dy + size_y * char_h, 0.0f);
+                    Vector3 vert_UpLeft = new Vector3(dx, dy, 0.0f);
+                    Vector3 vert_UpRight = new Vector3(dx + size_x * char_w, dy, 0.0f);
+                    Vector3 vert_DownRight = new Vector3(dx + size_x * char_w, dy - size_y * char_h, 0.0f);
+                    Vector3 vert_DownLeft = new Vector3(dx, dy - size_y * char_h, 0.0f);
                     dx += size_x * char_w;
 
                     vertices.Add(vert_UpLeft);

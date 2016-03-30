@@ -543,8 +543,6 @@ namespace Kocka
 
         public void DrawSurface()
         {
-           
-
             GL.BindVertexArray(VAO[0]);
             switch (WhatToDraw)
             {
