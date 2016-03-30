@@ -543,11 +543,7 @@ namespace Kocka
 
         public void DrawSurface()
         {
-            if (colrscl)
-            {
-                colorScale.DrawColorScale();
-                spMain.UseProgram();
-            }
+           
 
             GL.BindVertexArray(VAO[0]);
             switch (WhatToDraw)
@@ -564,7 +560,11 @@ namespace Kocka
                 default:
                     break;
             }
-            //DrawNormals();
+            if (colrscl)
+            {
+                colorScale.DrawColorScale();
+                spMain.UseProgram();
+            }
         }
 
         public void Delete(bool b)

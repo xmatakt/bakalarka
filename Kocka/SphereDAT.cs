@@ -920,12 +920,7 @@ namespace Kocka
 
         public void DrawSphere()
         {
-            if (colrscl)
-            {
-                colorScale.DrawColorScale();
-                spMain.UseProgram();
-            }
-            //DrawNormals();
+            spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
             switch (WhatToDraw)
             {
@@ -933,13 +928,21 @@ namespace Kocka
                     GL.DrawElements(PrimitiveType.TriangleStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 2:
-                    GL.DrawArrays(PrimitiveType.LineStrip, 0, NumOfVertices);
+                    GL.DrawElements(PrimitiveType.LineStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 3:
-                    GL.DrawArrays(PrimitiveType.Points, 0, NumOfVertices);
+                    GL.DrawElements(PrimitiveType.Points, Indices.Count, DrawElementsType.UnsignedInt, 0);
                     break;
                 default:
                     break;
+            }
+            GL.BindVertexArray(0);
+
+            if (colrscl)
+            {
+                colorScale.DrawColorScale();
+                //colorScale.DrawText();
+                spMain.UseProgram();
             }
         }
 

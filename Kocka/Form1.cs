@@ -480,10 +480,5 @@ namespace Kocka
         {
             menuStrip1.Enabled = !menuStrip1.Enabled;
         }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            glControl1.Invalidate();
-        }
     }
 }

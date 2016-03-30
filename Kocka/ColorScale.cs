@@ -26,6 +26,8 @@ namespace Kocka
         private Shaders.Shader VertexShader, FragmentShader;
         private Shaders.ShaderProgram spMain;
         private Matrix4 projectionMatrix, modelViewMatrix;
+        private Dictionary<string, Vector4> popis_dic;
+        private Text2D popis_txt;
 
         public ColorScale(float min, float max, int width, int height)
         {
@@ -33,12 +35,14 @@ namespace Kocka
             this.height = height;
             this.min = min;
             this.max = max;
-            length = 350.0f;
-            barHeight = 20.0f;
+            length = 400.0f;
+            barHeight = 25.0f;
             bottom = -height / 2.0f + 30.0f;
             left = -length / 2.0f;
             NumOfVertices = 0;
             cm = new Dictionary<float, Vector3>();
+            popis_txt = new Text2D(width,height);
+            popis_dic = new Dictionary<string, Vector4>();
 
             VAO = new int[1];
             VBO = new int[2];
@@ -50,17 +54,14 @@ namespace Kocka
             spMain = new Shaders.ShaderProgram();
 
             SetColorScale();
+            SetText();
             Init();
         }
 
         private void Init()
         {
-            modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 50.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-            //projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-            //projectionMatrix = Matrix4.CreateOrthographicOffCenter(0.0f, 1.0f, 0.0f, 1.0f, -2.0f, 0.0f);
-            //projectionMatrix = Matrix4.CreateOrthographic(2, 2, 1, 100);
+            modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
             projectionMatrix = Matrix4.CreateOrthographic(width, height, 1, 100);
-
 
             GL.GenBuffers(2, VBO);
             GL.GenVertexArrays(1, VAO);
@@ -79,19 +80,37 @@ namespace Kocka
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
 
-            if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}shader.vert", Path.DirectorySeparatorChar);
+            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}shader.frag", Path.DirectorySeparatorChar);
+            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (color bar)!");
+            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (color bar)!");
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
             spMain.AddShaderToProgram(FragmentShader);
             spMain.LinkProgram();
-            spMain.UseProgram();
 
+            spMain.UseProgram();
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", modelViewMatrix);
+            spMain.UseProgram(0);
+
+            GL.BindVertexArray(0);
+        }
+
+        private void SetText()
+        {
+            float len = max - min;
+            popis_dic.Add(min.ToString(), new Vector4(left-30.0f,bottom-barHeight, 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.25f).ToString(), new Vector4(left + 0.25f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.5f).ToString(), new Vector4(left + 0.5f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
+            popis_dic.Add((min + len * 0.75f).ToString(), new Vector4(left + 0.75f * length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
+            popis_dic.Add(max.ToString(), new Vector4(left + length - 30.0f, bottom - barHeight, 0.7f, 0.7f));
+            popis_dic.Add("Pokusny_text_nepozna_medzery_a_pismena_ako_yjpq_pise_nepekne_aj_minus(-)", new Vector4(-width/2, height/2-20, 1, 1));
+            popis_dic.Add("Dalsia_chyba_je,_ze_nebude_vidiet_na_bielom_pozadi", new Vector4(-width / 2, -height / 2 +100, 1, 1));
+            popis_txt.PrintText2D(popis_dic);
         }
 
         private void SetColorScale()
@@ -107,6 +126,7 @@ namespace Kocka
             Vector3 f5 = new Vector3(1.0f, 0.0f, 0.0f); float x5 = 0.9f; cm.Add(x5, f5);
             Vector3 f6 = new Vector3(0.5f, 0.0f, 0.0f); float x6 = 1.0f; cm.Add(x6, f6);
             //
+
             keys = cm.Keys.ToArray();
             NumOfVertices = (cm.Count - 1) * 6;
             vertices = new Vector3[NumOfVertices];
@@ -156,6 +176,15 @@ namespace Kocka
             spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
             GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
+            GL.BindVertexArray(0);
+            spMain.UseProgram(0);
+            DrawText();
+        }
+
+        public void DrawText()
+        {
+            popis_txt.RenderText();
+            //popis_txt.PrintText2D("ahojakosamas???", 0, 0, 1, 1);
         }
 
         public Vector3 SetColor(float height)
@@ -231,12 +260,14 @@ namespace Kocka
             spMain.UseProgram();
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             RecalculateVertices();
+            spMain.UseProgram(0);
 
-            //GL.BindVertexArray(VAO[0]);
+            popis_dic.Clear();
+            popis_txt.ResizeText2D(width,height);
+            SetText();
+
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[0]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(NumOfVertices * Vector3.SizeInBytes), vertices, BufferUsageHint.StaticDraw);
-            //GL.EnableVertexAttribArray(0);
-            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
         }
 
         private void SortDictionary()
