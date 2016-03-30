@@ -984,9 +984,13 @@ namespace Kocka
                 GL.DeleteVertexArrays(1, VAO);
                 coords.Clear();
                 Indices.Clear();
+                
+                //zle
                 spMain.DeleteProgram();
                 VertexShader.DeleteShader();
                 FragmentShader.DeleteShader();
+                //
+                colorScale.Delete();
             }
             else
             {

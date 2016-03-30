@@ -92,11 +92,18 @@ namespace Kocka
             spMain.AddShaderToProgram(FragmentShader);
             spMain.LinkProgram();
 
+            VertexShader.DetachShader(spMain.GetProgramHandle());
+            FragmentShader.DetachShader(spMain.GetProgramHandle());
+            VertexShader.DeleteShader();
+            FragmentShader.DeleteShader();
+
             spMain.UseProgram();
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             spMain.SetUniform("modelViewMatrix", modelViewMatrix);
             spMain.UseProgram(0);
 
+            GL.DisableVertexAttribArray(0);
+            GL.DisableVertexAttribArray(1);
             GL.BindVertexArray(0);
         }
 
@@ -176,7 +183,11 @@ namespace Kocka
         {
             spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
+            GL.EnableVertexAttribArray(0);
+            GL.EnableVertexAttribArray(1);
             GL.DrawArrays(PrimitiveType.Triangles, 0, NumOfVertices);
+            GL.DisableVertexAttribArray(0);
+            GL.DisableVertexAttribArray(1);
             GL.BindVertexArray(0);
             spMain.UseProgram(0);
             DrawText();
@@ -185,7 +196,6 @@ namespace Kocka
         public void DrawText()
         {
             popis_txt.RenderText();
-            //popis_txt.PrintText2D("ahojakosamas???", 0, 0, 1, 1);
         }
 
         public Vector3 SetColor(float height)
@@ -266,9 +276,11 @@ namespace Kocka
             popis_dic.Clear();
             popis_txt.ResizeText2D(width,height);
             SetText();
-
+            
+            GL.BindVertexArray(VAO[0]);
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[0]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(NumOfVertices * Vector3.SizeInBytes), vertices, BufferUsageHint.StaticDraw);
+            GL.BindVertexArray(0);
         }
 
         private void SortDictionary()
@@ -276,6 +288,16 @@ namespace Kocka
             var l = cm.OrderBy(key => key.Key);
             var dic = l.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
             cm = dic;
+        }
+
+        public void Delete()
+        {
+            GL.DeleteBuffers(2, VBO);
+            GL.DeleteVertexArrays(1,VAO);
+            cm.Clear();
+            popis_dic.Clear();
+            spMain.DeleteProgram();
+            popis_txt.Delete();
         }
     }
 }
