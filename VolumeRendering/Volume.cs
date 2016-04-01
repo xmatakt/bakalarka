@@ -26,9 +26,15 @@ namespace VolumeRendering
         public Volume(string pathToFile, int w, int h)
         {
             file = pathToFile;
-            width = texWidth = w ;
-            height = texHeight = h ;
-            stepSize = 0.001f;
+            width = texWidth = w;
+            height = texHeight = h;
+
+            //pri ciernobielom vykreslovani treba zlovilt mensi stepsize
+            stepSize = 0.01f;
+
+            //pre farebnicke obrazky
+            //stepSize = 0.001f;
+
             bfVertShader = new Shaders.Shader();
             bfFragShader = new Shaders.Shader();
             rcFragShader = new Shaders.Shader();
@@ -44,7 +50,7 @@ namespace VolumeRendering
             MatrixStore_Rotations = Matrix4.Identity;
             MatrixStore_Translations = Matrix4.Identity;
             MatrixStore_Scales = Matrix4.Identity;
-            
+
             Init();
         }
 
@@ -54,9 +60,10 @@ namespace VolumeRendering
             InitShaders();
             InitTFF1DTex("tff.dat");
             InitFace2DTex(texWidth, texHeight);
-            InitVol3DTex(file, 256, 256, 225);
+            //je sice pekne ze si sem posielam file, ale potom musim posielat aj rozmer(y)
+            //InitVol3DTex(file, 256, 256, 225);
             //InitVol3DTex("BostonTeapot.raw", 256, 256, 178);
-            //InitVol3DTex("foot.raw", 256, 256, 256);
+            InitVol3DTex("foot.raw", 256, 256, 256);
             //InitVol3DTex("skull.raw", 256, 256, 256);
             InitFrameBuffer(bfTexID, texWidth, texHeight);
         }
@@ -100,7 +107,7 @@ namespace VolumeRendering
                 };
 
             int[] gbo = new int[2];
-           
+
             GL.GenBuffers(2, gbo);
             verticesID = gbo[0];
             indicesID = gbo[1];
@@ -124,14 +131,20 @@ namespace VolumeRendering
         {
             //backface shaders
             if (!bfVertShader.LoadShader("backface.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (backface.vert)!");
             if (!bfFragShader.LoadShader("backface.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (backface.frag)!");
             //ray-casting shaders
             if (!rcVertShader.LoadShader("raycasting.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!rcFragShader.LoadShader("raycasting.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (raycasting.vert)!");
+
+            //farebne
+            //if (!rcFragShader.LoadShader("raycasting.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (raycastingNew.frag)!");
+
+            //cjernobjele
+            if (!rcFragShader.LoadShader("raycastingNew.frag", ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (raycastingNew.frag)!");
         }
 
         //inicializacia 1D textury pre transfer function
@@ -139,6 +152,8 @@ namespace VolumeRendering
         {
             //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
             // programe bola napevno dana velkost 10000
+
+            //pridat kontrolu ci file egzistuje
             int count = File.ReadAllBytes(pathToFile).Length;
 
             //naplnim tff[] 
@@ -151,18 +166,18 @@ namespace VolumeRendering
 
                 //vytvorim 1D texturu z tff[]
                 tffTexID = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture1D,tffTexID);
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
                 GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
                 GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.PixelStore(PixelStoreParameter.UnpackAlignment,1);
+                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
                 GL.TexImage1D(TextureTarget.Texture1D, 0, PixelInternalFormat.Rgba8, 256, 0, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
             }
             catch (System.IO.FileNotFoundException)
             {
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
             }
-            catch 
+            catch
             {
                 System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
             }
@@ -172,11 +187,12 @@ namespace VolumeRendering
         private void InitFace2DTex(int texWidth, int texHeight)
         {
             bfTexID = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D,bfTexID);
+            GL.BindTexture(TextureTarget.Texture2D, bfTexID);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            //nenaolna sa datami, do nej sa bude kreslit
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, texWidth, texHeight, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
         }
 
@@ -184,7 +200,7 @@ namespace VolumeRendering
         private void InitVol3DTex(string pathToFile, int w, int h, int d)
         {
             int count = w * h * d;
-            
+
             byte[] data = new byte[count];
             try
             {
@@ -192,16 +208,24 @@ namespace VolumeRendering
                 br.Read(data, 0, count);
                 br.Close();
 
+                //na rozdiel od prvej verzie, 3D textura bude naplnena floatami z [0,1]
+                float maxIntensity = data.Max();
+                float[] float_data = new float[count];
+                for (int i = 0; i < count; i++)
+                    float_data[i] = data[i] / (float)maxIntensity;
+
                 //vytvorim 1D texturu z tff[]
                 volTexID = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture3D, volTexID);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.UnsignedByte, data);
+                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.Float, float_data);
             }
             catch (System.IO.FileNotFoundException)
             {
@@ -218,14 +242,14 @@ namespace VolumeRendering
             // create a depth buffer for our framebuffer
             int depthBuffer;
             depthBuffer = GL.GenRenderbuffer();
-            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer,depthBuffer);
+            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthBuffer);
             GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, texWidth, texHeight);
 
             // attach the texture and the depth buffer to the framebuffer
             frameBufferID = GL.GenFramebuffer();
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferID);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer,FramebufferAttachment.ColorAttachment0,TextureTarget.Texture2D,texID,0);
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer,FramebufferAttachment.DepthAttachment,RenderbufferTarget.Renderbuffer,depthBuffer);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texID, 0);
+            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBuffer);
 
             GL.Enable(EnableCap.DepthTest);
         }
@@ -278,25 +302,23 @@ namespace VolumeRendering
             GL.CullFace(mode);
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
+            GL.BindVertexArray(0);
             GL.Disable(EnableCap.CullFace);
+            spMain.UseProgram(0);//zapnuty bol v Render() ktora DrawBox zavolala
         }
 
         private void Render(CullFaceMode mode)
         {
-            GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            //Matrix4 model = Matrix4.Identity;
-            //model = model * Matrix4.CreateRotationY(10.0f * (float)Math.PI / 180.0f);
-            //model = model * Matrix4.CreateRotationX(90.0f * (float)Math.PI / 180.0f);
-            //model = model * Matrix4.CreateTranslation(new Vector3(-0.5f, -0.5f, -0.5f));
-            ////modelViewMatrix = model * modelViewMatrix;
+            spMain.UseProgram();
             spMain.SetUniform("modelViewMatrix", Current);
             spMain.SetUniform("projectionMatrix", projectionMatrix);
             DrawBox(mode);
         }
-      
+
         public void Display()
-        {  
+        {
             // the color of the vertex in the back face is also the location
             // of the vertex
             // save the back face to the user defined framebuffer bound
@@ -312,17 +334,20 @@ namespace VolumeRendering
             // (correspond to 'VolumeTex' in glsl)and `g_volTexObj`(correspond to 'ExitPoints')
             // as well as the location of primitives.
             // the most important is that we got the GLSL to exec the logic. Here we go!
-            
+
             // draw the back face of the box
             GL.Enable(EnableCap.DepthTest);
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer,frameBufferID);
+            //"vykreslim" front || back face objemu do framebuffru --> teda do 2D textury s ID bfTexID 
+            //(pomocou backface.frag &.vert)
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferID);
             GL.Viewport(0, 0, width, height);
-            LinkShader(spMain.GetProgramHandle(),bfVertShader.GetShaderHandle(),bfFragShader.GetShaderHandle());
+            LinkShader(spMain.GetProgramHandle(), bfVertShader.GetShaderHandle(), bfFragShader.GetShaderHandle());
             spMain.UseProgram();
             //cull front face
             Render(CullFaceMode.Front);
             spMain.UseProgram(0);
+            //klasicky framebuffer --> "obrazovka"
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
             GL.Viewport(0, 0, width, height);
@@ -383,6 +408,7 @@ namespace VolumeRendering
             GL.DeleteBuffer(verticesID);
             GL.DeleteBuffer(indicesID);
             GL.DeleteVertexArray(VAO);
+            //najprv detach
             bfFragShader.DeleteShader();
             bfVertShader.DeleteShader();
             rcFragShader.DeleteShader();
