@@ -22,6 +22,7 @@ namespace VolumeRendering
         private int bfTexID, tffTexID, volTexID, frameBufferID;
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
+        bool tff;
 
         public Volume(string pathToFile, int w, int h)
         {
@@ -58,12 +59,13 @@ namespace VolumeRendering
         {
             InitVBO();
             InitShaders();
-            InitTFF1DTex("tff.dat");
+            string path = string.Format("..{0}..{0}Properties{0}data{0}tff.dat", Path.DirectorySeparatorChar);
+            InitTFF1DTex(path);
             InitFace2DTex(texWidth, texHeight);
             //je sice pekne ze si sem posielam file, ale potom musim posielat aj rozmer(y)
-            //InitVol3DTex(file, 256, 256, 225);
+            InitVol3DTex(file, 256, 256, 225);
             //InitVol3DTex("BostonTeapot.raw", 256, 256, 178);
-            InitVol3DTex("foot.raw", 256, 256, 256);
+            //InitVol3DTex("foot.raw", 256, 256, 256);
             //InitVol3DTex("skull.raw", 256, 256, 256);
             InitFrameBuffer(bfTexID, texWidth, texHeight);
         }
@@ -108,6 +110,7 @@ namespace VolumeRendering
 
             int[] gbo = new int[2];
 
+            VAO = GL.GenVertexArray();
             GL.GenBuffers(2, gbo);
             verticesID = gbo[0];
             indicesID = gbo[1];
@@ -125,26 +128,37 @@ namespace VolumeRendering
             //indices
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, indicesID);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * 36), indices, BufferUsageHint.StaticDraw);
+
+            GL.BindVertexArray(0);
         }
 
         private void InitShaders()
         {
             //backface shaders
-            if (!bfVertShader.LoadShader("backface.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (backface.vert)!");
-            if (!bfFragShader.LoadShader("backface.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (backface.frag)!");
+
+            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}backface.vert", Path.DirectorySeparatorChar);
+            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}backface.frag", Path.DirectorySeparatorChar);
+            if (!bfVertShader.LoadShader(vspath, ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (" + vspath + ")!");
+            if (!bfFragShader.LoadShader(fspath, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+
             //ray-casting shaders
-            if (!rcVertShader.LoadShader("raycasting.vert", ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (raycasting.vert)!");
+            vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycasting.vert", Path.DirectorySeparatorChar);
+            if (!rcVertShader.LoadShader(vspath, ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (" + vspath + ")!");
 
             //farebne
-            //if (!rcFragShader.LoadShader("raycasting.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (raycastingNew.frag)!");
+            //fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycasting.frag", Path.DirectorySeparatorChar);
+            //if (!rcFragShader.LoadShader(fspath, ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+            //tff = true;
 
             //cjernobjele
-            if (!rcFragShader.LoadShader("raycastingNew.frag", ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (raycastingNew.frag)!");
+            fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycastingNew.frag", Path.DirectorySeparatorChar);
+            if (!rcFragShader.LoadShader(fspath, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+            tff = false;
         }
 
         //inicializacia 1D textury pre transfer function
@@ -153,14 +167,13 @@ namespace VolumeRendering
             //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
             // programe bola napevno dana velkost 10000
 
-            //pridat kontrolu ci file egzistuje
-            int count = File.ReadAllBytes(pathToFile).Length;
-
-            //naplnim tff[] 
-            byte[] tff = new byte[count];
             try
             {
+                int count = File.ReadAllBytes(pathToFile).Length;
+                byte[] tff = new byte[count];
+
                 BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
+                //naplnim tff[] 
                 br.Read(tff, 0, count);
                 br.Close();
 
@@ -282,10 +295,13 @@ namespace VolumeRendering
             spMain.SetUniform("ScreenSize", (float)width, (float)height);
             spMain.SetUniform("StepSize", stepSize);
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-            spMain.SetUniform("TransferFunc", 0);
-
+            if (tff)
+            {
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                spMain.SetUniform("TransferFunc", 0);
+            }
+           
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, bfTexID);
             spMain.SetUniform("ExitPoints", 1);

@@ -5,7 +5,7 @@ in vec4 ExitPointCoord;
 
 uniform sampler2D ExitPoints;
 uniform sampler3D VolumeTex;
-uniform sampler1D TransferFunc;  
+//uniform sampler1D TransferFunc;  
 uniform float     StepSize;
 uniform vec2      ScreenSize;
 layout (location = 0) out vec4 FragColor;
@@ -30,7 +30,7 @@ void main()
 	float Length = length(exitPoint - EntryPoint);
 
 	//len preto aby to islo
-	vec4 tmp = texture(TransferFunc, value);
+	//vec4 tmp = texture(TransferFunc, value);
 	//
 	
 	for(int i=0; i < 1600; i++)
@@ -51,7 +51,7 @@ void main()
 		LengthSum += stepLength;
 
 		//break from the loop when alpha gets high enough
-		if(dst.a >= 1.0f)
+		if(dst.a >= 0.95f)
 			break;
 		
 		//advance the current position
