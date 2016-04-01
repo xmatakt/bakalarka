@@ -26,6 +26,8 @@ namespace VolumeRendering
 
         public Volume(string pathToFile, int w, int h)
         {
+            //ReadVTK("VTK.vtk");
+
             file = pathToFile;
             width = texWidth = w;
             height = texHeight = h;
@@ -63,7 +65,9 @@ namespace VolumeRendering
             InitTFF1DTex(path);
             InitFace2DTex(texWidth, texHeight);
             //je sice pekne ze si sem posielam file, ale potom musim posielat aj rozmer(y)
-            InitVol3DTex(file, 256, 256, 225);
+            //InitVol3DTex(file, 256, 256, 225);
+            path = string.Format("..{0}..{0}Properties{0}data{0}VTK.vtk", Path.DirectorySeparatorChar);
+            InitVol3DTex(path);
             //InitVol3DTex("BostonTeapot.raw", 256, 256, 178);
             //InitVol3DTex("foot.raw", 256, 256, 256);
             //InitVol3DTex("skull.raw", 256, 256, 256);
@@ -239,6 +243,47 @@ namespace VolumeRendering
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
                 GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.Float, float_data);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+            }
+        }
+
+        private void InitVol3DTex(string pathToFile)
+        {
+            VtkReader reader = new VtkReader();
+            int w = 0, h = 0, d = 0;
+            try
+            {
+                byte[, ,] data = reader.ReadVTK(pathToFile);
+                w = reader.Dx();
+                h = reader.Dy();
+                d = reader.Dz();
+                byte[] flatten = new byte[w * h * d];
+                
+                //mozem dat rovno do VtkReader-u
+                for (int x = 0; x < w; x++)
+                    for (int y = 0; y < h; y++)
+                        for (int z = 0; z < d; z++)
+                            flatten[x + w * (y + h * z)] = data[x, y, z];
+                //
+
+                volTexID = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture3D, volTexID);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
+                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.Byte, flatten);
             }
             catch (System.IO.FileNotFoundException)
             {
