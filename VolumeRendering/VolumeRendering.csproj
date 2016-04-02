@@ -69,7 +69,13 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Properties\data\shaders\backface.frag" />
+    <None Include="Properties\data\shaders\backface.vert" />
+    <None Include="Properties\data\shaders\raycasting.frag" />
+    <None Include="Properties\data\shaders\raycasting.vert" />
+    <None Include="Properties\data\shaders\raycastingNew.frag" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -82,6 +88,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\bfFrag.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\bfVert.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\rcFrag.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\rcgsFrag.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\rcVert.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

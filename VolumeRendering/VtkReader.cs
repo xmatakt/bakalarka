@@ -9,20 +9,21 @@ namespace VolumeRendering
 {
     class VtkReader
     {
-        private int ox, oy, oz, dx, dy, dz;
+        private int ox, oy, oz, dx, dy, dz, max;
         private double oxx , oyy , ozz , sx , sy , sz;
 
         public VtkReader()
         {
             oxx = oyy = ozz  = sx = sy = sz = 0;
-            dx = dy = dz = ox = oy = oz = 0;
+            dx = dy = dz = ox = oy = oz = max = 0;
         }
 
         public int Dx() { return dx; }
         public int Dy() { return dy; }
         public int Dz() { return dz; }
+        public int Max() { return max; }
 
-        public byte[,,] ReadVTK(string filename)
+        public byte[] ReadVTK(string filename)
         {
 
             //filestream do ktoreho otvorime nas subor
@@ -67,7 +68,13 @@ namespace VolumeRendering
             // teraz nam binaryreader nacita zvysok suboru ako binarne data do pola
             byte[] data = binreader.ReadBytes((int)(binreader.BaseStream.Length - binreader.BaseStream.Position));
             //byte[] vtk_data
-            byte[,,] vtk_data = new byte[dx, dy, dz];
+            if (max <= dx)
+                max = dx;
+            if (max < dy)
+                max = dy;
+            if (max < dz)
+                max = dz;
+            byte[] vtk_data = new byte[max * max * max];
             int counter = 0;
             try
             {
@@ -77,7 +84,7 @@ namespace VolumeRendering
                     {
                         for (int i = ox; i < ox + dx; i++)
                         {
-                            vtk_data[i, j, k] = data[counter++];
+                            vtk_data[i + dx * (j + dy * k)] = data[counter++];
                         }
                     }
                 }

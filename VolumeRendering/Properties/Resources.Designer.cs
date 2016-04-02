@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VolumeRendering.Properties
-{
-
-
+namespace VolumeRendering.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,49 +22,174 @@ namespace VolumeRendering.Properties
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources
-    {
-
+    internal class Resources {
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources()
-        {
+        internal Resources() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager
-        {
-            get
-            {
-                if ((resourceMan == null))
-                {
+        internal static global::System.Resources.ResourceManager ResourceManager {
+            get {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("VolumeRendering.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture
-        {
-            get
-            {
+        internal static global::System.Globalization.CultureInfo Culture {
+            get {
                 return resourceCulture;
             }
-            set
-            {
+            set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to // for raycasting
+        ///#version 400
+        ///
+        ///in vec3 Color;
+        ///layout (location = 0) out vec4 FragColor;
+        ///
+        ///
+        ///void main()
+        ///{
+        ///    FragColor = vec4(Color, 1.0);
+        ///}
+        ///.
+        /// </summary>
+        internal static string bfFrag {
+            get {
+                return ResourceManager.GetString("bfFrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to // for raycasting
+        ///#version 400
+        ///
+        ///layout(location = 0) in vec3 VerPos;
+        ///layout(location = 1) in vec3 VerClr;
+        ///
+        ///out vec3 Color;
+        ///
+        ///uniform mat4 projectionMatrix;
+        ///uniform mat4 modelViewMatrix;
+        ///
+        ///void main()
+        ///{
+        /// 	Color = VerClr;
+        ///	//posunutie do stredu obrazovky
+        ///	vec3 tmp = vec3(-0.5f,-0.5f,-0.5f);
+        ///	tmp=VerPos+tmp; 
+        ///	gl_Position = projectionMatrix * modelViewMatrix * vec4(tmp, 1.0);
+        ///}
+        ///.
+        /// </summary>
+        internal static string bfVert {
+            get {
+                return ResourceManager.GetString("bfVert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #version 400
+        ///
+        ///in vec3 EntryPoint;
+        ///in vec4 ExitPointCoord;
+        ///
+        ///uniform sampler2D ExitPoints;
+        ///uniform sampler3D VolumeTex;
+        ///uniform sampler1D TransferFunc;  
+        ///uniform float     StepSize;
+        ///uniform vec2      ScreenSize;
+        ///layout (location = 0) out vec4 FragColor;
+        ///
+        ///void main()
+        ///{
+        ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
+        ///    vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
+        ///    // that will actually give you clip-space coordinates rather than
+        ///    // normalised device coordinate [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string rcFrag {
+            get {
+                return ResourceManager.GetString("rcFrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #version 330
+        ///
+        ///in vec3 EntryPoint;
+        ///in vec4 ExitPointCoord;
+        ///
+        ///uniform sampler2D ExitPoints;
+        ///uniform sampler3D VolumeTex;
+        /////uniform sampler1D TransferFunc;  
+        ///uniform float     StepSize;
+        ///uniform vec2      ScreenSize;
+        ///layout (location = 0) out vec4 FragColor;
+        ///
+        ///void main()
+        ///{
+        ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
+        ///	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
+        ///
+        ///	if (EntryPoint == exitPoint)
+        ///		//background need no raycasting
+        ///		discard;
+        ///	
+        ///	vec3 dir = normalize(ex [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string rcgsFrag {
+            get {
+                return ResourceManager.GetString("rcgsFrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #version 400
+        ///
+        ///layout (location = 0) in vec3 VerPos;
+        ///// have to use this variable!!!, or it will be very hard to debug for AMD video card
+        ///layout (location = 1) in vec3 VerClr;  
+        ///
+        ///
+        ///out vec3 EntryPoint;
+        ///out vec4 ExitPointCoord;
+        ///
+        ///uniform mat4 projectionMatrix;
+        ///uniform mat4 modelViewMatrix;
+        ///
+        ///void main()
+        ///{
+        ///	//posunutie do stredu obrazovky
+        ///	vec3 tmp = vec3(-0.5f,-0.5f,-0.5f);
+        ///	tmp=VerPos+tmp; 
+        ///	EntryPoint = VerClr;
+        ///	gl_Position = projectionMatrix*modelViewMatrix * vec4(tmp,1.0);
+        ///	ExitPointCoord [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string rcVert {
+            get {
+                return ResourceManager.GetString("rcVert", resourceCulture);
             }
         }
     }

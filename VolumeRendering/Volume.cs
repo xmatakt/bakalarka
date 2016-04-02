@@ -139,29 +139,23 @@ namespace VolumeRendering
         private void InitShaders()
         {
             //backface shaders
-
-            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}backface.vert", Path.DirectorySeparatorChar);
-            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}backface.frag", Path.DirectorySeparatorChar);
-            if (!bfVertShader.LoadShader(vspath, ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (" + vspath + ")!");
-            if (!bfFragShader.LoadShader(fspath, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+            if (!bfVertShader.LoadShaderS(VolumeRendering.Properties.Resources.bfVert, ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+            if (!bfFragShader.LoadShaderS(VolumeRendering.Properties.Resources.bfFrag, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
             //ray-casting shaders
-            vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycasting.vert", Path.DirectorySeparatorChar);
-            if (!rcVertShader.LoadShader(vspath, ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (" + vspath + ")!");
+            if (!rcVertShader.LoadShaderS(VolumeRendering.Properties.Resources.rcVert, ShaderType.VertexShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
 
             //farebne
-            //fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycasting.frag", Path.DirectorySeparatorChar);
-            //if (!rcFragShader.LoadShader(fspath, ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+            //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
             //tff = true;
 
             //cjernobjele
-            fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycastingNew.frag", Path.DirectorySeparatorChar);
-            if (!rcFragShader.LoadShader(fspath, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (" + fspath + ")!");
+            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcgsFrag, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
             tff = false;
         }
 
@@ -257,21 +251,11 @@ namespace VolumeRendering
         private void InitVol3DTex(string pathToFile)
         {
             VtkReader reader = new VtkReader();
-            int w = 0, h = 0, d = 0;
+            int max = 0;
             try
             {
-                byte[, ,] data = reader.ReadVTK(pathToFile);
-                w = reader.Dx();
-                h = reader.Dy();
-                d = reader.Dz();
-                byte[] flatten = new byte[w * h * d];
-                
-                //mozem dat rovno do VtkReader-u
-                for (int x = 0; x < w; x++)
-                    for (int y = 0; y < h; y++)
-                        for (int z = 0; z < d; z++)
-                            flatten[x + w * (y + h * z)] = data[x, y, z];
-                //
+                byte[] data = reader.ReadVTK(pathToFile);
+                max = reader.Max();
 
                 volTexID = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture3D, volTexID);
@@ -283,7 +267,7 @@ namespace VolumeRendering
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.Byte, flatten);
+                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.Byte, data);
             }
             catch (System.IO.FileNotFoundException)
             {
