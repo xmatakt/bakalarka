@@ -37,8 +37,8 @@ void main()
 	{
 		pos.w = 0.0f;
 		value = texture(VolumeTex, pos.xyz).r;
-		//src = vec4(value);
-		src = vec4(value, value, value, value);
+		src = vec4(value);
+		//src = texture(TransferFunc,value);
 
 		//reduce the alpha to have a more transparent result
 		src.a *= 0.5f;

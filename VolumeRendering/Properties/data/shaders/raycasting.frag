@@ -37,7 +37,7 @@ void main()
     // backgroundColor --> farba vyplne objem
     vec4 bgColor = vec4(1.0, 1.0, 1.0, 0.0);
  
-    for(int i = 0; i < 1600; i++)
+    for(int i = 0; i < 16000; i++)
     {
     	intensity = texture(VolumeTex, voxelCoord).x;
     	colorSample = texture(TransferFunc, intensity);

@@ -99,8 +99,7 @@ namespace VolumeRendering
 
                 dy = e.Location.Y;
 
-                //if (sfera)
-                //    sdat.Scale(scale);
+                volume.Scale(scale);
 
                 glControl1.Invalidate();
             }

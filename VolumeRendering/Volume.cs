@@ -23,17 +23,35 @@ namespace VolumeRendering
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         bool tff;
+        private TransferFunction transferFunction;
 
         public Volume(string pathToFile, int w, int h)
         {
-            //ReadVTK("VTK.vtk");
+            List<Vector2> tmp2 = new List<Vector2>();
+            tmp2.Add(new Vector2(0.0f, 0));
+            tmp2.Add(new Vector2(0.0f, 40));
+            tmp2.Add(new Vector2(0.2f, 60));
+            tmp2.Add(new Vector2(0.05f, 63));
+            tmp2.Add(new Vector2(0.0f, 80));
+            tmp2.Add(new Vector2(0.9f, 82));
+            tmp2.Add(new Vector2(1f, 256));
+            
+
+            List<Vector4> tmp4 = new List<Vector4>();
+            tmp4.Add(new Vector4(.91f, .7f, .61f, 0));
+            tmp4.Add(new Vector4(.91f, .7f, .61f, 80));
+            tmp4.Add(new Vector4(1.0f, 1.0f, .85f, 82));
+            tmp4.Add(new Vector4(1.0f, 1.0f, .85f, 256));
+
+            transferFunction = new TransferFunction(tmp2, tmp4);
+
 
             file = pathToFile;
             width = texWidth = w;
             height = texHeight = h;
 
             //pri ciernobielom vykreslovani treba zlovilt mensi stepsize
-            stepSize = 0.01f;
+            stepSize = 0.001f;
 
             //pre farebnicke obrazky
             //stepSize = 0.001f;
@@ -62,12 +80,13 @@ namespace VolumeRendering
             InitVBO();
             InitShaders();
             string path = string.Format("..{0}..{0}Properties{0}data{0}tff.dat", Path.DirectorySeparatorChar);
-            InitTFF1DTex(path);
+            //InitTFF1DTex(path);
+            InitTFF1DTex();
             InitFace2DTex(texWidth, texHeight);
-            //je sice pekne ze si sem posielam file, ale potom musim posielat aj rozmer(y)
-            //InitVol3DTex(file, 256, 256, 225);
             path = string.Format("..{0}..{0}Properties{0}data{0}VTK.vtk", Path.DirectorySeparatorChar);
-            InitVol3DTex(path);
+            //InitVol3DTex(path);
+            InitVol3DTex(file, 256, 256, 225);
+            //InitVol3DTex("..\\..\\Properties\\data\\male.raw", 256, 256, 128);
             //InitVol3DTex("BostonTeapot.raw", 256, 256, 178);
             //InitVol3DTex("foot.raw", 256, 256, 256);
             //InitVol3DTex("skull.raw", 256, 256, 256);
@@ -149,17 +168,38 @@ namespace VolumeRendering
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
 
             //farebne
-            //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-            //tff = true;
+            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            tff = true;
 
             //cjernobjele
-            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcgsFrag, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-            tff = false;
+            //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcgsFrag, ShaderType.FragmentShader))
+            //    //if (!rcFragShader.LoadShader("..\\..\\Properties\\data\\shaders\\raycastingNew.frag", ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //tff = false;
         }
 
         //inicializacia 1D textury pre transfer function
+        private void InitTFF1DTex()
+        {
+            try
+            {
+                byte[] tff = transferFunction.GetTransferFunction();
+                //vytvorim 1D texturu z tff[]
+                tffTexID = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+                GL.TexImage1D(TextureTarget.Texture1D, 0, PixelInternalFormat.Rgba8, 256, 0, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba neocakavana chyba pri nastavovani prenosovej funkcie!");
+            }
+        }
+
         private void InitTFF1DTex(string pathToFile)
         {
             //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
@@ -210,9 +250,17 @@ namespace VolumeRendering
         // init 3D texture to store the volume data used for ray casting
         private void InitVol3DTex(string pathToFile, int w, int h, int d)
         {
+            int max = 0;
+            if (max <= w)
+                max = w;
+            if (max < h)
+                max = h;
+            if (max < d)
+                max = d;
+
             int count = w * h * d;
 
-            byte[] data = new byte[count];
+            byte[] data = new byte[max * max * max];
             try
             {
                 BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
@@ -220,12 +268,11 @@ namespace VolumeRendering
                 br.Close();
 
                 //na rozdiel od prvej verzie, 3D textura bude naplnena floatami z [0,1]
-                float maxIntensity = data.Max();
-                float[] float_data = new float[count];
-                for (int i = 0; i < count; i++)
-                    float_data[i] = data[i] / (float)maxIntensity;
+                //float maxIntensity = data.Max();
+                //float[] float_data = new float[max * max * max];
+                //for (int i = 0; i < count; i++)
+                //    float_data[i] = data[i] / (float)maxIntensity;
 
-                //vytvorim 1D texturu z tff[]
                 volTexID = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture3D, volTexID);
                 //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
@@ -236,7 +283,7 @@ namespace VolumeRendering
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, w, h, d, 0, PixelFormat.Luminance, PixelType.Float, float_data);
+                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, data);
             }
             catch (System.IO.FileNotFoundException)
             {
