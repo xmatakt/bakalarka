@@ -46,9 +46,7 @@ namespace VolumeRendering
             {
                 LinearFunction lf = new LinearFunction(OpacityList[i].Y, OpacityList[i + 1].Y, OpacityList[i].X, OpacityList[i+1].X);
                 for (int j = (int)OpacityList[i].Y; j < (int)OpacityList[i+1].Y; j++)
-                {
                     Opacity[j] = (byte)(255 * lf.Value(j));
-                }
             }
         }
 
@@ -94,8 +92,78 @@ namespace VolumeRendering
 
         public byte[] GetTransferFunction() { return transferFunction; }
 
-        private void Sort2() { OpacityList.Sort((x, y) => x.X.CompareTo(y.X)); }
+        public void ChangeOpacity(List<Vector2> newOpacityList)
+        {
+            if (newOpacityList.Count >= 2)
+                Sort2(newOpacityList);
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat minimalne 2 iso hodnoty!", "Vnimanie!",
+                   System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+                return;
+            }
+               
+            if (newOpacityList[0].Y != 0)
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat definovanu\npriehladnost pre iso hodnotu 0!","Vnimanie!",
+                    System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Information);
+            else if (newOpacityList[newOpacityList.Count - 1].Y != 256)
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat definovanu\npriehladnost pre iso hodnotu 256!", "Vnimanie!",
+                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            else 
+            {
+                OpacityList.Clear();
+                OpacityList = new List<Vector2>(newOpacityList);
+                SetOpacityArray();
+
+                int counterO = 0;
+                for (int i = 3; i < 1024; i += 4)
+                    if (i % 4 == 3)//w
+                        transferFunction[i] = Opacity[counterO++];
+            }
+        }
+
+        public void ChangeColors(List<Vector4> newColorList)
+        {
+            if (newColorList.Count >= 2)
+                Sort4(newColorList);
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat minimalne 2 iso hodnoty!", "Vnimanie!",
+                   System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+                return;
+            }
+
+            if (newColorList[0].W != 0)
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat definovanu\npriehladnost pre iso hodnotu 0!", "Vnimanie!",
+                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            else if (newColorList[newColorList.Count - 1].W != 256)
+                System.Windows.Forms.MessageBox.Show("List musi obsahovat definovanu\npriehladnost pre iso hodnotu 256!", "Vnimanie!",
+                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            else
+            {
+                ColorList.Clear();
+                ColorList = new List<Vector4>(newColorList);
+                SetColorArrays();
+
+                int counterR = 0;
+                int counterG = 0;
+                int counterB = 0;
+                for (int i = 0; i < 1024; i++)
+                {
+                    if (i % 4 == 0)//r
+                        transferFunction[i] = Red[counterR++];
+                    if (i % 4 == 1)//g
+                        transferFunction[i] = Green[counterG++];
+                    if (i % 4 == 2)//b
+                        transferFunction[i] = Blue[counterB++];
+                }
+            }
+        }
+
+        private void Sort2() { OpacityList.Sort((x, y) => x.Y.CompareTo(y.Y)); }
         private void Sort4() { ColorList.Sort((x, y) => x.W.CompareTo(y.W)); }
+        private void Sort2(List<Vector2> listToSort) { listToSort.Sort((x, y) => x.Y.CompareTo(y.Y)); }
+        private void Sort4(List<Vector4> listToSort) { listToSort.Sort((x, y) => x.W.CompareTo(y.W)); }
 
     }
 }

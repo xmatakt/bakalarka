@@ -15,7 +15,7 @@ namespace VolumeRendering
     {
         private string file;
         private int width, height, texWidth, texHeight;
-        private float scale, stepSize;
+        private float scale, stepSize, AlphaReduce;
         private Shaders.Shader bfVertShader, bfFragShader, rcVertShader, rcFragShader;
         private Shaders.ShaderProgram spMain;
         private int VAO, indicesID, verticesID;
@@ -52,6 +52,7 @@ namespace VolumeRendering
 
             //pri ciernobielom vykreslovani treba zlovilt mensi stepsize
             stepSize = 0.001f;
+            AlphaReduce = 0.5f;
 
             //pre farebnicke obrazky
             //stepSize = 0.001f;
@@ -168,15 +169,21 @@ namespace VolumeRendering
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
 
             //farebne
-            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-            tff = true;
+            //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
+            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            //tff = true;
 
             //cjernobjele
             //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcgsFrag, ShaderType.FragmentShader))
             //    //if (!rcFragShader.LoadShader("..\\..\\Properties\\data\\shaders\\raycastingNew.frag", ShaderType.FragmentShader))
             //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
             //tff = false;
+
+            //dalsi nateraz finalny
+            //string path = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycastingTff.frag", Path.DirectorySeparatorChar);
+            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcCustomTffFrag, ShaderType.FragmentShader))
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            tff = true;
         }
 
         //inicializacia 1D textury pre transfer function
@@ -241,6 +248,8 @@ namespace VolumeRendering
             GL.BindTexture(TextureTarget.Texture2D, bfTexID);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             //nenaolna sa datami, do nej sa bude kreslit
@@ -376,6 +385,7 @@ namespace VolumeRendering
                 GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture1D, tffTexID);
                 spMain.SetUniform("TransferFunc", 0);
+                spMain.SetUniform("AlphaReduce",AlphaReduce);
             }
            
             GL.ActiveTexture(TextureUnit.Texture1);
@@ -461,7 +471,6 @@ namespace VolumeRendering
             //mat = mat.Inverted(); mat = Matrix4.Transpose(mat);
             //spMain.SetUniform("normalMatrix", mat);
             spMain.SetUniform("modelViewMatrix", Current);
-            System.Diagnostics.Debug.WriteLine("som tu");
         }
 
         public void Scale(float s)
@@ -475,6 +484,18 @@ namespace VolumeRendering
             spMain.SetUniform("modelViewMatrix", Current);
         }
 
+        public void SetAlphaReduce(float AlphaReduce)
+        {
+            this.AlphaReduce = AlphaReduce;
+            spMain.SetUniform("AlphaReduce", AlphaReduce);
+        }
+
+        public void SetStepSize(float step)
+        {
+            stepSize = step;
+            spMain.SetUniform("StepSize", stepSize);
+        }
+
         public void Ende()
         {
             MatrixStore_Translations = MatrixStore_Translations * TranslationMatrix;
@@ -485,13 +506,58 @@ namespace VolumeRendering
             RotationMatrix = Matrix4.Identity;
             TranslationMatrix = Matrix4.Identity;
         }
-        #endregion
-
+        
         public void Resize(int w, int h)
         {
             width = texWidth = w;
             height = texHeight = h;
         }
+
+        public void ChangeOpacity(List<Vector2> list)
+        {
+            transferFunction.ChangeOpacity(list);
+            try
+            {
+                byte[] tf = transferFunction.GetTransferFunction();
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                //prepise data, nemusim vytvarat novu texturu a nicit staru
+                GL.TexSubImage1D(TextureTarget.Texture1D, 0, 0, 256, PixelFormat.Rgba, PixelType.UnsignedByte, tf);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba neocakavana chyba pri nastavovani prenosovej funkcie!");
+            }
+            if (tff)
+            {
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                spMain.SetUniform("TransferFunc", 0);
+            }
+        }
+
+        public void ChangeColors(List<Vector4> list)
+        {
+            transferFunction.ChangeColors(list);
+            try
+            {
+                byte[] tf = transferFunction.GetTransferFunction();
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                //prepise data, nemusim vytvarat novu texturu a nicit staru
+                GL.TexSubImage1D(TextureTarget.Texture1D, 0, 0, 256, PixelFormat.Rgba, PixelType.UnsignedByte, tf);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba neocakavana chyba pri nastavovani prenosovej funkcie!");
+            }
+            if (tff)
+            {
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                spMain.SetUniform("TransferFunc", 0);
+            }
+        }
+
+        #endregion
 
         public void Delete()
         {

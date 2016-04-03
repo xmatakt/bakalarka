@@ -79,6 +79,7 @@
     <None Include="Properties\data\shaders\raycasting.frag" />
     <None Include="Properties\data\shaders\raycasting.vert" />
     <None Include="Properties\data\shaders\raycastingNew.frag" />
+    <None Include="Properties\data\shaders\raycastingTff.frag" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -106,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\data\shaders\rcVert.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\data\shaders\rcCustomTffFrag.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

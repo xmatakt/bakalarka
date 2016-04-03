@@ -5,8 +5,9 @@ in vec4 ExitPointCoord;
 
 uniform sampler2D ExitPoints;
 uniform sampler3D VolumeTex;
-//uniform sampler1D TransferFunc;  
+uniform sampler1D TransferFunc;  
 uniform float     StepSize;
+uniform float     AlphaReduce;
 uniform vec2      ScreenSize;
 layout (location = 0) out vec4 FragColor;
 
@@ -35,13 +36,12 @@ void main()
 	
 	for(int i=0; i < 1600; i++)
 	{
-		pos.w = 0.0f;
+		//pos.w = 0.0f;
 		value = texture(VolumeTex, pos.xyz).a;
-		src = vec4(value);
-		//src = texture(TransferFunc,value);
-
+		//src = vec4(value);
+		src = texture(TransferFunc,value);
 		//reduce the alpha to have a more transparent result
-		src.a *= 0.5f;
+		src.a *= AlphaReduce;
 		
 		//Front to back blending
 		src.rgb *= src.a;
