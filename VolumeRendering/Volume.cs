@@ -268,9 +268,22 @@ namespace VolumeRendering
                 br.Read(data, 0, count);
                 br.Close();
 
+                volTexID = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture3D, volTexID);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
+                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+
                 //centrovanie - ale bude fungovat iba ak je odlisna iba hodnota hlbky
                 byte[] centrovane = new byte[max * max * max];
                 int tmp_dz = max - d;
+
+                //ak treba centrovat
                 if (tmp_dz != 0)
                 {
                     try
@@ -290,21 +303,13 @@ namespace VolumeRendering
                     }
                     catch (Exception)
                     {
-                        System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie VTK suboru. \nData sa nepodarilo vycentrovat.");
+                        System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie RAW suboru. \nData sa nepodarilo vycentrovat.");
                     }
+                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, centrovane);
                 }
-
-                volTexID = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture3D, volTexID);
-                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
-                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
-                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, centrovane);
+                // v pripade ze centrovat netreba
+                else
+                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, data);
             }
             catch (System.IO.FileNotFoundException)
             {
