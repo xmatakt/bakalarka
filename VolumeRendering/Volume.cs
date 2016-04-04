@@ -35,7 +35,7 @@ namespace VolumeRendering
             tmp2.Add(new Vector2(0.0f, 80));
             tmp2.Add(new Vector2(0.9f, 82));
             tmp2.Add(new Vector2(1f, 256));
-            
+
 
             List<Vector4> tmp4 = new List<Vector4>();
             tmp4.Add(new Vector4(.91f, .7f, .61f, 0));
@@ -243,7 +243,7 @@ namespace VolumeRendering
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            
+
             //nenaplna sa datami, do nej sa bude kreslit
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, texWidth, texHeight, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
         }
@@ -261,18 +261,38 @@ namespace VolumeRendering
 
             int count = w * h * d;
 
-            byte[] data = new byte[max * max * max];
+            byte[] data = new byte[count];
             try
             {
                 BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
                 br.Read(data, 0, count);
                 br.Close();
 
-                //na rozdiel od prvej verzie, 3D textura bude naplnena floatami z [0,1]
-                //float maxIntensity = data.Max();
-                //float[] float_data = new float[max * max * max];
-                //for (int i = 0; i < count; i++)
-                //    float_data[i] = data[i] / (float)maxIntensity;
+                //centrovanie - ale bude fungovat iba ak je odlisna iba hodnota hlbky
+                byte[] centrovane = new byte[max * max * max];
+                int tmp_dz = max - d;
+                if (tmp_dz != 0)
+                {
+                    try
+                    {
+                        int dolna_hranica = tmp_dz / 2;
+                        int counter = 0;
+                        for (int k = dolna_hranica; k < dolna_hranica + d; k++)
+                        {
+                            for (int j = 0; j < h; j++)
+                            {
+                                for (int i = 0; i < w; i++)
+                                {
+                                    centrovane[i + w * (j + h * k)] = data[counter++];
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie VTK suboru. \nData sa nepodarilo vycentrovat.");
+                    }
+                }
 
                 volTexID = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture3D, volTexID);
@@ -284,7 +304,7 @@ namespace VolumeRendering
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, data);
+                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, centrovane);
             }
             catch (System.IO.FileNotFoundException)
             {
@@ -298,7 +318,7 @@ namespace VolumeRendering
 
         private void InitVol3DTex(string pathToFile)
         {
-            if(pathToFile.EndsWith(".vtk"))
+            if (pathToFile.EndsWith(".vtk"))
             {
                 VtkReader reader = new VtkReader();
                 int max = 0;
@@ -328,10 +348,10 @@ namespace VolumeRendering
                     System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
                 }
             }
-            if(pathToFile.EndsWith(".tsf"))
+            if (pathToFile.EndsWith(".tsf"))
             {
                 int w, h, d; w = h = d = 0;
-                string rawFile="";
+                string rawFile = "";
                 char[] separator = { ' ' };
                 StreamReader sr = new StreamReader(pathToFile);
                 string firstLine = sr.ReadLine();
@@ -339,7 +359,7 @@ namespace VolumeRendering
                 if (firstLine.Contains("Dimensions:"))
                 {
                     string[] arr = firstLine.Split(separator);
-                    try 
+                    try
                     {
                         w = int.Parse(arr[1]);
                         h = int.Parse(arr[2]);
@@ -348,8 +368,8 @@ namespace VolumeRendering
                     }
                     catch
                     {
-                        System.Windows.Forms.MessageBox.Show("Nespravny format suboru " + pathToFile,"Vnimanie!",
-                            System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Error);
+                        System.Windows.Forms.MessageBox.Show("Nespravny format suboru " + pathToFile, "Vnimanie!",
+                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     }
                 }
 
@@ -371,9 +391,9 @@ namespace VolumeRendering
                     }
                 }
                 sr.Close();
-                InitVol3DTex(rawFile,w,h,d);
+                InitVol3DTex(rawFile, w, h, d);
             }
-        
+
         }
 
         private void InitFrameBuffer(int texID, int texWidth, int texHeight)
@@ -425,9 +445,9 @@ namespace VolumeRendering
                 GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture1D, tffTexID);
                 spMain.SetUniform("TransferFunc", 0);
-                spMain.SetUniform("AlphaReduce",AlphaReduce);
+                spMain.SetUniform("AlphaReduce", AlphaReduce);
             }
-           
+
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, bfTexID);
             spMain.SetUniform("ExitPoints", 1);
@@ -540,7 +560,7 @@ namespace VolumeRendering
             RotationMatrix = Matrix4.Identity;
             TranslationMatrix = Matrix4.Identity;
         }
-        
+
         public void Resize(int w, int h)
         {
             width = texWidth = w;

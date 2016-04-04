@@ -10,11 +10,11 @@ namespace VolumeRendering
     class VtkReader
     {
         private int ox, oy, oz, dx, dy, dz, max;
-        private double oxx , oyy , ozz , sx , sy , sz;
+        private double oxx, oyy, ozz, sx, sy, sz;
 
         public VtkReader()
         {
-            oxx = oyy = ozz  = sx = sy = sz = 0;
+            oxx = oyy = ozz = sx = sy = sz = 0;
             dx = dy = dz = ox = oy = oz = max = 0;
         }
 
@@ -67,14 +67,14 @@ namespace VolumeRendering
             reader.DiscardBufferedData();
             // teraz nam binaryreader nacita zvysok suboru ako binarne data do pola
             byte[] data = binreader.ReadBytes((int)(binreader.BaseStream.Length - binreader.BaseStream.Position));
-            //byte[] vtk_data
             if (max <= dx)
                 max = dx;
             if (max < dy)
                 max = dy;
             if (max < dz)
                 max = dz;
-            byte[] vtk_data = new byte[max * max * max];
+
+            byte[] vtk_data = new byte[dx * dy * dz];
             int counter = 0;
             try
             {
@@ -88,15 +88,39 @@ namespace VolumeRendering
                         }
                     }
                 }
-                System.Diagnostics.Debug.WriteLine("counter = " + counter + "\n data.Length() = " + data.Length + "\n dx*dy*dz = " + (dx * dy * dz));
-                System.Diagnostics.Debug.WriteLine("vtk_data.Length = " + vtk_data.Length);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("dojeb v subore: " + ex.Message + "\n" + filename);
             }
             instream.Close();
-            return vtk_data;
+
+            //centrovanie
+            byte[] centrovane = new byte[max * max * max];
+            int tmp_dz = max - dz;
+            if (tmp_dz != 0)
+            {
+                try
+                {
+                    int dolna_hranica = tmp_dz / 2;
+                    counter = 0;
+                    for (int k = oz + dolna_hranica; k < dolna_hranica + oz + dz; k++)
+                    {
+                        for (int j = oy; j < oy + dy; j++)
+                        {
+                            for (int i = ox; i < ox + dx; i++)
+                            {
+                                centrovane[i + dx * (j + dy * k)] = vtk_data[counter++];
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie VTK suboru. \nData sa nepodarilo vycentrovat.");
+                }
+            }
+            return centrovane;
         }
 
         static long GetActualPosition(StreamReader reader)
