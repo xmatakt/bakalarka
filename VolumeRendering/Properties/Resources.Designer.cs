@@ -138,6 +138,36 @@ namespace VolumeRendering.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to #version 330
+        ///
+        ///in vec3 EntryPoint;
+        ///in vec4 ExitPointCoord;
+        ///
+        ///uniform sampler2D ExitPoints;
+        ///uniform sampler3D VolumeTex;
+        ///uniform sampler1D TransferFunc;  
+        ///uniform float     StepSize;
+        ///uniform float     AlphaReduce;
+        ///uniform vec2      ScreenSize;
+        ///
+        ///layout (location = 0) out vec4 FragColor;
+        ///
+        ///void main()
+        ///{
+        ///	vec4 normal4;
+        ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
+        ///	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
+        ///
+        ///	if (EntryPoint == exitPoint)
+        ///		//background need no ray [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string rcCustomTffShadedFrag {
+            get {
+                return ResourceManager.GetString("rcCustomTffShadedFrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to #version 400
         ///
         ///in vec3 EntryPoint;

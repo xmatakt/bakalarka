@@ -48,6 +48,7 @@
             this.stepSize_numericUpDown = new System.Windows.Forms.NumericUpDown();
             this.ValOpDel_button = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.volbaShadingu_checkBox = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.ValColDel_button = new System.Windows.Forms.Button();
@@ -66,6 +67,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.stepSize_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.alphaReduce_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
+            this.shadingInfo_label = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.value_numericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.opacity_numericUpDown)).BeginInit();
@@ -310,6 +312,8 @@
             // panel2
             // 
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel2.Controls.Add(this.shadingInfo_label);
+            this.panel2.Controls.Add(this.volbaShadingu_checkBox);
             this.panel2.Controls.Add(this.label2);
             this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.stepSize_numericUpDown);
@@ -329,6 +333,16 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(176, 697);
             this.panel2.TabIndex = 18;
+            // 
+            // volbaShadingu_checkBox
+            // 
+            this.volbaShadingu_checkBox.AutoSize = true;
+            this.volbaShadingu_checkBox.Location = new System.Drawing.Point(13, 647);
+            this.volbaShadingu_checkBox.Name = "volbaShadingu_checkBox";
+            this.volbaShadingu_checkBox.Size = new System.Drawing.Size(80, 21);
+            this.volbaShadingu_checkBox.TabIndex = 23;
+            this.volbaShadingu_checkBox.Text = "shading";
+            this.volbaShadingu_checkBox.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -522,6 +536,17 @@
             65536});
             this.alphaReduce_numericUpDown2.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
+            // shadingInfo_label
+            // 
+            this.shadingInfo_label.AutoSize = true;
+            this.shadingInfo_label.Cursor = System.Windows.Forms.Cursors.Help;
+            this.shadingInfo_label.Location = new System.Drawing.Point(90, 649);
+            this.shadingInfo_label.Name = "shadingInfo_label";
+            this.shadingInfo_label.Size = new System.Drawing.Size(45, 17);
+            this.shadingInfo_label.TabIndex = 24;
+            this.shadingInfo_label.Text = "| info |";
+            this.shadingInfo_label.Click += new System.EventHandler(this.shadingInfo_label_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -593,6 +618,8 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown stepSize_numericUpDown2;
         private System.Windows.Forms.NumericUpDown alphaReduce_numericUpDown2;
+        private System.Windows.Forms.CheckBox volbaShadingu_checkBox;
+        private System.Windows.Forms.Label shadingInfo_label;
     }
 }
 

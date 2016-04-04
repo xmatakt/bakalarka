@@ -15,17 +15,21 @@ namespace VolumeRendering
     {
         private string file;
         private int width, height, texWidth, texHeight;
+        private int vol_max;
         private float scale, stepSize, AlphaReduce;
         private Shaders.Shader bfVertShader, bfFragShader, rcVertShader, rcFragShader;
         private Shaders.ShaderProgram spMain;
         private int VAO, indicesID, verticesID;
         private int bfTexID, tffTexID, volTexID, frameBufferID, depthBufferID;
         private Matrix4 modelViewMatrix, projectionMatrix;
-        private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
-        bool tff;
+        private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix,
+            MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
+        private bool shaded;
         private TransferFunction transferFunction;
+        private Vector4[] VolumeData;//(nx,ny,nz,isovalue)
+        private Vector3[] Gradients;
 
-        public Volume(string pathToFile, int w, int h)
+        public Volume(string pathToFile, int w, int h, bool shaded)
         {
             List<Vector2> tmp2 = new List<Vector2>();
             tmp2.Add(new Vector2(0.0f, 0));
@@ -45,10 +49,11 @@ namespace VolumeRendering
 
             transferFunction = new TransferFunction(tmp2, tmp4);
 
-
+            this.shaded = shaded;
             file = pathToFile;
             width = texWidth = w;
             height = texHeight = h;
+            vol_max = 0;
 
             //pri ciernobielom vykreslovani treba zlovilt mensi stepsize
             stepSize = 0.001f;
@@ -160,11 +165,6 @@ namespace VolumeRendering
             if (!rcVertShader.LoadShaderS(VolumeRendering.Properties.Resources.rcVert, ShaderType.VertexShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
 
-            //farebne
-            //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcFrag, ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-            //tff = true;
-
             //cjernobjele
             //if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcgsFrag, ShaderType.FragmentShader))
             //    //if (!rcFragShader.LoadShader("..\\..\\Properties\\data\\shaders\\raycastingNew.frag", ShaderType.FragmentShader))
@@ -172,11 +172,17 @@ namespace VolumeRendering
             //tff = false;
 
             //dalsi nateraz finalny
-            //string path = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}raycastingTff.frag", Path.DirectorySeparatorChar);
-            if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcCustomTffFrag, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-            tff = true;
+            if (shaded)
+            {
+                if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcCustomTffShadedFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
+            else
+                if (!rcFragShader.LoadShaderS(VolumeRendering.Properties.Resources.rcCustomTffFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
         }
+
+        #region inicializacia textur a framebuffra
 
         //inicializacia 1D textury pre transfer function
         private void InitTFF1DTex()
@@ -199,38 +205,39 @@ namespace VolumeRendering
             }
         }
 
-        private void InitTFF1DTex(string pathToFile)
-        {
-            //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
-            // programe bola napevno dana velkost 10000
-            try
-            {
-                int count = File.ReadAllBytes(pathToFile).Length;
-                byte[] tff = new byte[count];
+        //zrejme mozem vymazat, uz neviem naco to sluzilo
+        //private void InitTFF1DTex(string pathToFile)
+        //{
+        //    //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
+        //    // programe bola napevno dana velkost 10000
+        //    try
+        //    {
+        //        int count = File.ReadAllBytes(pathToFile).Length;
+        //        byte[] tff = new byte[count];
 
-                BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
-                //naplnim tff[] 
-                br.Read(tff, 0, count);
-                br.Close();
+        //        BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
+        //        //naplnim tff[] 
+        //        br.Read(tff, 0, count);
+        //        br.Close();
 
-                //vytvorim 1D texturu z tff[]
-                tffTexID = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage1D(TextureTarget.Texture1D, 0, PixelInternalFormat.Rgba8, 256, 0, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
-            }
-            catch
-            {
-                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
-            }
-        }
+        //        //vytvorim 1D texturu z tff[]
+        //        tffTexID = GL.GenTexture();
+        //        GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+        //        GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+        //        GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+        //        GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+        //        GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+        //        GL.TexImage1D(TextureTarget.Texture1D, 0, PixelInternalFormat.Rgba8, 256, 0, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
+        //    }
+        //    catch (System.IO.FileNotFoundException)
+        //    {
+        //        System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+        //    }
+        //    catch
+        //    {
+        //        System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+        //    }
+        //}
 
         //inicializacia 2D textury pre vykreslovanie backface-u
         private void InitFace2DTex(int texWidth, int texHeight)
@@ -260,8 +267,11 @@ namespace VolumeRendering
                 max = d;
 
             int count = w * h * d;
-
+            vol_max = max;
+            VolumeData = new Vector4[max * max * max];
+            Gradients = new Vector3[max * max * max];
             byte[] data = new byte[count];
+
             try
             {
                 BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
@@ -278,38 +288,6 @@ namespace VolumeRendering
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
                 GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-
-                //centrovanie - ale bude fungovat iba ak je odlisna iba hodnota hlbky
-                byte[] centrovane = new byte[max * max * max];
-                int tmp_dz = max - d;
-
-                //ak treba centrovat
-                if (tmp_dz != 0)
-                {
-                    try
-                    {
-                        int dolna_hranica = tmp_dz / 2;
-                        int counter = 0;
-                        for (int k = dolna_hranica; k < dolna_hranica + d; k++)
-                        {
-                            for (int j = 0; j < h; j++)
-                            {
-                                for (int i = 0; i < w; i++)
-                                {
-                                    centrovane[i + w * (j + h * k)] = data[counter++];
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie RAW suboru. \nData sa nepodarilo vycentrovat.");
-                    }
-                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, centrovane);
-                }
-                // v pripade ze centrovat netreba
-                else
-                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, data);
             }
             catch (System.IO.FileNotFoundException)
             {
@@ -318,6 +296,50 @@ namespace VolumeRendering
             catch
             {
                 System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+            }
+
+            try
+            {
+                //toto je tu v pripade ze netreba centrovat zbytocne a zabera cas, ale koli prehladnejsiumu kodu som zrusil if(tmp_dz != 0):
+                //centrovanie - ale bude fungovat iba ak je odlisna iba hodnota hlbky
+                byte[] centrovane = new byte[max * max * max];
+                int tmp_dz = max - d;
+                int dolna_hranica = tmp_dz / 2;
+                int counter = 0;
+
+                for (int k = dolna_hranica; k < dolna_hranica + d; k++)
+                    for (int j = 0; j < h; j++)
+                        for (int i = 0; i < w; i++)
+                            centrovane[i + w * (j + h * k)] = data[counter++];
+
+                //ak si uzivatel zvolil zobrazovanie bez shadingu
+                if (!shaded)
+                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.UnsignedByte, centrovane);
+
+                //ak si uzivatel zvolil zobrazovanie so shadingom
+                else
+                {
+                    //pre potreby shadingu budu data ulozene v poli Vector4(nx,ny,nz,isovalue)
+                    //cize obdoba pola pre 1D texturu. nx,ny,nz su zlozky normaly
+                    int max_val = centrovane.Max();
+
+                    for (int i = 0; i < VolumeData.Length; i++)
+                        VolumeData[i].W = centrovane[i] / (float)max_val;
+
+                    GenerateGradients(2);
+
+                    //for (int i = 0; i < VolumeData.Length; i++)
+                    //{
+                    //    VolumeData[i].X = Gradients[i].X;
+                    //    VolumeData[i].Y = Gradients[i].Y;
+                    //    VolumeData[i].Z = Gradients[i].Z;
+                    //}
+                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Rgba8, max, max, max, 0, PixelFormat.Rgba, PixelType.Float, VolumeData);
+                }
+            }
+            catch (Exception)
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa neocakavana chyba pri tvorbe 3D textury.");
             }
         }
 
@@ -417,6 +439,8 @@ namespace VolumeRendering
             GL.Enable(EnableCap.DepthTest);
         }
 
+        #endregion
+
         // link the shader objects using the shader program
         private void LinkShader(int programID, int vertShaderID, int fragShaderID)
         {
@@ -442,16 +466,14 @@ namespace VolumeRendering
 
         private void SetUniforms()
         {
+            //spMain.UseProgram();
             spMain.SetUniform("ScreenSize", (float)width, (float)height);
             spMain.SetUniform("StepSize", stepSize);
 
-            if (tff)
-            {
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                spMain.SetUniform("TransferFunc", 0);
-                spMain.SetUniform("AlphaReduce", AlphaReduce);
-            }
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+            spMain.SetUniform("TransferFunc", 0);
+            spMain.SetUniform("AlphaReduce", AlphaReduce);
 
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, bfTexID);
@@ -532,8 +554,9 @@ namespace VolumeRendering
         public void Rotate(float x, float y, float angle)
         {
             RotationMatrix = Matrix4.CreateFromAxisAngle(new Vector3(y, x, 0.0f), angle);
+
             Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            spMain.SetUniform("modelViewMatrix", Current);
+            //spMain.SetUniform("modelViewMatrix", Current);
         }
 
         public void Scale(float s)
@@ -541,14 +564,14 @@ namespace VolumeRendering
             scale = s;
             ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
             Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            spMain.SetUniform("modelViewMatrix", Current);
+            //spMain.SetUniform("modelViewMatrix", Current);
         }
 
         public void Transalte(float x, float y)
         {
             TranslationMatrix = Matrix4.CreateTranslation(x, y, 0.0f);
             Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            spMain.SetUniform("modelViewMatrix", Current);
+            //spMain.SetUniform("modelViewMatrix", Current);
         }
 
         public void SetAlphaReduce(float AlphaReduce) { this.AlphaReduce = AlphaReduce; }
@@ -560,7 +583,7 @@ namespace VolumeRendering
             MatrixStore_Translations = MatrixStore_Translations * TranslationMatrix;
             MatrixStore_Rotations = MatrixStore_Rotations * RotationMatrix;
 
-            spMain.SetUniform("modelViewMatrix", Current);
+            //spMain.SetUniform("modelViewMatrix", Current);
             ScaleMatrix = Matrix4.Identity;
             RotationMatrix = Matrix4.Identity;
             TranslationMatrix = Matrix4.Identity;
@@ -593,12 +616,9 @@ namespace VolumeRendering
             {
                 System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba neocakavana chyba pri nastavovani prenosovej funkcie!");
             }
-            if (tff)
-            {
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                spMain.SetUniform("TransferFunc", 0);
-            }
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+            spMain.SetUniform("TransferFunc", 0);
         }
 
         public void ChangeColors(List<Vector4> list)
@@ -613,14 +633,12 @@ namespace VolumeRendering
             }
             catch
             {
-                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba neocakavana chyba pri nastavovani prenosovej funkcie!");
+                System.Windows.Forms.MessageBox.Show("Vyskytla neocakavana chyba pri nastavovani prenosovej funkcie!");
             }
-            if (tff)
-            {
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                spMain.SetUniform("TransferFunc", 0);
-            }
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+            spMain.SetUniform("TransferFunc", 0);
         }
 
         public void SaveTransferFunction(string path)
@@ -657,6 +675,51 @@ namespace VolumeRendering
             {
                 System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
             }
+        }
+
+        #endregion
+
+        #region funkcie pre shading
+
+        private void GenerateGradients(int sampleSize)
+        {
+            int n = sampleSize;
+            Vector3 normal = Vector3.Zero;
+            Vector3 s1, s2;
+
+            int index = 0;
+            for (int z = 0; z < vol_max; z++)
+            {
+                for (int y = 0; y < vol_max; y++)
+                {
+                    for (int x = 0; x < vol_max; x++)
+                    {
+                        s1.X = SampleVolume(x - n, y, z);
+                        s2.X = SampleVolume(x + n, y, z);
+                        s1.Y = SampleVolume(x, y - n, z);
+                        s2.Y = SampleVolume(x, y + n, z);
+                        s1.Z = SampleVolume(x, y, z - n);
+                        s2.Z = SampleVolume(x, y, z + n);
+
+                        Gradients[index++] = Vector3.Normalize(s2 - s1);
+                        if (float.IsNaN(Gradients[index - 1].X))
+                            Gradients[index - 1] = Vector3.Zero;
+
+                        VolumeData[index - 1].X = Gradients[index - 1].X;
+                        VolumeData[index - 1].Y = Gradients[index - 1].Y;
+                        VolumeData[index - 1].Z = Gradients[index - 1].Z;
+                    }
+                }
+            }
+        }
+
+        private float SampleVolume(int x, int y, int z)
+        {
+            x = (int)MathHelper.Clamp(x, 0, vol_max - 1);
+            y = (int)MathHelper.Clamp(y, 0, vol_max - 1);
+            z = (int)MathHelper.Clamp(z, 0, vol_max - 1);
+
+            return (float)VolumeData[x + (y * vol_max) + (z * vol_max * vol_max)].W;
         }
 
         #endregion

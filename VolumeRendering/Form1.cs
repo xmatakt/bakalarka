@@ -19,7 +19,7 @@ namespace VolumeRendering
     public partial class Form1 : Form
     {
         int index, indexValCol;
-        private bool loaded,volumeLoaded;
+        private bool loaded, volumeLoaded;
         float scale;
         float dx, dy;
         float wPol, hPol;
@@ -52,7 +52,7 @@ namespace VolumeRendering
             if (!loaded)
                 return;
 
-            if(volumeLoaded)
+            if (volumeLoaded)
                 volume.Display();
 
             glControl1.SwapBuffers();
@@ -71,7 +71,7 @@ namespace VolumeRendering
         private void glControl1_MouseMove(object sender, MouseEventArgs e)
         {
             //posuvanie
-            if (e.Button == MouseButtons.Middle && volumeLoaded )
+            if (e.Button == MouseButtons.Middle && volumeLoaded)
             {
                 float tmpx = e.Location.X - dx;
                 float tmpy = dy - e.Location.Y;
@@ -91,7 +91,7 @@ namespace VolumeRendering
                 glControl1.Invalidate();
             }
             //skalovanie
-            if (e.Button == MouseButtons.Right && volumeLoaded )
+            if (e.Button == MouseButtons.Right && volumeLoaded)
             {
                 if (scale > 1.0f)
                     scale += ((float)dy - e.Location.Y) * scale / 500f;
@@ -105,13 +105,13 @@ namespace VolumeRendering
                 glControl1.Invalidate();
             }
         }
-        
+
         private void glControl1_MouseUp(object sender, MouseEventArgs e)
         {
             //posuvanie//skalovanie//rotacia
             if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle || e.Button == MouseButtons.Right)
             {
-                if(volumeLoaded)
+                if (volumeLoaded)
                     volume.Ende();
             }
             glControl1.Invalidate();
@@ -119,7 +119,7 @@ namespace VolumeRendering
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(volumeLoaded)
+            if (volumeLoaded)
                 volume.Delete();
         }
 
@@ -129,7 +129,7 @@ namespace VolumeRendering
             {
                 wLomeno2 = 1.0f / (float)glControl1.Width;
                 hLomeno2 = 1.0f / (float)glControl1.Height;
-                volume.Resize( glControl1.Width, glControl1.Height);
+                volume.Resize(glControl1.Width, glControl1.Height);
             }
         }
 
@@ -193,7 +193,7 @@ namespace VolumeRendering
                 indexValCol = listView2.Items.IndexOf(listView2.SelectedItems[0]);
                 //valCol_numericUpDown.Value = decimal.Parse(listView3.Items[indexValCol].Text);
                 color_label.BackColor = listView2.Items[indexValCol].BackColor;
-                if (colorDialog1.ShowDialog() == DialogResult.OK) 
+                if (colorDialog1.ShowDialog() == DialogResult.OK)
                     listView2.Items[indexValCol].BackColor = color_label.BackColor = colorDialog1.Color;
             }
             if (volumeLoaded)
@@ -315,9 +315,9 @@ namespace VolumeRendering
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            if(volumeLoaded)
+            if (volumeLoaded)
             {
-                if(panel2.Visible)
+                if (panel2.Visible)
                     volume.SetAlphaReduce((float)alphaReduce_numericUpDown.Value);
                 if (panel3.Visible)
                     volume.SetAlphaReduce((float)alphaReduce_numericUpDown2.Value);
@@ -334,7 +334,7 @@ namespace VolumeRendering
                 if (panel3.Visible)
                     volume.SetStepSize((float)stepSize_numericUpDown2.Value);
             }
-            
+
             glControl1.Invalidate();
         }
 
@@ -370,7 +370,7 @@ namespace VolumeRendering
             if (tmp_count > 0)
                 for (int i = 0; i < tmp_count; i++)
                 {
-                    float r = listView2.Items[i].BackColor.R/(float)255;
+                    float r = listView2.Items[i].BackColor.R / (float)255;
                     float g = listView2.Items[i].BackColor.G / (float)255;
                     float b = listView2.Items[i].BackColor.B / (float)255;
                     tmp.Add(new Vector4(r, g, b, float.Parse(listView3.Items[i].Text)));
@@ -396,9 +396,9 @@ namespace VolumeRendering
                 alphaReduce_numericUpDown.Value = (decimal)0.5;
                 SetListViewItems();
 
-                if(volumeLoaded)
+                if (volumeLoaded)
                     volume.Delete();
-                volume = new Volume(file, glControl1.Width, glControl1.Height);
+                volume = new Volume(file, glControl1.Width, glControl1.Height, volbaShadingu_checkBox.Checked);
                 volumeLoaded = true;
                 glControl1.Invalidate();
             }
@@ -452,6 +452,17 @@ namespace VolumeRendering
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void shadingInfo_label_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Changing state of check button after volume data was loaded" +
+                "\n don't take affect on the data." +
+                "\n Before you load volume data, choose the type of fragment shader you want to use." +
+                "\n Checked = shaded " +
+                "\n Unchecked = without shading", "Shading info",
+                MessageBoxButtons.OK, MessageBoxIcon.Information
+                );
         }
     }
 }
