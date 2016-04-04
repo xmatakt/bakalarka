@@ -19,7 +19,7 @@ namespace VolumeRendering
         private Shaders.Shader bfVertShader, bfFragShader, rcVertShader, rcFragShader;
         private Shaders.ShaderProgram spMain;
         private int VAO, indicesID, verticesID;
-        private int bfTexID, tffTexID, volTexID, frameBufferID;
+        private int bfTexID, tffTexID, volTexID, frameBufferID, depthBufferID;
         private Matrix4 modelViewMatrix, projectionMatrix;
         private Matrix4 Current, ScaleMatrix, TranslationMatrix, RotationMatrix, MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         bool tff;
@@ -80,17 +80,9 @@ namespace VolumeRendering
         {
             InitVBO();
             InitShaders();
-            string path = string.Format("..{0}..{0}Properties{0}data{0}tff.dat", Path.DirectorySeparatorChar);
-            //InitTFF1DTex(path);
             InitTFF1DTex();
             InitFace2DTex(texWidth, texHeight);
-            path = string.Format("..{0}..{0}Properties{0}data{0}VTK.vtk", Path.DirectorySeparatorChar);
-            //InitVol3DTex(path);
-            InitVol3DTex(file, 256, 256, 225);
-            //InitVol3DTex("..\\..\\Properties\\data\\male.raw", 256, 256, 128);
-            //InitVol3DTex("BostonTeapot.raw", 256, 256, 178);
-            //InitVol3DTex("foot.raw", 256, 256, 256);
-            //InitVol3DTex("skull.raw", 256, 256, 256);
+            InitVol3DTex(file);
             InitFrameBuffer(bfTexID, texWidth, texHeight);
         }
 
@@ -211,7 +203,6 @@ namespace VolumeRendering
         {
             //zistim pocet - asi by nebolo zle to nahradit dacim inym koli strate casu, v povodnom
             // programe bola napevno dana velkost 10000
-
             try
             {
                 int count = File.ReadAllBytes(pathToFile).Length;
@@ -248,11 +239,12 @@ namespace VolumeRendering
             GL.BindTexture(TextureTarget.Texture2D, bfTexID);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            //nenaolna sa datami, do nej sa bude kreslit
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            
+            //nenaplna sa datami, do nej sa bude kreslit
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, texWidth, texHeight, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
         }
 
@@ -306,48 +298,96 @@ namespace VolumeRendering
 
         private void InitVol3DTex(string pathToFile)
         {
-            VtkReader reader = new VtkReader();
-            int max = 0;
-            try
+            if(pathToFile.EndsWith(".vtk"))
             {
-                byte[] data = reader.ReadVTK(pathToFile);
-                max = reader.Max();
+                VtkReader reader = new VtkReader();
+                int max = 0;
+                try
+                {
+                    byte[] data = reader.ReadVTK(pathToFile);
+                    max = reader.Max();
 
-                volTexID = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture3D, volTexID);
-                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
-                //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-                GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
-                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-                GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.Byte, data);
+                    volTexID = GL.GenTexture();
+                    GL.BindTexture(TextureTarget.Texture3D, volTexID);
+                    //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+                    //GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                    GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Linear);
+                    GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                    GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+                    GL.TexParameter(TextureTarget.Texture3D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
+                    GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+                    GL.TexImage3D(TextureTarget.Texture3D, 0, PixelInternalFormat.Intensity, max, max, max, 0, PixelFormat.Luminance, PixelType.Byte, data);
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+                }
+                catch
+                {
+                    System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+                }
             }
-            catch (System.IO.FileNotFoundException)
+            if(pathToFile.EndsWith(".tsf"))
             {
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+                int w, h, d; w = h = d = 0;
+                string rawFile="";
+                char[] separator = { ' ' };
+                StreamReader sr = new StreamReader(pathToFile);
+                string firstLine = sr.ReadLine();
+
+                if (firstLine.Contains("Dimensions:"))
+                {
+                    string[] arr = firstLine.Split(separator);
+                    try 
+                    {
+                        w = int.Parse(arr[1]);
+                        h = int.Parse(arr[2]);
+                        d = int.Parse(arr[3]);
+                        System.Diagnostics.Debug.WriteLine(w + "," + h + "," + d);
+                    }
+                    catch
+                    {
+                        System.Windows.Forms.MessageBox.Show("Nespravny format suboru " + pathToFile,"Vnimanie!",
+                            System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Error);
+                    }
+                }
+
+                firstLine = sr.ReadLine();
+                if (firstLine.Contains("raw file:"))
+                {
+                    string[] arr = firstLine.Split(separator);
+                    try
+                    {
+                        if (arr[2].Contains(".raw"))
+                            rawFile = arr[2];
+                        else
+                            throw new Exception();
+                    }
+                    catch
+                    {
+                        System.Windows.Forms.MessageBox.Show("Nespravny format suboru " + pathToFile, "Vnimanie!",
+                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    }
+                }
+                sr.Close();
+                InitVol3DTex(rawFile,w,h,d);
             }
-            catch
-            {
-                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
-            }
+        
         }
 
         private void InitFrameBuffer(int texID, int texWidth, int texHeight)
         {
             // create a depth buffer for our framebuffer
-            int depthBuffer;
-            depthBuffer = GL.GenRenderbuffer();
-            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthBuffer);
+            depthBufferID = GL.GenRenderbuffer();
+            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthBufferID);
             GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, texWidth, texHeight);
 
             // attach the texture and the depth buffer to the framebuffer
             frameBufferID = GL.GenFramebuffer();
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferID);
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texID, 0);
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBuffer);
+            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBufferID);
 
             GL.Enable(EnableCap.DepthTest);
         }
@@ -463,13 +503,11 @@ namespace VolumeRendering
         }
 
         #region ovladanie
+
         public void Rotate(float x, float y, float angle)
         {
             RotationMatrix = Matrix4.CreateFromAxisAngle(new Vector3(y, x, 0.0f), angle);
-            Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix);
-            Current = mat * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            //mat = mat.Inverted(); mat = Matrix4.Transpose(mat);
-            //spMain.SetUniform("normalMatrix", mat);
+            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
             spMain.SetUniform("modelViewMatrix", Current);
         }
 
@@ -477,24 +515,20 @@ namespace VolumeRendering
         {
             scale = s;
             ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
-            Matrix4 mat = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix);
-            Current = mat * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            //mat = mat.Inverted(); mat = Matrix4.Transpose(mat);
-            //spMain.SetUniform("normalMatrix", mat);
+            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
             spMain.SetUniform("modelViewMatrix", Current);
         }
 
-        public void SetAlphaReduce(float AlphaReduce)
+        public void Transalte(float x, float y)
         {
-            this.AlphaReduce = AlphaReduce;
-            spMain.SetUniform("AlphaReduce", AlphaReduce);
+            TranslationMatrix = Matrix4.CreateTranslation(x, y, 0.0f);
+            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
+            spMain.SetUniform("modelViewMatrix", Current);
         }
 
-        public void SetStepSize(float step)
-        {
-            stepSize = step;
-            spMain.SetUniform("StepSize", stepSize);
-        }
+        public void SetAlphaReduce(float AlphaReduce) { this.AlphaReduce = AlphaReduce; }
+
+        public void SetStepSize(float step) { stepSize = step; }
 
         public void Ende()
         {
@@ -511,6 +545,13 @@ namespace VolumeRendering
         {
             width = texWidth = w;
             height = texHeight = h;
+            projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
+            GL.BindTexture(TextureTarget.Texture2D, bfTexID);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba16f, texWidth, texHeight, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+            GL.DeleteFramebuffer(frameBufferID);
+            GL.DeleteRenderbuffer(depthBufferID);
+            InitFrameBuffer(bfTexID, texWidth, texHeight);
         }
 
         public void ChangeOpacity(List<Vector2> list)
@@ -557,6 +598,42 @@ namespace VolumeRendering
             }
         }
 
+        public void SaveTransferFunction(string path)
+        {
+            byte[] arr = transferFunction.GetTransferFunction();
+            BinaryWriter br = new BinaryWriter(new FileStream(path, FileMode.Create), Encoding.ASCII);
+            for (int i = 0; i < arr.Length; i++)
+                br.Write(arr[i]);
+            br.Flush();
+            br.Close();
+        }
+
+        public void LoadTransferFunction(string pathToFile)
+        {
+            try
+            {
+                int count = File.ReadAllBytes(pathToFile).Length;
+                byte[] tff = new byte[count];
+
+                BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
+                //naplnim tff[] 
+                br.Read(tff, 0, count);
+                br.Close();
+
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                //prepise data, nemusim vytvarat novu texturu a nicit staru
+                GL.TexSubImage1D(TextureTarget.Texture1D, 0, 0, 256, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+            }
+        }
+
         #endregion
 
         public void Delete()
@@ -566,6 +643,11 @@ namespace VolumeRendering
             GL.DeleteBuffer(verticesID);
             GL.DeleteBuffer(indicesID);
             GL.DeleteVertexArray(VAO);
+            GL.DeleteTexture(bfTexID);
+            GL.DeleteTexture(tffTexID);
+            GL.DeleteTexture(volTexID);
+            GL.DeleteRenderbuffer(depthBufferID);
+            GL.DeleteFramebuffer(frameBufferID);
             //najprv detach
             bfFragShader.DeleteShader();
             bfVertShader.DeleteShader();
