@@ -191,7 +191,7 @@ namespace VolumeRendering
             {
                 ValColDel_button.Enabled = false;
                 indexValCol = listView2.Items.IndexOf(listView2.SelectedItems[0]);
-                valCol_numericUpDown.Value = decimal.Parse(listView3.Items[indexValCol].Text);
+                //valCol_numericUpDown.Value = decimal.Parse(listView3.Items[indexValCol].Text);
                 color_label.BackColor = listView2.Items[indexValCol].BackColor;
                 if (colorDialog1.ShowDialog() == DialogResult.OK) 
                     listView2.Items[indexValCol].BackColor = color_label.BackColor = colorDialog1.Color;
@@ -226,24 +226,16 @@ namespace VolumeRendering
             ListViewItem lvicol = new ListViewItem("");
             lvicol.BackColor = color_label.BackColor;
             listView2.Items.Add(lvicol);
-        }
-
-        //zmena vybranej zlozky
-        private void ValCol_buttonEdit_Click(object sender, EventArgs e)
-        {
-            if (listView3.Items.Count > 0)
-            {
-                listView3.Items[indexValCol].Text = valCol_numericUpDown.Value.ToString();
-                listView2.Items[indexValCol].BackColor = color_label.BackColor;
-                ValColDel_button.Enabled = false;
-            }
+            if (volumeLoaded)
+                volume.ChangeColors(GetListFromViewList4());
+            glControl1.Invalidate();
         }
 
         //delete vybranej zlozky
         private void ValColDel_button_Click(object sender, EventArgs e)
         {
-            listView3.Items[indexValCol].Remove();
             listView2.Items[indexValCol].Remove();
+            listView3.Items[indexValCol].Remove();
             ValColDel_button.Enabled = false;
             if (volumeLoaded)
                 volume.ChangeColors(GetListFromViewList4());
@@ -261,6 +253,9 @@ namespace VolumeRendering
             lvi.SubItems.Add(opacity_numericUpDown.Value.ToString());
             ValOp_ListView.Items.Add(lvi);
             ValOp_ListView.Sort();
+            if (volumeLoaded)
+                volume.ChangeOpacity(GetListFromViewList2());
+            glControl1.Invalidate();
         }
 
         //vyber urcitej polozky
@@ -377,17 +372,17 @@ namespace VolumeRendering
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 file = openFileDialog1.FileName;
+
+                ValOp_ListView.Items.Clear();
+                listView2.Items.Clear();
+                listView3.Items.Clear();
+                scale = 1.0f;
+                stepSize_numericUpDown.Value = (decimal)0.001;
+                alphaReduce_numericUpDown.Value = (decimal)0.5;
+                SetListViewItems();
+
                 if(volumeLoaded)
-                {
-                    ValOp_ListView.Items.Clear();
-                    listView2.Items.Clear();
-                    listView3.Items.Clear();
-                    scale = 1.0f;
-                    stepSize_numericUpDown.Value = (decimal)0.001;
-                    alphaReduce_numericUpDown.Value = (decimal)0.5;
-                    SetListViewItems();
                     volume.Delete();
-                }
                 volume = new Volume(file, glControl1.Width, glControl1.Height);
                 volumeLoaded = true;
                 glControl1.Invalidate();
