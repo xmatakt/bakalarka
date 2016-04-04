@@ -315,13 +315,26 @@ namespace VolumeRendering
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            volume.SetAlphaReduce((float)alphaReduce_numericUpDown.Value);
+            if(volumeLoaded)
+            {
+                if(panel2.Visible)
+                    volume.SetAlphaReduce((float)alphaReduce_numericUpDown.Value);
+                if (panel3.Visible)
+                    volume.SetAlphaReduce((float)alphaReduce_numericUpDown2.Value);
+            }
             glControl1.Invalidate();
         }
 
         private void stepSize_numericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            volume.SetStepSize((float)stepSize_numericUpDown.Value);
+            if (volumeLoaded)
+            {
+                if (panel2.Visible)
+                    volume.SetStepSize((float)stepSize_numericUpDown.Value);
+                if (panel3.Visible)
+                    volume.SetStepSize((float)stepSize_numericUpDown2.Value);
+            }
+            
             glControl1.Invalidate();
         }
 
@@ -330,6 +343,14 @@ namespace VolumeRendering
         {
             panel3.Visible = false;
             panel2.Visible = true;
+            alphaReduce_numericUpDown.Value = alphaReduce_numericUpDown2.Value;
+            stepSize_numericUpDown.Value = stepSize_numericUpDown2.Value;
+            if (volumeLoaded)
+            {
+                volume.ChangeOpacity(GetListFromViewList2());
+                volume.ChangeColors(GetListFromViewList4());
+            }
+            glControl1.Invalidate();
         }
 
         private List<Vector2> GetListFromViewList2()
@@ -339,12 +360,6 @@ namespace VolumeRendering
             if (tmp_count > 0)
                 for (int i = 0; i < tmp_count; i++)
                     tmp.Add(new Vector2(float.Parse(ValOp_ListView.Items[i].SubItems[1].Text), float.Parse(ValOp_ListView.Items[i].Text)));
-
-            foreach (var item in tmp)
-            {
-                System.Diagnostics.Debug.WriteLine(item);
-            }
-
             return tmp;
         }
 
@@ -427,6 +442,8 @@ namespace VolumeRendering
                     volume.LoadTransferFunction(file);
                     panel3.Visible = true;
                     panel2.Visible = false;
+                    alphaReduce_numericUpDown2.Value = alphaReduce_numericUpDown.Value;
+                    stepSize_numericUpDown2.Value = stepSize_numericUpDown.Value;
                 }
                 glControl1.Invalidate();
             }

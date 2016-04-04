@@ -62,6 +62,10 @@
             this.button2 = new System.Windows.Forms.Button();
             this.info_label = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.stepSize_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
+            this.alphaReduce_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.value_numericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.opacity_numericUpDown)).BeginInit();
@@ -71,6 +75,8 @@
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.stepSize_numericUpDown2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.alphaReduce_numericUpDown2)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -269,7 +275,7 @@
             0,
             0,
             196608});
-            this.stepSize_numericUpDown.Location = new System.Drawing.Point(86, 598);
+            this.stepSize_numericUpDown.Location = new System.Drawing.Point(83, 597);
             this.stepSize_numericUpDown.Maximum = new decimal(new int[] {
             10,
             0,
@@ -327,7 +333,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(86, 578);
+            this.label2.Location = new System.Drawing.Point(83, 577);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 17);
             this.label2.TabIndex = 19;
@@ -336,7 +342,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 576);
+            this.label1.Location = new System.Drawing.Point(6, 577);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(69, 17);
             this.label1.TabIndex = 18;
@@ -415,7 +421,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(10, 138);
+            this.button2.Location = new System.Drawing.Point(10, 192);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(79, 35);
             this.button2.TabIndex = 21;
@@ -434,22 +440,97 @@
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.label3);
+            this.panel3.Controls.Add(this.label4);
+            this.panel3.Controls.Add(this.stepSize_numericUpDown2);
+            this.panel3.Controls.Add(this.alphaReduce_numericUpDown2);
             this.panel3.Controls.Add(this.button2);
             this.panel3.Controls.Add(this.info_label);
-            this.panel3.Location = new System.Drawing.Point(7, 47);
+            this.panel3.Location = new System.Drawing.Point(14, 42);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(181, 198);
+            this.panel3.Size = new System.Drawing.Size(179, 245);
             this.panel3.TabIndex = 22;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(90, 134);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(70, 17);
+            this.label3.TabIndex = 25;
+            this.label3.Text = "Step size:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(13, 133);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(69, 17);
+            this.label4.TabIndex = 24;
+            this.label4.Text = "A reduce:";
+            // 
+            // stepSize_numericUpDown2
+            // 
+            this.stepSize_numericUpDown2.DecimalPlaces = 4;
+            this.stepSize_numericUpDown2.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.stepSize_numericUpDown2.Location = new System.Drawing.Point(90, 154);
+            this.stepSize_numericUpDown2.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            65536});
+            this.stepSize_numericUpDown2.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            262144});
+            this.stepSize_numericUpDown2.Name = "stepSize_numericUpDown2";
+            this.stepSize_numericUpDown2.Size = new System.Drawing.Size(71, 22);
+            this.stepSize_numericUpDown2.TabIndex = 23;
+            this.stepSize_numericUpDown2.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.stepSize_numericUpDown2.ValueChanged += new System.EventHandler(this.stepSize_numericUpDown_ValueChanged);
+            // 
+            // alphaReduce_numericUpDown2
+            // 
+            this.alphaReduce_numericUpDown2.DecimalPlaces = 2;
+            this.alphaReduce_numericUpDown2.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.alphaReduce_numericUpDown2.Location = new System.Drawing.Point(13, 154);
+            this.alphaReduce_numericUpDown2.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            65536});
+            this.alphaReduce_numericUpDown2.Name = "alphaReduce_numericUpDown2";
+            this.alphaReduce_numericUpDown2.Size = new System.Drawing.Size(71, 22);
+            this.alphaReduce_numericUpDown2.TabIndex = 22;
+            this.alphaReduce_numericUpDown2.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            this.alphaReduce_numericUpDown2.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1028, 752);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel2);
-            this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.panel3);
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -465,6 +546,9 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.stepSize_numericUpDown2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.alphaReduce_numericUpDown2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -505,6 +589,10 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label info_label;
         private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown stepSize_numericUpDown2;
+        private System.Windows.Forms.NumericUpDown alphaReduce_numericUpDown2;
     }
 }
 
