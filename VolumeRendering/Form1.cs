@@ -105,13 +105,11 @@ namespace VolumeRendering
 
                 if (scale < .0f)
                     scale = .0f;
-                if (scale > 2.8f)
-                    scale = 2.8f;
-
-                dy = e.Location.Y;
 
                 volume.SetStepSize(0.01f);
                 volume.Scale(scale);
+
+                dy = e.Location.Y;
 
                 glControl1.Invalidate();
             }

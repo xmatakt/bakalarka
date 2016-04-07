@@ -17,7 +17,7 @@ namespace VolumeRendering
         private string gradFile;
         private int width, height, texWidth, texHeight;
         private int vol_max;
-        private float scale, stepSize, AlphaReduce;
+        private float scaleCoeff, stepSize, AlphaReduce;
         private Shaders.Shader bfVertShader, bfFragShader, rcVertShader, rcFragShader;
         private Shaders.ShaderProgram spMain;
         private int VAO, indicesID, verticesID;
@@ -27,6 +27,7 @@ namespace VolumeRendering
             MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         private bool shaded;//pre volbu uzivatela, ci chce tienovanie
         private bool gradient;//ci normaly treba pocitat, alebo nie
+        private bool scale;
         private TransferFunction transferFunction;
         private List<KeyValuePair<byte,int>> IsoTable;
         private Form1 form;
@@ -57,13 +58,14 @@ namespace VolumeRendering
             height = texHeight = h;
             vol_max = 0;
             gradient = false;
+            scale = true;
 
             stepSize = 0.001f;
             AlphaReduce = 0.5f;
 
             Current = modelViewMatrix = Matrix4.LookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
             projectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f, width / (float)height, 0.01f, 300.0f);
-            ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
+            ScaleMatrix = Matrix4.CreateScale(scaleCoeff, scaleCoeff, scaleCoeff);
             TranslationMatrix = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
             RotationMatrix = Matrix4.Identity;
             MatrixStore_Rotations = Matrix4.Identity;
@@ -421,6 +423,7 @@ namespace VolumeRendering
         {
             spMain.SetUniform("ScreenSize", (float)width, (float)height);
             spMain.SetUniform("StepSize", stepSize);
+            spMain.SetUniform("scaleCoeff", scaleCoeff);
 
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture1D, tffTexID);
@@ -650,10 +653,20 @@ namespace VolumeRendering
 
         public void Scale(float s)
         {
-            scale = s;
-            ScaleMatrix = Matrix4.CreateScale(scale, scale, scale);
-            Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
-            //spMain.SetUniform("modelViewMatrix", Current);
+            //if(scale)
+            //{
+            if (s > 2.7f)
+            {
+                scaleCoeff = s;
+                ScaleMatrix = Matrix4.CreateScale(2.7f, 2.7f, 2.7f);
+                Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
+            }
+            else
+            {
+                scaleCoeff = s;
+                ScaleMatrix = Matrix4.CreateScale(scaleCoeff, scaleCoeff, scaleCoeff);
+                Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
+            }
         }
 
         public void Transalte(float x, float y)
@@ -666,6 +679,8 @@ namespace VolumeRendering
         public void SetAlphaReduce(float AlphaReduce) { this.AlphaReduce = AlphaReduce; }
 
         public void SetStepSize(float step) { stepSize = step; }
+
+        //public void SetScaleCoeff(float scaleCoeff) { this.scaleCoeff = scaleCoeff; }
 
         public void Ende()
         {

@@ -8,6 +8,7 @@ uniform sampler3D VolumeTex;
 uniform sampler1D TransferFunc;  
 uniform float     StepSize;
 uniform float     AlphaReduce;
+uniform float     scaleCoeff;
 uniform vec2      ScreenSize;
 layout (location = 0) out vec4 FragColor;
 
@@ -16,7 +17,21 @@ void main()
 	//gl_FragCoord --> http://www.txutxi.com/?p=182
 	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
 	vec3 rayDirection = normalize(exitPoint - EntryPoint);
-	vec3 entryPoint = EntryPoint + 0.0f * rayDirection;
+
+	//odstranenie miznutia objektu pri prilisnom priblizeni
+	vec3 entryPoint = vec3(0.0f);
+	if(scaleCoeff >= 2.7f)
+	{
+		float tmp = min((scaleCoeff - 2.7f) * 0.1f, 1.0f);
+		entryPoint = EntryPoint + tmp * (exitPoint - EntryPoint);//rayDirection;
+	}
+	else
+	{
+		entryPoint = EntryPoint;
+	}
+	//
+
+	//vec3 entryPoint = EntryPoint + 0.0f * rayDirection;
 
 	//background need no raycasting
 	if (entryPoint == exitPoint)
