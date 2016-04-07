@@ -15,51 +15,50 @@ void main()
 {
 	//gl_FragCoord --> http://www.txutxi.com/?p=182
 	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
+	vec3 rayDirection = normalize(exitPoint - EntryPoint);
+	vec3 entryPoint = EntryPoint + 0.0f * rayDirection;
 
-	if (EntryPoint == exitPoint)
-		//background need no raycasting
+	//background need no raycasting
+	if (entryPoint == exitPoint)
 		discard;
 	
-	vec3 dir = normalize(exitPoint - EntryPoint);
-	vec4 pos = vec4(EntryPoint, 0.0f);
-	vec4 dst = vec4(.0f,.0f,.0f,0.0f);
-	vec4 src = vec4(0.0f,0.0f,0.0f,0.0f);
-	float value = 0.0f;
-	vec3 Step = dir * StepSize;
+	//vec3 rayDirection = normalize(exitPoint - entryPoint);
+	vec4 currentPosition = vec4(entryPoint, 0.0f);
+	vec4 colorSum = vec4(.0f,.0f,.0f,.0f);
+	vec4 color = vec4(0.0f,0.0f,0.0f,0.0f);
+	vec4 value = vec4(0.0f);
+
+	vec3 Step = rayDirection * StepSize;
 	float stepLength= length(Step);
 	float LengthSum = 0.0f;
-	float Length = length(exitPoint - EntryPoint);
-
-	//len preto aby to islo
-	//vec4 tmp = texture(TransferFunc, value);
-	//
+	float Length = length(exitPoint - entryPoint);
 	
-	for(int i=0; i < 1600; i++)
+	for(int i=0; i < 16000; i++)
 	{
-		//pos.w = 0.0f;
-		value = texture(VolumeTex, pos.xyz).a;
-		//src = vec4(value);
-		src = texture(TransferFunc,value);
+		currentPosition.w = 0.0f;
+		value = texture(VolumeTex, currentPosition.xyz);
+		color = texture(TransferFunc, value.a);
+
 		//reduce the alpha to have a more transparent result
-		src.a *= AlphaReduce;
+		color.a *= AlphaReduce;
 		
 		//Front to back blending
-		src.rgb *= src.a;
-		dst = (1.0f - dst.a) * src + dst;
+		color.rgb *= color.a;
+		colorSum = (1.0f - colorSum.a) * color + colorSum;
 		
 		//accumulate length
 		LengthSum += stepLength;
 
 		//break from the loop when alpha gets high enough
-		if(dst.a >= .95f)
+		if(colorSum.a >= .95f)
 			break;
 		
 		//advance the current position
-		pos.xyz += Step;
+		currentPosition.xyz += Step;
 
 		//break if the ray is outside of the bounding box
 		if(LengthSum >= Length)
 			break;
 	}
-	FragColor = dst;
+	FragColor = colorSum;
 }

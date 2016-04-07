@@ -127,9 +127,9 @@ namespace VolumeRendering.Properties {
         ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
         ///	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
         ///
+        ///	//background need no raycasting
         ///	if (EntryPoint == exitPoint)
-        ///		//background need no raycasting
-        ///		discard [rest of string was truncated]&quot;;.
+        ///		discard; [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string rcCustomTffFrag {
             get {
@@ -249,6 +249,16 @@ namespace VolumeRendering.Properties {
         internal static string rcVert {
             get {
                 return ResourceManager.GetString("rcVert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap temne_logo {
+            get {
+                object obj = ResourceManager.GetObject("temne_logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

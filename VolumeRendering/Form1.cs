@@ -34,6 +34,8 @@ namespace VolumeRendering
             scale = 1.0f;
             volumeLoaded = false;
             panel3.Visible = false;
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.Image = VolumeRendering.Properties.Resources.temne_logo;
         }
 
         private void glControl1_Load(object sender, EventArgs e)
@@ -75,6 +77,7 @@ namespace VolumeRendering
             {
                 float tmpx = e.Location.X - dx;
                 float tmpy = dy - e.Location.Y;
+                volume.SetStepSize(0.01f);
                 volume.Scale(scale);
                 volume.Transalte(wLomeno2 * tmpx, hLomeno2 * tmpy);
                 glControl1.Invalidate();
@@ -86,10 +89,12 @@ namespace VolumeRendering
                 float tmpx = (e.Location.X - dx) / wPol;
                 float tmpy = (e.Location.Y - dy) / hPol;
                 float angle = (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
+                volume.SetStepSize(0.01f);
                 volume.Scale(scale);
                 volume.Rotate(tmpx, tmpy, angle);
                 glControl1.Invalidate();
             }
+
             //skalovanie
             if (e.Button == MouseButtons.Right && volumeLoaded)
             {
@@ -98,8 +103,14 @@ namespace VolumeRendering
                 else
                     scale += ((float)dy - e.Location.Y) / 500f;
 
+                if (scale < .0f)
+                    scale = .0f;
+                if (scale > 2.8f)
+                    scale = 2.8f;
+
                 dy = e.Location.Y;
 
+                volume.SetStepSize(0.01f);
                 volume.Scale(scale);
 
                 glControl1.Invalidate();
@@ -112,7 +123,13 @@ namespace VolumeRendering
             if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle || e.Button == MouseButtons.Right)
             {
                 if (volumeLoaded)
+                {
+                    if (panel2.Visible)
+                        volume.SetStepSize((float)stepSize_numericUpDown.Value);
+                    if (panel3.Visible)
+                        volume.SetStepSize((float)stepSize_numericUpDown2.Value);
                     volume.Ende();
+                }
             }
             glControl1.Invalidate();
         }
@@ -397,8 +414,12 @@ namespace VolumeRendering
                 SetListViewItems();
 
                 if (volumeLoaded)
+                {
                     volume.Delete();
-                volume = new Volume(file, glControl1.Width, glControl1.Height, volbaShadingu_checkBox.Checked);
+                    //GC.Collect();
+                }
+                    
+                volume = new Volume(file, glControl1.Width, glControl1.Height, volbaShadingu_checkBox.Checked,this);
                 volumeLoaded = true;
                 glControl1.Invalidate();
             }
@@ -419,6 +440,7 @@ namespace VolumeRendering
                 bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
                 bmp.Save(saveFileDialog1.FileName, ImageFormat.Png);
                 bmp.Dispose();
+                AddTextToOutput("Image " + Path.GetFileName(saveFileDialog1.FileName) + " was saved.");
             }
         }
 
@@ -427,7 +449,10 @@ namespace VolumeRendering
             saveFileDialog1.FileName = "nazovVystihujuciFunkciu.dat";
             saveFileDialog1.Filter = "DAT files (*.dat)|*.dat";
             if (saveFileDialog1.ShowDialog() == DialogResult.OK && volumeLoaded)
+            {
                 volume.SaveTransferFunction(saveFileDialog1.FileName);
+                AddTextToOutput("Transfer function " + Path.GetFileName(saveFileDialog1.FileName) + " was saved.");
+            }
         }
 
         private void loadTransferFunctionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -444,6 +469,7 @@ namespace VolumeRendering
                     panel2.Visible = false;
                     alphaReduce_numericUpDown2.Value = alphaReduce_numericUpDown.Value;
                     stepSize_numericUpDown2.Value = stepSize_numericUpDown.Value;
+                    AddTextToOutput("Transfer function " + Path.GetFileName(openFileDialog1.FileName) + " was loaded.");
                 }
                 glControl1.Invalidate();
             }
@@ -463,6 +489,23 @@ namespace VolumeRendering
                 "\n Unchecked = without shading", "Shading info",
                 MessageBoxButtons.OK, MessageBoxIcon.Information
                 );
+        }
+
+        public void AddTextToOutput(string text)
+        {
+            output.Items.Add(text);
+            output.SelectedIndex = output.Items.Count - 1;
+            output.Refresh();
+        }
+
+        public void RewriteLastItem(string text)
+        {
+            int count=output.Items.Count;
+            if (count > 0)
+                output.Items[count - 1] = text;
+            else
+                AddTextToOutput(text);
+            output.Refresh();
         }
     }
 }

@@ -33,7 +33,7 @@ void main()
 	//vec4 tmp = texture(TransferFunc, value);
 	//
 	
-	for(int i=0; i < 1600; i++)
+	for(int i=0; i < 16000; i++)
 	{
 		pos.w = 0.0f;
 		value = texture(VolumeTex, pos.xyz).r;

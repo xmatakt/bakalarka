@@ -48,6 +48,7 @@
             this.stepSize_numericUpDown = new System.Windows.Forms.NumericUpDown();
             this.ValOpDel_button = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.shadingInfo_label = new System.Windows.Forms.Label();
             this.volbaShadingu_checkBox = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -67,7 +68,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.stepSize_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.alphaReduce_numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.shadingInfo_label = new System.Windows.Forms.Label();
+            this.output = new System.Windows.Forms.ListBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.value_numericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.opacity_numericUpDown)).BeginInit();
@@ -79,6 +81,7 @@
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.stepSize_numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.alphaReduce_numericUpDown2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -90,7 +93,7 @@
             this.glControl1.Location = new System.Drawing.Point(4, 3);
             this.glControl1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(807, 690);
+            this.glControl1.Size = new System.Drawing.Size(807, 771);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
@@ -109,7 +112,7 @@
             this.panel1.Controls.Add(this.glControl1);
             this.panel1.Location = new System.Drawing.Point(194, 42);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(819, 701);
+            this.panel1.Size = new System.Drawing.Size(819, 697);
             this.panel1.TabIndex = 1;
             // 
             // ValOp_ListView
@@ -118,7 +121,7 @@
             this.Value,
             this.Opacity});
             this.ValOp_ListView.FullRowSelect = true;
-            this.ValOp_ListView.Location = new System.Drawing.Point(6, 3);
+            this.ValOp_ListView.Location = new System.Drawing.Point(10, 13);
             this.ValOp_ListView.Name = "ValOp_ListView";
             this.ValOp_ListView.Size = new System.Drawing.Size(156, 216);
             this.ValOp_ListView.TabIndex = 1;
@@ -140,7 +143,7 @@
             // 
             this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Farba});
-            this.listView2.Location = new System.Drawing.Point(68, 287);
+            this.listView2.Location = new System.Drawing.Point(84, 297);
             this.listView2.Name = "listView2";
             this.listView2.Size = new System.Drawing.Size(66, 216);
             this.listView2.TabIndex = 2;
@@ -154,7 +157,7 @@
             // 
             // value_numericUpDown
             // 
-            this.value_numericUpDown.Location = new System.Drawing.Point(6, 225);
+            this.value_numericUpDown.Location = new System.Drawing.Point(10, 235);
             this.value_numericUpDown.Maximum = new decimal(new int[] {
             256,
             0,
@@ -173,7 +176,7 @@
             0,
             0,
             65536});
-            this.opacity_numericUpDown.Location = new System.Drawing.Point(91, 225);
+            this.opacity_numericUpDown.Location = new System.Drawing.Point(95, 235);
             this.opacity_numericUpDown.Maximum = new decimal(new int[] {
             10,
             0,
@@ -188,7 +191,7 @@
             // 
             this.color_label.AutoSize = true;
             this.color_label.BackColor = System.Drawing.Color.Red;
-            this.color_label.Location = new System.Drawing.Point(82, 511);
+            this.color_label.Location = new System.Drawing.Point(82, 521);
             this.color_label.Name = "color_label";
             this.color_label.Size = new System.Drawing.Size(44, 17);
             this.color_label.TabIndex = 5;
@@ -197,7 +200,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(6, 253);
+            this.button1.Location = new System.Drawing.Point(25, 263);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(59, 27);
             this.button1.TabIndex = 6;
@@ -210,7 +213,7 @@
             this.listView3.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
             this.listView3.FullRowSelect = true;
-            this.listView3.Location = new System.Drawing.Point(6, 287);
+            this.listView3.Location = new System.Drawing.Point(22, 297);
             this.listView3.Name = "listView3";
             this.listView3.Size = new System.Drawing.Size(66, 216);
             this.listView3.TabIndex = 8;
@@ -224,7 +227,7 @@
             // 
             // valCol_numericUpDown
             // 
-            this.valCol_numericUpDown.Location = new System.Drawing.Point(6, 509);
+            this.valCol_numericUpDown.Location = new System.Drawing.Point(22, 519);
             this.valCol_numericUpDown.Maximum = new decimal(new int[] {
             256,
             0,
@@ -237,7 +240,7 @@
             // 
             // ValCol_buttonAdd
             // 
-            this.ValCol_buttonAdd.Location = new System.Drawing.Point(6, 537);
+            this.ValCol_buttonAdd.Location = new System.Drawing.Point(22, 547);
             this.ValCol_buttonAdd.Name = "ValCol_buttonAdd";
             this.ValCol_buttonAdd.Size = new System.Drawing.Size(59, 27);
             this.ValCol_buttonAdd.TabIndex = 10;
@@ -253,7 +256,7 @@
             0,
             0,
             131072});
-            this.alphaReduce_numericUpDown.Location = new System.Drawing.Point(6, 597);
+            this.alphaReduce_numericUpDown.Location = new System.Drawing.Point(13, 607);
             this.alphaReduce_numericUpDown.Maximum = new decimal(new int[] {
             10,
             0,
@@ -277,7 +280,7 @@
             0,
             0,
             196608});
-            this.stepSize_numericUpDown.Location = new System.Drawing.Point(83, 597);
+            this.stepSize_numericUpDown.Location = new System.Drawing.Point(90, 607);
             this.stepSize_numericUpDown.Maximum = new decimal(new int[] {
             10,
             0,
@@ -301,7 +304,7 @@
             // ValOpDel_button
             // 
             this.ValOpDel_button.Enabled = false;
-            this.ValOpDel_button.Location = new System.Drawing.Point(71, 253);
+            this.ValOpDel_button.Location = new System.Drawing.Point(90, 263);
             this.ValOpDel_button.Name = "ValOpDel_button";
             this.ValOpDel_button.Size = new System.Drawing.Size(59, 28);
             this.ValOpDel_button.TabIndex = 15;
@@ -311,6 +314,8 @@
             // 
             // panel2
             // 
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel2.Controls.Add(this.shadingInfo_label);
             this.panel2.Controls.Add(this.volbaShadingu_checkBox);
@@ -334,10 +339,21 @@
             this.panel2.Size = new System.Drawing.Size(176, 697);
             this.panel2.TabIndex = 18;
             // 
+            // shadingInfo_label
+            // 
+            this.shadingInfo_label.AutoSize = true;
+            this.shadingInfo_label.Cursor = System.Windows.Forms.Cursors.Help;
+            this.shadingInfo_label.Location = new System.Drawing.Point(103, 650);
+            this.shadingInfo_label.Name = "shadingInfo_label";
+            this.shadingInfo_label.Size = new System.Drawing.Size(45, 17);
+            this.shadingInfo_label.TabIndex = 24;
+            this.shadingInfo_label.Text = "| info |";
+            this.shadingInfo_label.Click += new System.EventHandler(this.shadingInfo_label_Click);
+            // 
             // volbaShadingu_checkBox
             // 
             this.volbaShadingu_checkBox.AutoSize = true;
-            this.volbaShadingu_checkBox.Location = new System.Drawing.Point(13, 647);
+            this.volbaShadingu_checkBox.Location = new System.Drawing.Point(26, 648);
             this.volbaShadingu_checkBox.Name = "volbaShadingu_checkBox";
             this.volbaShadingu_checkBox.Size = new System.Drawing.Size(80, 21);
             this.volbaShadingu_checkBox.TabIndex = 23;
@@ -347,7 +363,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(83, 577);
+            this.label2.Location = new System.Drawing.Point(90, 587);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 17);
             this.label2.TabIndex = 19;
@@ -356,7 +372,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 577);
+            this.label1.Location = new System.Drawing.Point(13, 587);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(69, 17);
             this.label1.TabIndex = 18;
@@ -365,7 +381,7 @@
             // ValColDel_button
             // 
             this.ValColDel_button.Enabled = false;
-            this.ValColDel_button.Location = new System.Drawing.Point(71, 537);
+            this.ValColDel_button.Location = new System.Drawing.Point(87, 547);
             this.ValColDel_button.Name = "ValColDel_button";
             this.ValColDel_button.Size = new System.Drawing.Size(59, 28);
             this.ValColDel_button.TabIndex = 14;
@@ -536,26 +552,38 @@
             65536});
             this.alphaReduce_numericUpDown2.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
-            // shadingInfo_label
+            // output
             // 
-            this.shadingInfo_label.AutoSize = true;
-            this.shadingInfo_label.Cursor = System.Windows.Forms.Cursors.Help;
-            this.shadingInfo_label.Location = new System.Drawing.Point(90, 649);
-            this.shadingInfo_label.Name = "shadingInfo_label";
-            this.shadingInfo_label.Size = new System.Drawing.Size(45, 17);
-            this.shadingInfo_label.TabIndex = 24;
-            this.shadingInfo_label.Text = "| info |";
-            this.shadingInfo_label.Click += new System.EventHandler(this.shadingInfo_label_Click);
+            this.output.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.output.FormattingEnabled = true;
+            this.output.ItemHeight = 16;
+            this.output.Location = new System.Drawing.Point(194, 747);
+            this.output.Margin = new System.Windows.Forms.Padding(0);
+            this.output.Name = "output";
+            this.output.Size = new System.Drawing.Size(819, 84);
+            this.output.TabIndex = 23;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBox1.Location = new System.Drawing.Point(12, 747);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(176, 84);
+            this.pictureBox1.TabIndex = 24;
+            this.pictureBox1.TabStop = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1028, 752);
-            this.Controls.Add(this.panel3);
+            this.ClientSize = new System.Drawing.Size(1028, 840);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.output);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel3);
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -574,6 +602,7 @@
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.stepSize_numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.alphaReduce_numericUpDown2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -620,6 +649,8 @@
         private System.Windows.Forms.NumericUpDown alphaReduce_numericUpDown2;
         private System.Windows.Forms.CheckBox volbaShadingu_checkBox;
         private System.Windows.Forms.Label shadingInfo_label;
+        private System.Windows.Forms.ListBox output;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

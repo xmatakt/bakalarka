@@ -24,8 +24,7 @@ namespace VolumeRendering
         public int Max() { return max; }
 
         public byte[] ReadVTK(string filename)
-        {
-
+        {                        
             //filestream do ktoreho otvorime nas subor
             FileStream instream = File.Open(filename, FileMode.Open);
             //nasledne si tento stream otvorime v binarnom aj textovom readeri
@@ -74,11 +73,14 @@ namespace VolumeRendering
             if (max < dz)
                 max = dz;
 
-            byte[] vtk_data = new byte[dx * dy * dz];
+            int tmp_dz = max - dz;
+            int dolna_hranica = tmp_dz / 2;
+
+            byte[] vtk_data = new byte[max * max * max];
             int counter = 0;
             try
             {
-                for (int k = oz; k < oz + dz; k++)
+                for (int k = oz + dolna_hranica; k < dolna_hranica + oz + dz; k++)
                 {
                     for (int j = oy; j < oy + dy; j++)
                     {
@@ -96,31 +98,31 @@ namespace VolumeRendering
             instream.Close();
 
             //centrovanie
-            byte[] centrovane = new byte[max * max * max];
-            int tmp_dz = max - dz;
-            if (tmp_dz != 0)
-            {
-                try
-                {
-                    int dolna_hranica = tmp_dz / 2;
-                    counter = 0;
-                    for (int k = oz + dolna_hranica; k < dolna_hranica + oz + dz; k++)
-                    {
-                        for (int j = oy; j < oy + dy; j++)
-                        {
-                            for (int i = ox; i < ox + dx; i++)
-                            {
-                                centrovane[i + dx * (j + dy * k)] = vtk_data[counter++];
-                            }
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie VTK suboru. \nData sa nepodarilo vycentrovat.");
-                }
-            }
-            return centrovane;
+            //byte[] centrovane = new byte[max * max * max];
+            ////int tmp_dz = max - dz;
+            //if (tmp_dz != 0)
+            //{
+            //    try
+            //    {
+            //        //int dolna_hranica = tmp_dz / 2;
+            //        counter = 0;
+            //        for (int k = oz + dolna_hranica; k < dolna_hranica + oz + dz; k++)
+            //        {
+            //            for (int j = oy; j < oy + dy; j++)
+            //            {
+            //                for (int i = ox; i < ox + dx; i++)
+            //                {
+            //                    centrovane[i + dx * (j + dy * k)] = vtk_data[counter++];
+            //                }
+            //            }
+            //        }
+            //    }
+            //    catch (Exception)
+            //    {
+            //        System.Windows.Forms.MessageBox.Show("Chyba pri nacitacvanie VTK suboru. \nData sa nepodarilo vycentrovat.");
+            //    }
+            //}
+            return vtk_data;
         }
 
         static long GetActualPosition(StreamReader reader)
