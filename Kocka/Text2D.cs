@@ -66,11 +66,9 @@ namespace Kocka
             spMain = new Shaders.ShaderProgram();
 
 
-            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}textShader.vert", Path.DirectorySeparatorChar);
-            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}textShader.frag", Path.DirectorySeparatorChar);
-            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
+            if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.textShaderVert, ShaderType.VertexShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (font rendering)!");
-            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
+            if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.textShaderFrag, ShaderType.FragmentShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (font rendering)!");
 
             spMain.CreateProgram();

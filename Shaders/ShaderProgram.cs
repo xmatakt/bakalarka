@@ -134,6 +134,13 @@ namespace Shaders
                 GL.Uniform2(location, v1, v2);
             else
                 System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
+
+            //1) GL.ClearColor(float red, float green, float blue, float alpha);
+            //2) GL.Viewport(int x, int y, int width, int height);
+            //3) GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit)
         }
+
+
+
     }
 }

@@ -80,11 +80,9 @@ namespace Kocka
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
 
-            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}shader.vert", Path.DirectorySeparatorChar);
-            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}shader.frag", Path.DirectorySeparatorChar);
-            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
+            if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.colorScaleVert, ShaderType.VertexShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder (color bar)!");
-            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
+            if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.colorScaleFrag, ShaderType.FragmentShader))
                 System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder (color bar)!");
 
             spMain.CreateProgram();
@@ -115,17 +113,11 @@ namespace Kocka
             popis_dic.Add((min + len * 0.5f).ToString(), new Vector4(left + 0.5f * length - 30.0f, bottom , 0.7f, 0.7f));
             popis_dic.Add((min + len * 0.75f).ToString(), new Vector4(left + 0.75f * length - 30.0f, bottom , 0.7f, 0.7f));
             popis_dic.Add(max.ToString(), new Vector4(left + length - 30.0f, bottom , 0.7f, 0.7f));
-            popis_dic.Add("Text prebehol upravou, uz pozna medzery a pqkj- atd. pise normalne", new Vector4(-width/2, height/2-20, 1, 1));
-            popis_dic.Add("Viditelnost na bielom pozadi zrejme vyriesim dalsou", new Vector4(-width / 2, -height / 2 + 100, 1, 1));
-            popis_dic.Add("bitmapou s ciernymi pismenami na bielom podklade", new Vector4(-width / 2 +3, -height / 2 + 75, 0.7f, 0.7f));
             popis_txt.PrintText2D(popis_dic);
         }
 
         private void SetColorScale()
         {
-            Vector3 col = new Vector3(1.0f, 1.0f, 1.0f);
-            float dv = max - min;
-
             //prvotne nastavenie colorbaru
             Vector3 f1 = new Vector3(0.0f, 0.0f, 0.5f); float x1 = 0.0f; cm.Add(x1, f1);
             Vector3 f2 = new Vector3(0.0f, 0.0f, 1.0f); float x2 = 0.1f; cm.Add(x2, f2);
@@ -190,11 +182,6 @@ namespace Kocka
             GL.DisableVertexAttribArray(1);
             GL.BindVertexArray(0);
             spMain.UseProgram(0);
-            DrawText();
-        }
-
-        public void DrawText()
-        {
             popis_txt.RenderText();
         }
 

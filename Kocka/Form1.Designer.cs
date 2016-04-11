@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.glControl1 = new OpenTK.GLControl();
+            //this.glControl1 = new OpenTK.GLControl();
+            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
+
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RotY_trackBar1 = new System.Windows.Forms.TrackBar();
@@ -53,6 +55,10 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.perPixel_checkBox = new System.Windows.Forms.CheckBox();
+            this.perFragment_checkBox = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).BeginInit();
@@ -161,11 +167,11 @@
             // RekresliBtn
             // 
             this.RekresliBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.RekresliBtn.Location = new System.Drawing.Point(1063, 109);
+            this.RekresliBtn.Location = new System.Drawing.Point(1059, 109);
             this.RekresliBtn.Name = "RekresliBtn";
             this.RekresliBtn.Size = new System.Drawing.Size(75, 28);
             this.RekresliBtn.TabIndex = 44;
-            this.RekresliBtn.Text = "Rekresli";
+            this.RekresliBtn.Text = "Prekresli";
             this.RekresliBtn.UseVisualStyleBackColor = true;
             this.RekresliBtn.Click += new System.EventHandler(this.RekresliBtn_Click);
             // 
@@ -187,8 +193,8 @@
             this.otvorToolStripMenuItem,
             this.ulozObrazokToolStripMenuItem});
             this.volacoToolStripMenuItem.Name = "volacoToolStripMenuItem";
-            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(67, 24);
-            this.volacoToolStripMenuItem.Text = "Volaco";
+            this.volacoToolStripMenuItem.Size = new System.Drawing.Size(60, 24);
+            this.volacoToolStripMenuItem.Text = "Súbor";
             // 
             // otvorToolStripMenuItem
             // 
@@ -201,7 +207,7 @@
             // 
             this.ulozObrazokToolStripMenuItem.Name = "ulozObrazokToolStripMenuItem";
             this.ulozObrazokToolStripMenuItem.Size = new System.Drawing.Size(166, 24);
-            this.ulozObrazokToolStripMenuItem.Text = "Uloz obrazok";
+            this.ulozObrazokToolStripMenuItem.Text = "Ulož obrázok";
             this.ulozObrazokToolStripMenuItem.Click += new System.EventHandler(this.ulozObrazokToolStripMenuItem_Click);
             // 
             // nastaveniaToolStripMenuItem
@@ -253,7 +259,7 @@
             this.TrianglesRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.TrianglesRadioButton.AutoSize = true;
             this.TrianglesRadioButton.Checked = true;
-            this.TrianglesRadioButton.Location = new System.Drawing.Point(1063, 160);
+            this.TrianglesRadioButton.Location = new System.Drawing.Point(1041, 186);
             this.TrianglesRadioButton.Name = "TrianglesRadioButton";
             this.TrianglesRadioButton.Size = new System.Drawing.Size(72, 21);
             this.TrianglesRadioButton.TabIndex = 46;
@@ -266,11 +272,11 @@
             // 
             this.WireframeRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.WireframeRadioButton.AutoSize = true;
-            this.WireframeRadioButton.Location = new System.Drawing.Point(1063, 188);
+            this.WireframeRadioButton.Location = new System.Drawing.Point(1041, 214);
             this.WireframeRadioButton.Name = "WireframeRadioButton";
-            this.WireframeRadioButton.Size = new System.Drawing.Size(59, 21);
+            this.WireframeRadioButton.Size = new System.Drawing.Size(52, 21);
             this.WireframeRadioButton.TabIndex = 47;
-            this.WireframeRadioButton.Text = "#siet";
+            this.WireframeRadioButton.Text = "sieť";
             this.WireframeRadioButton.UseVisualStyleBackColor = true;
             this.WireframeRadioButton.CheckedChanged += new System.EventHandler(this.TrianglesRadioButton_CheckedChanged);
             // 
@@ -278,7 +284,7 @@
             // 
             this.PointsRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PointsRadioButton.AutoSize = true;
-            this.PointsRadioButton.Location = new System.Drawing.Point(1063, 215);
+            this.PointsRadioButton.Location = new System.Drawing.Point(1041, 241);
             this.PointsRadioButton.Name = "PointsRadioButton";
             this.PointsRadioButton.Size = new System.Drawing.Size(60, 21);
             this.PointsRadioButton.TabIndex = 48;
@@ -312,11 +318,66 @@
             this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.TextChanged += new System.EventHandler(this.toolStripStatusLabel1_TextChanged);
             // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(1038, 275);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(105, 17);
+            this.label2.TabIndex = 53;
+            this.label2.Text = "Voľba shadera:";
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(1038, 162);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(65, 17);
+            this.label3.TabIndex = 54;
+            this.label3.Text = "Zobraziť:";
+            // 
+            // perPixel_checkBox
+            // 
+            this.perPixel_checkBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.perPixel_checkBox.AutoSize = true;
+            this.perPixel_checkBox.Checked = true;
+            this.perPixel_checkBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.perPixel_checkBox.Location = new System.Drawing.Point(1044, 295);
+            this.perPixel_checkBox.Name = "perPixel_checkBox";
+            this.perPixel_checkBox.Size = new System.Drawing.Size(58, 21);
+            this.perPixel_checkBox.TabIndex = 51;
+            this.perPixel_checkBox.Text = "pixel";
+            this.perPixel_checkBox.UseVisualStyleBackColor = true;
+            this.perPixel_checkBox.Click += new System.EventHandler(this.perPixel_checkBox_Click);
+            // 
+            // perFragment_checkBox
+            // 
+            this.perFragment_checkBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.perFragment_checkBox.AutoSize = true;
+            this.perFragment_checkBox.Location = new System.Drawing.Point(1044, 322);
+            this.perFragment_checkBox.Name = "perFragment_checkBox";
+            this.perFragment_checkBox.Size = new System.Drawing.Size(86, 21);
+            this.perFragment_checkBox.TabIndex = 52;
+            this.perFragment_checkBox.Text = "fragment";
+            this.perFragment_checkBox.UseVisualStyleBackColor = true;
+            this.perFragment_checkBox.CheckedChanged += new System.EventHandler(this.perFragment_checkBox_CheckedChanged);
+            this.perFragment_checkBox.Click += new System.EventHandler(this.perFragment_checkBox_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1150, 788);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.perFragment_checkBox);
+            this.Controls.Add(this.perPixel_checkBox);
             this.Controls.Add(this.PointsRadioButton);
             this.Controls.Add(this.WireframeRadioButton);
             this.Controls.Add(this.TrianglesRadioButton);
@@ -333,6 +394,7 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).EndInit();
@@ -373,6 +435,10 @@
         public System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox perPixel_checkBox;
+        private System.Windows.Forms.CheckBox perFragment_checkBox;
     }
 }
 

@@ -12,7 +12,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Kocka
 {
-    class SphereDAT
+    class Sphere
     {
         private int NumOfParallels;
         private int NumOfVertices;
@@ -25,7 +25,7 @@ namespace Kocka
         private List<int> Indices;
 
         private float RAD, R, scale, min, max, value;
-        private bool Status, colrscl;
+        private bool Status, colrscl, shaderOption;
         private int[] VBO;
         private int[] VAO;
         private int[] Indexes;
@@ -42,8 +42,9 @@ namespace Kocka
         System.Windows.Forms.ToolStripLabel toolStripLabel;
 
         //nacitanie dat do listu + prevod
-        public SphereDAT(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null)
+        public Sphere(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null, bool shaderOption = false)
         {
+            this.shaderOption = shaderOption;
             toolStripBar = bar;
             toolStripLabel = label;
             this.form = form;
@@ -56,12 +57,12 @@ namespace Kocka
             scale = 1.0f;
             width = w; height = h;
             RAD = (float)Math.PI / 180.0f;
-            NumOfTriangles = NumOfParallels = NumOfTriangles = 0;
+            NumOfTriangles = NumOfParallels = NumOfVertices = 0;
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
             material = new Material(0.16f, 0.50f, 0.6f, 124);
-            BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
+            //BigBrother = new Kamera(new Vector3(0.0f, 0.0f, 3.5f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
             //colorScale = new ColorScale(-100, 100, width, height);
 
             coords = new List<Vector3>();
@@ -90,11 +91,11 @@ namespace Kocka
                 // Do whatever else you want to do after the work completed.
                 // This happens in the main UI thread.
 
-                //toto musi byt az tu, pretoze GL.prikazy pre objekt SPhereDAT musia byt volane v tom threade, v ktorom objekt vznikol
+                //toto musi byt az tu, pretoze GL.prikazy pre objekt Sphere musia byt volane v tom threade, v ktorom objekt vznikol
                 if (init)
                 {
                     colorScale = new ColorScale(min, max, width, height);//tu sa vytvaraju shadere, takze to nemoze byt v bw.DoWork
-                    SetColors();//pracuje s colorScalei
+                    SetColors();//pracuje s colorScalemi
                     InitScene(false);//koli shaderom
                     FirstDraw();
                     form.SetBoolean_sfera(true);
@@ -112,11 +113,11 @@ namespace Kocka
             {
                 zaloha = new Vector3[coords.Count];
                 zaloha = coords.ToArray();
-                value = 0.5f * (max - min);
+                value = (max - min);
                 ScaleHeights(10.0f);
-                NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
-                GeoToSpatialCoords();
+                GeoToCartesianCoords();
 
+                NumOfParallels = (int)Math.Sqrt(coords.Count - 2) + 1;
                 GetNumberOfTriangles();
                 NumOfVertices = 3 * NumOfTriangles;
                 Indexes = new int[NumOfVertices];
@@ -173,10 +174,16 @@ namespace Kocka
                     Status = true;
                 form.statusStrip1.Invoke(progres, 100);
                 //SetToolStrip("");
+                System.Diagnostics.Debug.WriteLine("cislo = " +  Vector3.SizeInBytes);
             }
             catch (FileNotFoundException)
             {
                 System.Windows.Forms.MessageBox.Show("Subor sa nenasiel!");
+                Status = false;
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa neznáma chyba pri načítaní súboru!");
                 Status = false;
             }
             return Status;
@@ -348,7 +355,6 @@ namespace Kocka
             }
 
             #endregion
-            //SetToolStrip("");
         }
 
         private void SetIndexes()
@@ -628,6 +634,13 @@ namespace Kocka
             }
             #endregion
 
+            for (int i = 0; i < 50; i++)
+            {
+                System.Diagnostics.Debug.Write("," + Indexes[i]);
+                if (i % 3 == 2)
+                    System.Diagnostics.Debug.WriteLine(",");
+            }
+
             //SetToolStrip("");
         }
 
@@ -639,7 +652,8 @@ namespace Kocka
             normals = new Vector3[coords.Count];
             int d = NumOfVertices / 300;
 
-            for (int i = 0; i < NumOfVertices / 3; i++)
+            //for (int i = 0; i < NumOfVertices / 3; i++)
+            for (int i = 0; i < NumOfTriangles; i++)
             {
                 int index1 = Indexes[i * 3];
                 int index2 = Indexes[i * 3 + 1];
@@ -686,7 +700,7 @@ namespace Kocka
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(coords.Count * Vector3.SizeInBytes), coords.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-
+            
             //farby
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO[1]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(colors.Length * Vector3.SizeInBytes), colors, BufferUsageHint.StaticDraw);
@@ -704,26 +718,23 @@ namespace Kocka
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Count), Indices.ToArray(), BufferUsageHint.StaticDraw);
             GL.Enable(EnableCap.PrimitiveRestart);
             GL.PrimitiveRestartIndex(coords.Count);
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
 
-            //per pixel
-            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.vert", Path.DirectorySeparatorChar);
-            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.frag", Path.DirectorySeparatorChar);
-            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            ////per fragment
-            //string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.vert", Path.DirectorySeparatorChar);
-            //string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.frag", Path.DirectorySeparatorChar);
-            //if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            if(shaderOption)
+            {
+                //per pixel
+                if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.perPixelShaderVert, ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.perPixelShaderFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
+            else
+            {
+                //per fragment
+                if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.perFragmentShaderVert, ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.perFragmentShaderFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
@@ -742,25 +753,30 @@ namespace Kocka
             label label = new label(SetToolStripLabel);
             progres progres = new progres(SetProgressBar);
             form.statusStrip1.Invoke(label, "Prebieha škálovanie výšok...");
+            LinearFunction map_z = new LinearFunction(min, max, -1 * value / 50.0f, 1 * value / 50.0f);
 
             int d = zaloha.Length / 100;
             for (int i = 0; i < zaloha.Length; i++)
             {
-                coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, zaloha[i].Z / (value * this.value));
+                //coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, zaloha[i].Z / (value * this.value));
+                coords[i] = new Vector3(zaloha[i].X, zaloha[i].Y, map_z.Value(zaloha[i].Z));
                 if (i % d == 0)
                     form.statusStrip1.Invoke(progres, i * 100 / zaloha.Length);
             }
         }
 
-        private void GeoToSpatialCoords()
+        private void GeoToCartesianCoords()
         {
             label label = new label(SetToolStripLabel);
             progres progres = new progres(SetProgressBar);
             form.statusStrip1.Invoke(label, "Prebieha prepočet koordinátov...");
-            float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
             int d = coords.Count / 100;
+            //pomocné premenné
+            float rH, cosBxRAD, cosLxRAD, sinLxRAD, sinBxRAD;
             for (int i = 0; i < coords.Count; i++)
             {
+                //R je polomer
+                //RAD = Pi/180
                 rH = R + coords[i].Z;
                 cosBxRAD = (float)Math.Cos(coords[i].X * RAD);
                 sinBxRAD = (float)Math.Sin(coords[i].X * RAD);
@@ -774,11 +790,12 @@ namespace Kocka
 
         private void GetNumberOfTriangles()
         {
-            for (int i = (NumOfParallels - 1) / 2; i > 0; i--)
-                NumOfTriangles += i;
+            //for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
+            for (int i = 1; i <= NumOfParallels / 2; i++)
+                NumOfTriangles += 8 * (2 * i - 1);
 
-            NumOfTriangles = -2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
-            NumOfTriangles *= 2;//dve polgule
+            //NumOfTriangles = -2 * (NumOfParallels - 1) + 8 * NumOfTriangles;
+            //NumOfTriangles *= 2;//dve polgule
             System.Diagnostics.Debug.WriteLine("NumOfTriangles = {0}", NumOfTriangles);
         }
 
@@ -855,7 +872,7 @@ namespace Kocka
             bw.DoWork += (sender, args) =>
             {
                 ScaleHeights(value);
-                GeoToSpatialCoords();
+                GeoToCartesianCoords();
                 CalculateNormals();
             };
 
@@ -910,9 +927,9 @@ namespace Kocka
             {
                 Vector3 start = coords[i];
                 Vector3 end = coords[i] + 0.01f * normals[i].Normalized();
-                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Color3(1.0f, 1.0f, 1.0f);
                 GL.Vertex3(start);
-                GL.Color3(1.0f, 0.0f, 0.0f);
+                GL.Color3(1.0f, 1.0f, 1.0f);
                 GL.Vertex3(end);
             }
             GL.End();
@@ -920,8 +937,11 @@ namespace Kocka
 
         public void DrawSphere()
         {
+            //DrawNormals();
             spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
+            //GL.Enable(EnableCap.CullFace);//toto by nemuselo byt zle rozbehat
+            //GL.CullFace(CullFaceMode.Back);//zrejme by to urychlilo vykreslovanie
             switch (WhatToDraw)
             {
                 case 1:
@@ -937,6 +957,7 @@ namespace Kocka
                     break;
             }
             GL.BindVertexArray(0);
+            //GL.Disable(EnableCap.CullFace);
 
             if (colrscl)
             {

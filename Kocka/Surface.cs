@@ -23,7 +23,7 @@ namespace Kocka
         private ColorScale colorScale;
 
         private float scale, min, max, minX, maxX, minY, maxY, angleX, angleY;
-        private bool Status, colrscl, rotate;
+        private bool Status, colrscl, rotate, shaderOption;
         private int[] VBO;
         private int[] VAO;
         private Shaders.Shader VertexShader, FragmentShader;
@@ -37,8 +37,9 @@ namespace Kocka
         System.Windows.Forms.ToolStripProgressBar toolStripBar;
         System.Windows.Forms.ToolStripLabel toolStripLabel;
 
-        public Surface(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null)
+        public Surface(int w, int h, string pathToFile, System.Windows.Forms.ToolStripProgressBar bar = null, System.Windows.Forms.ToolStripLabel label = null, Form1 form = null, bool shaderOption = false)
         {
+            this.shaderOption = shaderOption;
             this.form = form;
             toolStripBar = bar;
             toolStripLabel = label;
@@ -158,27 +159,22 @@ namespace Kocka
             GL.Enable(EnableCap.PrimitiveRestart);
             GL.PrimitiveRestartIndex(NumOfVertices);
 
-            //prvy shader
-            //if (!VertexShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.vert", ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader("..\\..\\Properties\\data\\shaders\\shader.frag", ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            //per pixel
-            string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.vert", Path.DirectorySeparatorChar);
-            string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirPerPixelShader.frag", Path.DirectorySeparatorChar);
-            if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
-
-            ////per fragment
-            //string vspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.vert", Path.DirectorySeparatorChar);
-            //string fspath = string.Format("..{0}..{0}Properties{0}data{0}shaders{0}dirShader.frag", Path.DirectorySeparatorChar);
-            //if (!VertexShader.LoadShader(vspath, ShaderType.VertexShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
-            //if (!FragmentShader.LoadShader(fspath, ShaderType.FragmentShader))
-            //    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            if (shaderOption)
+            {
+                //per pixel
+                if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.perPixelShaderVert, ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.perPixelShaderFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
+            else
+            {
+                //per fragment
+                if (!VertexShader.LoadShaderS(Kocka.Properties.Resources.perFragmentShaderVert, ShaderType.VertexShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat vertex sahder!");
+                if (!FragmentShader.LoadShaderS(Kocka.Properties.Resources.perFragmentShaderFrag, ShaderType.FragmentShader))
+                    System.Windows.Forms.MessageBox.Show("Nepodarilo sa nacitat fragment sahder!");
+            }
 
             spMain.CreateProgram();
             spMain.AddShaderToProgram(VertexShader);
@@ -369,6 +365,12 @@ namespace Kocka
             label label = new label(SetToolStripLabel);
             progres progres = new progres(SetProgressBar);
             form.statusStrip1.Invoke(label, "Prebieha škálovanie výšok...");
+            LinearFunction map_z;
+            LinearFunction percenta = new LinearFunction(1.0f, 50.0f, 0.5f, 0.01f);
+            if((maxX-minX)>(maxY-minY))
+                map_z = new LinearFunction(min, max, 0, (maxX - minX) * percenta.Value(L));
+            else
+                map_z = new LinearFunction(min, max, 0, (maxY - minY) * percenta.Value(L));
 
             int d = coords.Count / 100;
             float dx = minX + (maxX - minX) / 2.0f;
@@ -379,7 +381,8 @@ namespace Kocka
 
             for (int i = 0; i < coords.Count; i++)
             {
-                vertices[i] = new Vector3(-coords[i].X + dx, coords[i].Y - dy, coords[i].Z / (L * dl) - dz / (L * dl));
+                //vertices[i] = new Vector3( -coords[i].X + dx, coords[i].Y - dy, coords[i].Z / (L * dl) - dz / (L * dl));
+                vertices[i] = new Vector3(-coords[i].X + dx, coords[i].Y - dy, map_z.Value(coords[i].Z));
                 if (i % d == 0)
                     form.statusStrip1.Invoke(progres, i * 100 / coords.Count);
             }

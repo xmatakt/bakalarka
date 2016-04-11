@@ -21,7 +21,7 @@ namespace Kocka
     {
         private bool loaded, resize, sur;
         public bool sfera;
-        private SphereDAT sdat;
+        private Sphere sdat;
         private Surface surf;
         private float Pi180;
         float scale;
@@ -65,6 +65,7 @@ namespace Kocka
             GL.DepthFunc(DepthFunction.Less);
             GL.ClearDepth(1.0);
             GL.Viewport(0, 0, glControl1.Width, glControl1.Height);
+
             //a aj vypinat
         }
 
@@ -81,6 +82,7 @@ namespace Kocka
                 surf.DrawSurface();
 
             glControl1.SwapBuffers();
+
         }
 
         private void glControl1_KeyDown(object sender, KeyEventArgs e)
@@ -302,14 +304,14 @@ namespace Kocka
                     sur = false;
                     RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
                     SetMenuStrip_Enabled(false);
-                    sdat = new SphereDAT(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this);
+                    sdat = new Sphere(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this, perPixel_checkBox.Checked);
                 }
                 if (openFileDialog1.FilterIndex == 2)
                 {
                     RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
                     SetMenuStrip_Enabled(false);
                     sfera = false;
-                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this);
+                    surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this, perPixel_checkBox.Checked);
                 }
             }
         }
@@ -479,6 +481,28 @@ namespace Kocka
         private void button1_Click(object sender, EventArgs e)
         {
             menuStrip1.Enabled = !menuStrip1.Enabled;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void perFragment_checkBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (sfera || sur)
+                MessageBox.Show("Zmena nebude mať žiaden vplyv na načítané dáta." +
+                    "\nProsím vyverte si požadovaný shader a načítajte dáta znova.","Vnimanie!",MessageBoxButtons.OK,MessageBoxIcon.Information);
+        }
+
+        private void perFragment_checkBox_Click(object sender, EventArgs e)
+        {
+            perPixel_checkBox.Checked = !perFragment_checkBox.Checked;
+        }
+
+        private void perPixel_checkBox_Click(object sender, EventArgs e)
+        {
+            perFragment_checkBox.Checked = !perPixel_checkBox.Checked;
         }
     }
 }
