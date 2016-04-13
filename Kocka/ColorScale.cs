@@ -191,7 +191,7 @@ namespace Kocka
             Vector3 col = new Vector3();
             for (int i = 1; i < keys.Length; i++)
             {
-                if (height < min + keys[i] * dv)
+                if (height <= min + keys[i] * dv)
                 {
                     LinearFunction R = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].X, cm[keys[i]].X);
                     LinearFunction G = new LinearFunction(min + keys[i - 1] * dv, min + keys[i] * dv, cm[keys[i - 1]].Y, cm[keys[i]].Y);

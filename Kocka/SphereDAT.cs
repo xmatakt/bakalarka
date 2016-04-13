@@ -22,7 +22,6 @@ namespace Kocka
         private Vector3[] normals;
         private Vector3[] colors;
         private List<Vector3> coords;
-        private List<int> Indices;
 
         private float RAD, R, scale, min, max, value;
         private bool Status, colrscl, shaderOption;
@@ -66,7 +65,6 @@ namespace Kocka
             //colorScale = new ColorScale(-100, 100, width, height);
 
             coords = new List<Vector3>();
-            Indices = new List<int>();
 
             VBO = new int[4];
             VAO = new int[1];
@@ -123,7 +121,6 @@ namespace Kocka
                 Indexes = new int[NumOfVertices];
 
                 //triangulacia
-                SetIndices();
                 SetIndexes();
                 CalculateNormals();
                 return true;
@@ -192,169 +189,6 @@ namespace Kocka
         public bool Loaded()
         {
             return Status;
-        }
-
-        private void SetIndices()
-        {
-            label label = new label(SetToolStripLabel);
-            progres progres = new progres(SetProgressBar);
-            form.statusStrip1.Invoke(label, "Prebieha nastavovanie vrcholov...");
-            int startIndex = 0;
-            int endIndex = 0;
-            int tmp = 0;
-            int restartIndex = coords.Count;
-
-            //Timova triangulacia
-            #region cepicka
-            Indices.Add(0);
-            Indices.Add(1);
-            Indices.Add(2);
-            Indices.Add(restartIndex);
-
-            Indices.Add(0);
-            Indices.Add(2);
-            Indices.Add(3);
-            Indices.Add(restartIndex);
-
-            Indices.Add(0);
-            Indices.Add(3);
-            Indices.Add(4);
-            Indices.Add(restartIndex);
-
-            Indices.Add(0);
-            Indices.Add(4);
-            Indices.Add(1);
-            Indices.Add(restartIndex);
-            #endregion
-
-            #region horna polovica
-            for (int i = 1; i < (NumOfParallels - 1) / 2; i++)
-            {
-                form.statusStrip1.Invoke(progres, 100 * i / NumOfParallels);
-                startIndex = 2 * i * (i - 1) + 1;
-                int increment = i * 4;
-                endIndex = startIndex + increment - 1;
-                for (int j = startIndex; j <= startIndex + i; j++)
-                {
-                    Indices.Add(j + increment);
-                    Indices.Add(j);
-                    if (j == startIndex + i)
-                    {
-                        Indices.Add(j + increment + 1);
-                        Indices.Add(restartIndex);
-                    }
-                }
-                for (int j = startIndex + i; j <= startIndex + 2 * i; j++)
-                {
-                    Indices.Add(j + increment + 1);
-                    Indices.Add(j);
-                    if (j == startIndex + 2 * i)
-                    {
-                        Indices.Add(j + increment + 2);
-                        Indices.Add(restartIndex);
-                    }
-                }
-                for (int j = startIndex + 2 * i; j <= startIndex + 3 * i; j++)
-                {
-                    Indices.Add(j + increment + 2);
-                    Indices.Add(j);
-                    if (j == startIndex + 3 * i)
-                    {
-                        Indices.Add(j + increment + 3);
-                        Indices.Add(restartIndex);
-                    }
-                }
-                for (int j = startIndex + 3 * i; j <= endIndex; j++)
-                {
-                    Indices.Add(j + increment + 3);
-                    Indices.Add(j);
-                    if (j == endIndex)
-                    {
-                        Indices.Add(j + increment + 4);
-                        Indices.Add(startIndex);
-                        Indices.Add(startIndex + increment);
-                        Indices.Add(restartIndex);
-                    }
-                }
-            }
-            #endregion
-
-            #region dolna polovica
-
-            for (int i = (NumOfParallels - 1) / 2; i >= 1; i--)
-            {
-                form.statusStrip1.Invoke(progres, 100 * i / NumOfParallels);
-                if (i == (NumOfParallels - 1) / 2)//if i == prva iteracia
-                {
-                    startIndex = 2 * i * (i - 1) + 1;
-                    endIndex = startIndex + (i * 4) - 1;
-                    tmp = startIndex;
-                }
-                else
-                {
-                    startIndex = tmp + (i + 1) * 4;
-                    endIndex = startIndex + (i * 4) - 1;
-                    tmp = startIndex;
-                }
-                int increment = i * 4;
-
-                for (int j = startIndex; j <= startIndex + i; j++)
-                {
-                    if (j == startIndex + i)
-                    {
-                        Indices.Add(j);
-                        Indices.Add(restartIndex);
-                    }
-                    else
-                    {
-                        Indices.Add(j);
-                        Indices.Add(j + increment);
-                    }
-                }
-                for (int j = startIndex + i; j <= startIndex + 2 * i; j++)
-                {
-                    if (j == startIndex + 2 * i)
-                    {
-                        Indices.Add(j);
-                        Indices.Add(restartIndex);
-                    }
-                    else
-                    {
-                        Indices.Add(j);
-                        Indices.Add(j + increment - 1);
-                    }
-                }
-                for (int j = startIndex + 2 * i; j <= startIndex + 3 * i; j++)
-                {
-                    if (j == startIndex + 3 * i)
-                    {
-                        Indices.Add(j);
-                        Indices.Add(restartIndex);
-                    }
-                    else
-                    {
-                        Indices.Add(j);
-                        Indices.Add(j + increment - 2);
-                    }
-                }
-                for (int j = startIndex + 3 * i; j <= endIndex; j++)
-                {
-                    if (j == endIndex)
-                    {
-                        Indices.Add(j);
-                        Indices.Add(j + 1);
-                        Indices.Add(startIndex);
-                        Indices.Add(restartIndex);
-                    }
-                    else
-                    {
-                        Indices.Add(j);
-                        Indices.Add(j + increment - 3);
-                    }
-                }
-            }
-
-            #endregion
         }
 
         private void SetIndexes()
@@ -633,15 +467,6 @@ namespace Kocka
                 }
             }
             #endregion
-
-            for (int i = 0; i < 50; i++)
-            {
-                System.Diagnostics.Debug.Write("," + Indexes[i]);
-                if (i % 3 == 2)
-                    System.Diagnostics.Debug.WriteLine(",");
-            }
-
-            //SetToolStrip("");
         }
 
         private void CalculateNormals()
@@ -715,9 +540,10 @@ namespace Kocka
 
             //indices
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, VBO[3]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Count), Indices.ToArray(), BufferUsageHint.StaticDraw);
-            GL.Enable(EnableCap.PrimitiveRestart);
-            GL.PrimitiveRestartIndex(coords.Count);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indexes.Length), Indexes, BufferUsageHint.StaticDraw);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Count), Indices.ToArray(), BufferUsageHint.StaticDraw);
+            //GL.Enable(EnableCap.PrimitiveRestart);
+            //GL.PrimitiveRestartIndex(coords.Count);
 
             if(shaderOption)
             {
@@ -940,18 +766,18 @@ namespace Kocka
             //DrawNormals();
             spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
-            //GL.Enable(EnableCap.CullFace);//toto by nemuselo byt zle rozbehat
-            //GL.CullFace(CullFaceMode.Back);//zrejme by to urychlilo vykreslovanie
+            GL.Enable(EnableCap.CullFace);//toto by nemuselo byt zle rozbehat
+            GL.CullFace(CullFaceMode.Back);//zrejme by to urychlilo vykreslovanie
             switch (WhatToDraw)
             {
                 case 1:
-                    GL.DrawElements(PrimitiveType.TriangleStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Triangles, Indexes.Length, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 2:
-                    GL.DrawElements(PrimitiveType.LineStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.LineStrip, Indexes.Length, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 3:
-                    GL.DrawElements(PrimitiveType.Points, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Points, Indexes.Length, DrawElementsType.UnsignedInt, 0);
                     break;
                 default:
                     break;
@@ -1004,7 +830,6 @@ namespace Kocka
                 GL.DeleteBuffers(4, VBO);
                 GL.DeleteVertexArrays(1, VAO);
                 coords.Clear();
-                Indices.Clear();
                 
                 //zle
                 spMain.DeleteProgram();

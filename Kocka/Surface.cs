@@ -13,11 +13,11 @@ namespace Kocka
 {
     class Surface
     {
-        private int width, height, NumOfVertices, NumOfTriangles, NumOfIndices, NumOfIndexes, Xwidth, Ywidth, WhatToDraw;
+        private int width, height, NumOfVertices, NumOfIndexes, Xwidth, Ywidth, WhatToDraw;
         private Vector3[] vertices;
         private Vector3[] normals;
         private Vector3[] color;
-        private int[] Indices;
+        private List<int> Indices;
         private int[] Indexes;
         private List<Vector3> coords;
         private ColorScale colorScale;
@@ -50,7 +50,7 @@ namespace Kocka
             scale = 1.0f;
             angleX = angleY = 0.0f;
             width = w; height = h;
-            NumOfIndexes = NumOfTriangles = NumOfVertices = Xwidth = Ywidth = 0;
+            NumOfIndexes = NumOfVertices = Xwidth = Ywidth = 0;
             //svetlo - smer,ambient,specular,diffuse
             light = new DirectionalLight(new Vector3(0.0f, 0.0f, -1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f));
             //material - ambient,specular,diffuse,koeficienty - ambient, specular, diffuse, shininess 
@@ -76,9 +76,9 @@ namespace Kocka
                     vertices = new Vector3[NumOfVertices];
                     color = new Vector3[NumOfVertices];
                     normals = new Vector3[NumOfVertices];
-                    Indices = new int[NumOfIndices];
+                    Indices = new List<int>();
                     Indexes = new int[NumOfIndexes];
-                    SetIndices();
+                    //SetIndices();
                     SetIndexes();
                     if (Ywidth > Xwidth)
                     {
@@ -155,9 +155,10 @@ namespace Kocka
 
             //indices
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, VBO[3]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Length), Indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indices.Count), Indices.ToArray(), BufferUsageHint.StaticDraw);
             GL.Enable(EnableCap.PrimitiveRestart);
-            GL.PrimitiveRestartIndex(NumOfVertices);
+            GL.PrimitiveRestartIndex(coords.Count);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * Indexes.Length), Indexes, BufferUsageHint.StaticDraw);
 
             if (shaderOption)
             {
@@ -253,55 +254,33 @@ namespace Kocka
                 Ywidth = p;
                 Xwidth = NumOfVertices / p;
                 //NumOfIndices=(pocetRiadkov-1)*pocetIndicisNaRiadok + pocetRestartov
-                NumOfIndices = (Xwidth - 1) * (Ywidth * 2) + (Xwidth - 2);
                 NumOfIndexes = (Xwidth - 1) * (Ywidth - 1) * 2 * 3;
                 return true;
             }
         }
 
-        private void SetIndices()
-        {
-            label label = new label(SetToolStripLabel);
-            progres progres = new progres(SetProgressBar);
-            form.statusStrip1.Invoke(label, "Prebieha nastavovanie vrcholov...");
-
-            int p = 0;
-            for (int i = 0; i < NumOfVertices - Ywidth; i++)
-            {
-                Indices[p] = i; p++;
-                Indices[p] = i + Ywidth; p++;
-                if (i % Ywidth == (Ywidth - 1) && i != NumOfVertices - Ywidth - 1)
-                {
-                    Indices[p] = NumOfVertices; p++;
-                    form.statusStrip1.Invoke(progres, 100 * i / (NumOfVertices - Ywidth));
-                }
-            }
-        }
-
         private void SetIndexes()
         {
-            //label label = new label(SetToolStripLabel);
-            //progres progres = new progres(SetProgressBar);
-            //form.statusStrip1.Invoke(label, "Prebieha nastavovanie indexov...");
-
             int p = 0;
             for (int x = 0; x < Xwidth - 1; x++)
             {
                 for (int y = 0; y < Ywidth - 1; y++)
                 {
                     int pos1 = x * Ywidth + y;//0
-                    int pos2 = (x + 1) * Ywidth + y;//5
+                    int pos2 = (x + 1) * Ywidth + y;//4
                     int pos3 = x * Ywidth + y + 1;//1
-                    int pos4 = (x + 1) * Ywidth + y + 1;//6
-                    Indexes[p] = pos1; p++;
-                    Indexes[p] = pos2; p++;
-                    Indexes[p] = pos3; p++;
-                    Indexes[p] = pos3; p++;
-                    Indexes[p] = pos2; p++;
-                    Indexes[p] = pos4; p++;
+                    int pos4 = (x + 1) * Ywidth + y + 1;//5
+
+                    Indexes[p] = pos1; p++; Indices.Add(pos1);
+                    Indexes[p] = pos3; p++; Indices.Add(pos3);
+                    Indexes[p] = pos4; p++; Indices.Add(pos4);
+                    Indexes[p] = pos2; p++; Indices.Add(pos2);
+                    Indexes[p] = pos1; p++; Indices.Add(pos1);
+                    Indexes[p] = pos4; p++; Indices.Add(pos4);
+
+                    if (pos4 % Ywidth == Ywidth - 1)
+                        Indices.Add(coords.Count);
                 }
-                float tmp = p / (float)NumOfIndexes;
-                //form.statusStrip1.Invoke(progres, (int)(100 * tmp));
             }
         }
 
@@ -320,7 +299,7 @@ namespace Kocka
 
                 Vector3 side1 = vertices[index1] - vertices[index3];
                 Vector3 side2 = vertices[index2] - vertices[index1];
-                Vector3 normal = -Vector3.Cross(side1, side2);
+                Vector3 normal = Vector3.Cross(side1, side2);
 
                 normals[index1] += normal;
                 normals[index2] += normal;
@@ -550,13 +529,16 @@ namespace Kocka
             switch (WhatToDraw)
             {
                 case 1:
-                    GL.DrawElements(PrimitiveType.TriangleStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Triangles, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    //GL.DrawElements(PrimitiveType.Triangles, NumOfIndexes, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 2:
-                    GL.DrawElements(PrimitiveType.LineStrip, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.LineStrip, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    //GL.DrawElements(PrimitiveType.LineStrip, NumOfIndexes, DrawElementsType.UnsignedInt, 0);
                     break;
                 case 3:
-                    GL.DrawElements(PrimitiveType.Points, NumOfIndices, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType.Points, Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    //GL.DrawElements(PrimitiveType.Points, NumOfIndexes, DrawElementsType.UnsignedInt, 0);
                     break;
                 default:
                     break;

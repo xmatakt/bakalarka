@@ -30,5 +30,10 @@ namespace Kocka
             prog.SetUniform("light.specular", Specular);
             prog.SetUniform("light.direction", Direction);
         }
+
+        public void tmp()
+        {
+
+        }
     }
 }

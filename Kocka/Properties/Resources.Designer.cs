@@ -164,7 +164,7 @@ namespace Kocka.Properties {
         ///	float specCoef; 	//[0,1]
         ///	float diffCoef;		//[0,1]
         ///	float ambCoef;		//[0,1]
-        ///	int shininess;	//[0, [rest of string was truncated]&quot;;.
+        ///	int shininess;		//[0 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string perFragmentShaderVert {
             get {
@@ -196,10 +196,9 @@ namespace Kocka.Properties {
         ///
         ///	//fragment shader nemoze zapisovat varying premenne, preto n=...
         ///	n = normalize(normal);
+        ///	//lightDirection = normalize(lightDirection);
         ///
-        ///	NdotL = max(dot(n,-lightDirection),0.0);
-        ///
-        ///	// [rest of string was truncated]&quot;;.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string perPixelShaderFrag {
             get {
@@ -240,6 +239,46 @@ namespace Kocka.Properties {
         internal static string perPixelShaderVert {
             get {
                 return ResourceManager.GetString("perPixelShaderVert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #version 330
+        ///
+        ///smooth in vec3 theColor;
+        ///out vec4 outputColor;
+        ///
+        ///void main()
+        ///{
+        ///	outputColor = vec4(theColor, 1.0);
+        ///}.
+        /// </summary>
+        internal static string shaderFrag {
+            get {
+                return ResourceManager.GetString("shaderFrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #version 330
+        ///
+        ///uniform mat4 projectionMatrix;
+        ///uniform mat4 modelViewMatrix;
+        ///
+        ///layout (location = 0) in vec3 inPosition;
+        ///layout (location = 1) in vec3 inColor;
+        ///
+        ///smooth out vec3 theColor;
+        ///
+        ///void main()
+        ///{
+        ///	gl_Position = projectionMatrix*modelViewMatrix*vec4(inPosition, 1.0);
+        ///	theColor = inColor;
+        ///}.
+        /// </summary>
+        internal static string shaderVert {
+            get {
+                return ResourceManager.GetString("shaderVert", resourceCulture);
             }
         }
         
