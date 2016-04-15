@@ -764,6 +764,12 @@ namespace Kocka
         public void DrawSphere()
         {
             //DrawNormals();
+            if (colrscl)
+            {
+                colorScale.DrawColorScale();
+                //colorScale.DrawText();
+                spMain.UseProgram();
+            }
             spMain.UseProgram();
             GL.BindVertexArray(VAO[0]);
             GL.Enable(EnableCap.CullFace);//toto by nemuselo byt zle rozbehat
@@ -783,14 +789,14 @@ namespace Kocka
                     break;
             }
             GL.BindVertexArray(0);
-            //GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.CullFace);
 
-            if (colrscl)
-            {
-                colorScale.DrawColorScale();
-                //colorScale.DrawText();
-                spMain.UseProgram();
-            }
+            //if (colrscl)
+            //{
+            //    colorScale.DrawColorScale();
+            //    //colorScale.DrawText();
+            //    spMain.UseProgram();
+            //}
         }
 
         public void ChangeMaterialProperties(float amb, float spec, float diff, int shin)
