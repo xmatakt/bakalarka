@@ -301,7 +301,7 @@ namespace Kocka
 
                 if (openFileDialog1.FilterIndex == 1)
                 {
-                    sur = false;
+                    sur = sfera = false;
                     RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
                     SetMenuStrip_Enabled(false);
                     sdat = new Sphere(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this, perPixel_checkBox.Checked);
@@ -310,7 +310,7 @@ namespace Kocka
                 {
                     RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
                     SetMenuStrip_Enabled(false);
-                    sfera = false;
+                    sfera = sur = false;
                     surf = new Surface(glControl1.Width, glControl1.Height, openFileDialog1.FileName.ToString(), toolStripProgressBar1, toolStripStatusLabel1, this, perPixel_checkBox.Checked);
                 }
             }
