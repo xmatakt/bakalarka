@@ -27,7 +27,7 @@ struct Material
 	float specCoef; 	//[0,1]
 	float diffCoef;		//[0,1]
 	float ambCoef;		//[0,1]
-	int shininess;	//[0,128]
+	int shininess;		//[0,128]
 };
 
 uniform Material material;
@@ -42,13 +42,14 @@ void main()
 	vec4 normal4;
 
 	//transformacia normaly do eye space a znormovanie vysledku
-	normal4=normalMatrix * normalize(vec4(inNormal,1.0));
+	normal4 = normalMatrix * normalize(vec4( inNormal, 1.0));
 	normal=normalize(normal4.xyz);
 	
 	EyeVector = normalize(eye);//iba znormujem a posuniem dalej
+	vec4 tmp4 = normalMatrix * normalize(vec4( light.direction, 1.0));
 	lightDirection = normalize(light.direction);//znormujem a posuniem dalej
 
-	diffuse =  material.diffCoef * light.diffuse;// * NdotL pride az vo fragment shaderi
+	diffuse =  material.diffCoef * light.diffuse;
 	ambient = light.ambient * material.ambCoef;
 	specular = material.specCoef * light.specular;//zvysok pride vo fragment shaderi
 	shininess = material.shininess;//teba tiez len poslem
