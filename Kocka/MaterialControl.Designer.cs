@@ -49,7 +49,7 @@
             // Shinlabel
             // 
             this.Shinlabel.AutoSize = true;
-            this.Shinlabel.Location = new System.Drawing.Point(208, 206);
+            this.Shinlabel.Location = new System.Drawing.Point(208, 216);
             this.Shinlabel.Name = "Shinlabel";
             this.Shinlabel.Size = new System.Drawing.Size(46, 17);
             this.Shinlabel.TabIndex = 32;
@@ -59,14 +59,15 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(21, 210);
+            this.label5.MaximumSize = new System.Drawing.Size(100, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(69, 17);
+            this.label5.Size = new System.Drawing.Size(68, 34);
             this.label5.TabIndex = 31;
-            this.label5.Text = "Shininess";
+            this.label5.Text = "Phongov exponent";
             // 
             // ShininessTrackBar
             // 
-            this.ShininessTrackBar.Location = new System.Drawing.Point(98, 201);
+            this.ShininessTrackBar.Location = new System.Drawing.Point(98, 211);
             this.ShininessTrackBar.Maximum = 128;
             this.ShininessTrackBar.Name = "ShininessTrackBar";
             this.ShininessTrackBar.Size = new System.Drawing.Size(104, 56);
@@ -77,7 +78,7 @@
             // AmbLabel
             // 
             this.AmbLabel.AutoSize = true;
-            this.AmbLabel.Location = new System.Drawing.Point(208, 149);
+            this.AmbLabel.Location = new System.Drawing.Point(208, 154);
             this.AmbLabel.Name = "AmbLabel";
             this.AmbLabel.Size = new System.Drawing.Size(46, 17);
             this.AmbLabel.TabIndex = 29;
@@ -86,7 +87,7 @@
             // DiffLabel
             // 
             this.DiffLabel.AutoSize = true;
-            this.DiffLabel.Location = new System.Drawing.Point(208, 82);
+            this.DiffLabel.Location = new System.Drawing.Point(208, 91);
             this.DiffLabel.Name = "DiffLabel";
             this.DiffLabel.Size = new System.Drawing.Size(46, 17);
             this.DiffLabel.TabIndex = 28;
@@ -95,7 +96,7 @@
             // SpecLabel
             // 
             this.SpecLabel.AutoSize = true;
-            this.SpecLabel.Location = new System.Drawing.Point(208, 21);
+            this.SpecLabel.Location = new System.Drawing.Point(208, 26);
             this.SpecLabel.Name = "SpecLabel";
             this.SpecLabel.Size = new System.Drawing.Size(46, 17);
             this.SpecLabel.TabIndex = 27;
@@ -105,14 +106,15 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(21, 153);
+            this.label3.MaximumSize = new System.Drawing.Size(100, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(59, 17);
+            this.label3.Size = new System.Drawing.Size(78, 34);
             this.label3.TabIndex = 26;
-            this.label3.Text = "Ambient";
+            this.label3.Text = "Ambientný koeficient";
             // 
             // AmbientTrackBar
             // 
-            this.AmbientTrackBar.Location = new System.Drawing.Point(98, 144);
+            this.AmbientTrackBar.Location = new System.Drawing.Point(98, 149);
             this.AmbientTrackBar.Maximum = 100;
             this.AmbientTrackBar.Name = "AmbientTrackBar";
             this.AmbientTrackBar.Size = new System.Drawing.Size(104, 56);
@@ -124,14 +126,15 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(21, 87);
+            this.label2.MaximumSize = new System.Drawing.Size(100, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(52, 17);
+            this.label2.Size = new System.Drawing.Size(68, 34);
             this.label2.TabIndex = 24;
-            this.label2.Text = "Diffuse";
+            this.label2.Text = "Difúzny koeficient";
             // 
             // DiffuseTrackBar
             // 
-            this.DiffuseTrackBar.Location = new System.Drawing.Point(98, 78);
+            this.DiffuseTrackBar.Location = new System.Drawing.Point(98, 87);
             this.DiffuseTrackBar.Maximum = 100;
             this.DiffuseTrackBar.Name = "DiffuseTrackBar";
             this.DiffuseTrackBar.Size = new System.Drawing.Size(104, 56);
@@ -143,14 +146,15 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(21, 21);
+            this.label1.MaximumSize = new System.Drawing.Size(100, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 17);
+            this.label1.Size = new System.Drawing.Size(73, 34);
             this.label1.TabIndex = 22;
-            this.label1.Text = "Specular";
+            this.label1.Text = "Odrazový koeficient";
             // 
             // SpecularTrackBar
             // 
-            this.SpecularTrackBar.Location = new System.Drawing.Point(98, 16);
+            this.SpecularTrackBar.Location = new System.Drawing.Point(98, 21);
             this.SpecularTrackBar.Maximum = 100;
             this.SpecularTrackBar.Name = "SpecularTrackBar";
             this.SpecularTrackBar.Size = new System.Drawing.Size(104, 56);
@@ -177,7 +181,7 @@
             this.Controls.Add(this.SpecularTrackBar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "MaterialControl";
-            this.Text = "MaterialControl";
+            this.Text = "Materiálové vlastnosti";
             this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MaterialControl_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.ShininessTrackBar)).EndInit();

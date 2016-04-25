@@ -39,9 +39,6 @@ namespace Kocka
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
             Thread.CurrentThread.CurrentUICulture = CultureInfo.CreateSpecificCulture("en-US");
             RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = false;
-            //font = new QFont("..//..//Properties//data//Fonts//Anonymous.ttf", 10);
-            
-            
 
             amb = 0.29f; spec = 0.86f; diff = 0.57f; shin = 128;
             loaded = false;
@@ -271,6 +268,7 @@ namespace Kocka
             hPol = glControl1.Height / 2.0f;
             TrianglesRadioButton.Checked = true;
             RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
+            farebnaSkalaToolStripMenuItem.Checked = false;
             if (sfera)
             {
                 ZScale.Value = 10;
@@ -279,7 +277,7 @@ namespace Kocka
             }
             if (sur)
             {
-                ZScale.Value = 1;
+                ZScale.Value = 10;
                 wLomeno2 = 10.0f / (float)glControl1.Width;
                 hLomeno2 = 10.0f / (float)glControl1.Height;
             }
@@ -327,7 +325,7 @@ namespace Kocka
                     Reset();
                 RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = false;
                 RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
-                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripStatusLabel1.Text = "Pripravený...";
                 toolStripProgressBar1.Value = 0;
                 sdat.Scale(scale);
                 ZScale.Enabled = RekresliBtn.Enabled = true;
@@ -348,7 +346,7 @@ namespace Kocka
                     RotX_trackBar2.Value = RotY_trackBar1.Value = 0;
                 }
                 RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = true;
-                toolStripStatusLabel1.Text = "Fertig...";
+                toolStripStatusLabel1.Text = "Pripravený...";
                 toolStripProgressBar1.Value = 0;
                 surf.Scale(scale);
                 RotY_trackBar1.Enabled = RotX_trackBar2.Enabled = ZScale.Enabled = RekresliBtn.Enabled = true;

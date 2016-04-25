@@ -106,7 +106,7 @@ namespace Kocka
                 {
                     colorScale = new ColorScale(min, max, width, height);
                     CalculateColor();
-                    ScaleHeights(1.0f);
+                    ScaleHeights(10.0f);
                     CalculateNormals();
                     InitScene(false);
                     FirstDraw();
@@ -335,8 +335,6 @@ namespace Kocka
             progres progres = new progres(SetProgressBar);
             form.statusStrip1.Invoke(label, "Prebieha nastavovanie farieb...");
             color = colorScale.SetColorList(coords).ToArray();
-            //for (int i = 0; i < NumOfVertices; i++)
-            //color[i] = CalculateColor(coords[i].Z);
         }
 
         private void ScaleHeights(float L)
@@ -345,18 +343,18 @@ namespace Kocka
             progres progres = new progres(SetProgressBar);
             form.statusStrip1.Invoke(label, "Prebieha škálovanie výšok...");
             LinearFunction map_z;
-            LinearFunction percenta = new LinearFunction(1.0f, 50.0f, 0.5f, 0.01f);
+            LinearFunction percenta = new LinearFunction(50.0f, 1.0f, 0.5f, 0.01f);
             if((maxX-minX)>(maxY-minY))
                 map_z = new LinearFunction(min, max, 0, (maxX - minX) * percenta.Value(L));
             else
                 map_z = new LinearFunction(min, max, 0, (maxY - minY) * percenta.Value(L));
 
+            //System.Diagnostics.Debug.WriteLine("[{0},{1}]",map_z.Value(min),map_z.Value(max));
+            //System.Windows.Forms.MessageBox.Show("["+map_z.Value(min)+","+map_z.Value(max)+"]");
+
             int d = coords.Count / 100;
             float dx = minX + (maxX - minX) / 2.0f;
             float dy = minY + (maxY - minY) / 2.0f;
-            float dz = min / L + (max - min) / (L * 2.0f);
-            float dl = max - min;
-            L = L / 10;
 
             for (int i = 0; i < coords.Count; i++)
             {

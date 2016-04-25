@@ -28,13 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            //this.glControl1 = new OpenTK.GLControl();
-            this.glControl1 = new OpenTK.GLControl(new OpenTK.Graphics.GraphicsMode(new OpenTK.Graphics.ColorFormat(32), 24, 0, 8));
-
+            this.glControl1 = new OpenTK.GLControl();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RotY_trackBar1 = new System.Windows.Forms.TrackBar();
-            this.RotX_trackBar2 = new System.Windows.Forms.TrackBar();
             this.label1 = new System.Windows.Forms.Label();
             this.ZScale = new System.Windows.Forms.TrackBar();
             this.ZScale_value = new System.Windows.Forms.Label();
@@ -59,12 +56,17 @@
             this.label3 = new System.Windows.Forms.Label();
             this.perPixel_checkBox = new System.Windows.Forms.CheckBox();
             this.perFragment_checkBox = new System.Windows.Forms.CheckBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.RotX_trackBar2 = new System.Windows.Forms.TrackBar();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ZScale)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).BeginInit();
             this.SuspendLayout();
             // 
             // glControl1
@@ -76,7 +78,7 @@
             this.glControl1.Location = new System.Drawing.Point(0, 0);
             this.glControl1.Margin = new System.Windows.Forms.Padding(5);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(981, 683);
+            this.glControl1.Size = new System.Drawing.Size(981, 685);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.Load += new System.EventHandler(this.glControl1_Load);
@@ -109,27 +111,14 @@
             // 
             this.RotY_trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.RotY_trackBar1.Location = new System.Drawing.Point(48, 717);
+            this.RotY_trackBar1.Location = new System.Drawing.Point(0, 2);
             this.RotY_trackBar1.Maximum = 90;
             this.RotY_trackBar1.Minimum = -90;
             this.RotY_trackBar1.Name = "RotY_trackBar1";
-            this.RotY_trackBar1.Size = new System.Drawing.Size(983, 56);
+            this.RotY_trackBar1.Size = new System.Drawing.Size(985, 56);
             this.RotY_trackBar1.TabIndex = 40;
             this.RotY_trackBar1.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.RotY_trackBar1.ValueChanged += new System.EventHandler(this.RotX_trackBar2_ValueChanged);
-            // 
-            // RotX_trackBar2
-            // 
-            this.RotX_trackBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.RotX_trackBar2.Location = new System.Drawing.Point(12, 31);
-            this.RotX_trackBar2.Maximum = 90;
-            this.RotX_trackBar2.Minimum = -90;
-            this.RotX_trackBar2.Name = "RotX_trackBar2";
-            this.RotX_trackBar2.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.RotX_trackBar2.Size = new System.Drawing.Size(56, 689);
-            this.RotX_trackBar2.TabIndex = 39;
-            this.RotX_trackBar2.ValueChanged += new System.EventHandler(this.RotX_trackBar2_ValueChanged);
             // 
             // label1
             // 
@@ -224,7 +213,7 @@
             // bielePozadieToolStripMenuItem
             // 
             this.bielePozadieToolStripMenuItem.Name = "bielePozadieToolStripMenuItem";
-            this.bielePozadieToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.bielePozadieToolStripMenuItem.Size = new System.Drawing.Size(187, 24);
             this.bielePozadieToolStripMenuItem.Text = "Biele pozadie";
             this.bielePozadieToolStripMenuItem.CheckedChanged += new System.EventHandler(this.bielePozadieToolStripMenuItem_CheckedChanged);
             this.bielePozadieToolStripMenuItem.Click += new System.EventHandler(this.bielePozadieToolStripMenuItem_Click);
@@ -232,21 +221,21 @@
             // farebnaSkalaToolStripMenuItem
             // 
             this.farebnaSkalaToolStripMenuItem.Name = "farebnaSkalaToolStripMenuItem";
-            this.farebnaSkalaToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
-            this.farebnaSkalaToolStripMenuItem.Text = "Farebna skala";
+            this.farebnaSkalaToolStripMenuItem.Size = new System.Drawing.Size(187, 24);
+            this.farebnaSkalaToolStripMenuItem.Text = "Farebná škála";
             this.farebnaSkalaToolStripMenuItem.Click += new System.EventHandler(this.farebnaSkalaToolStripMenuItem_Click);
             // 
             // resetujPohladToolStripMenuItem
             // 
             this.resetujPohladToolStripMenuItem.Name = "resetujPohladToolStripMenuItem";
-            this.resetujPohladToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
-            this.resetujPohladToolStripMenuItem.Text = "Resetuj pohlad...";
+            this.resetujPohladToolStripMenuItem.Size = new System.Drawing.Size(187, 24);
+            this.resetujPohladToolStripMenuItem.Text = "Resetuj pohľad...";
             this.resetujPohladToolStripMenuItem.Click += new System.EventHandler(this.resetujPohladToolStripMenuItem_Click);
             // 
             // materiálToolStripMenuItem
             // 
             this.materiálToolStripMenuItem.Name = "materiálToolStripMenuItem";
-            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(186, 24);
+            this.materiálToolStripMenuItem.Size = new System.Drawing.Size(187, 24);
             this.materiálToolStripMenuItem.Text = "Materiál";
             this.materiálToolStripMenuItem.Click += new System.EventHandler(this.materiálToolStripMenuItem_Click);
             // 
@@ -259,7 +248,7 @@
             this.TrianglesRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.TrianglesRadioButton.AutoSize = true;
             this.TrianglesRadioButton.Checked = true;
-            this.TrianglesRadioButton.Location = new System.Drawing.Point(1041, 186);
+            this.TrianglesRadioButton.Location = new System.Drawing.Point(1061, 186);
             this.TrianglesRadioButton.Name = "TrianglesRadioButton";
             this.TrianglesRadioButton.Size = new System.Drawing.Size(72, 21);
             this.TrianglesRadioButton.TabIndex = 46;
@@ -272,7 +261,7 @@
             // 
             this.WireframeRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.WireframeRadioButton.AutoSize = true;
-            this.WireframeRadioButton.Location = new System.Drawing.Point(1041, 214);
+            this.WireframeRadioButton.Location = new System.Drawing.Point(1061, 214);
             this.WireframeRadioButton.Name = "WireframeRadioButton";
             this.WireframeRadioButton.Size = new System.Drawing.Size(52, 21);
             this.WireframeRadioButton.TabIndex = 47;
@@ -284,7 +273,7 @@
             // 
             this.PointsRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PointsRadioButton.AutoSize = true;
-            this.PointsRadioButton.Location = new System.Drawing.Point(1041, 241);
+            this.PointsRadioButton.Location = new System.Drawing.Point(1061, 241);
             this.PointsRadioButton.Name = "PointsRadioButton";
             this.PointsRadioButton.Size = new System.Drawing.Size(60, 21);
             this.PointsRadioButton.TabIndex = 48;
@@ -314,8 +303,8 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(151, 20);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(87, 20);
+            this.toolStripStatusLabel1.Text = "Pripravený...";
             this.toolStripStatusLabel1.TextChanged += new System.EventHandler(this.toolStripStatusLabel1_TextChanged);
             // 
             // label2
@@ -328,13 +317,14 @@
             this.label2.Size = new System.Drawing.Size(105, 17);
             this.label2.TabIndex = 53;
             this.label2.Text = "Voľba shadera:";
+            this.label2.Visible = false;
             // 
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(1038, 162);
+            this.label3.Location = new System.Drawing.Point(1058, 162);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 17);
             this.label3.TabIndex = 54;
@@ -353,6 +343,7 @@
             this.perPixel_checkBox.TabIndex = 51;
             this.perPixel_checkBox.Text = "pixel";
             this.perPixel_checkBox.UseVisualStyleBackColor = true;
+            this.perPixel_checkBox.Visible = false;
             this.perPixel_checkBox.Click += new System.EventHandler(this.perPixel_checkBox_Click);
             // 
             // perFragment_checkBox
@@ -366,14 +357,51 @@
             this.perFragment_checkBox.TabIndex = 52;
             this.perFragment_checkBox.Text = "fragment";
             this.perFragment_checkBox.UseVisualStyleBackColor = true;
+            this.perFragment_checkBox.Visible = false;
             this.perFragment_checkBox.CheckedChanged += new System.EventHandler(this.perFragment_checkBox_CheckedChanged);
             this.perFragment_checkBox.Click += new System.EventHandler(this.perFragment_checkBox_Click);
+            // 
+            // panel2
+            // 
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.panel2.Controls.Add(this.RotX_trackBar2);
+            this.panel2.Location = new System.Drawing.Point(12, 34);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(104, 683);
+            this.panel2.TabIndex = 55;
+            // 
+            // panel3
+            // 
+            this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel3.Controls.Add(this.RotY_trackBar1);
+            this.panel3.Location = new System.Drawing.Point(48, 720);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(985, 58);
+            this.panel3.TabIndex = 56;
+            // 
+            // RotX_trackBar2
+            // 
+            this.RotX_trackBar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.RotX_trackBar2.Location = new System.Drawing.Point(3, 3);
+            this.RotX_trackBar2.Maximum = 90;
+            this.RotX_trackBar2.Minimum = -90;
+            this.RotX_trackBar2.Name = "RotX_trackBar2";
+            this.RotX_trackBar2.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.RotX_trackBar2.Size = new System.Drawing.Size(56, 677);
+            this.RotX_trackBar2.TabIndex = 39;
+            this.RotX_trackBar2.ValueChanged += new System.EventHandler(this.RotX_trackBar2_ValueChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1150, 788);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.perFragment_checkBox);
@@ -383,26 +411,26 @@
             this.Controls.Add(this.TrianglesRadioButton);
             this.Controls.Add(this.RekresliBtn);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.RotX_trackBar2);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.ZScale_value);
             this.Controls.Add(this.ZScale);
-            this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.RotY_trackBar1);
+            this.Controls.Add(this.panel2);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
-            this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.RotY_trackBar1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ZScale)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotX_trackBar2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -414,7 +442,6 @@
         private System.Windows.Forms.Panel panel1;
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.TrackBar RotY_trackBar1;
-        private System.Windows.Forms.TrackBar RotX_trackBar2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TrackBar ZScale;
         private System.Windows.Forms.Label ZScale_value;
@@ -439,6 +466,9 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox perPixel_checkBox;
         private System.Windows.Forms.CheckBox perFragment_checkBox;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.TrackBar RotX_trackBar2;
     }
 }
 
