@@ -62,7 +62,7 @@ namespace VolumeRendering.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to // for raycasting
-        ///#version 400
+        ///#version 330
         ///
         ///in vec3 Color;
         ///layout (location = 0) out vec4 FragColor;
@@ -82,7 +82,7 @@ namespace VolumeRendering.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to // for raycasting
-        ///#version 400
+        ///#version 330
         ///
         ///layout(location = 0) in vec3 VerPos;
         ///layout(location = 1) in vec3 VerClr;
@@ -112,24 +112,24 @@ namespace VolumeRendering.Properties {
         ///   Looks up a localized string similar to #version 330
         ///
         ///in vec3 EntryPoint;
-        ///in vec4 ExitPointCoord;
         ///
         ///uniform sampler2D ExitPoints;
         ///uniform sampler3D VolumeTex;
         ///uniform sampler1D TransferFunc;  
         ///uniform float     StepSize;
         ///uniform float     AlphaReduce;
+        ///uniform float     scaleCoeff;
         ///uniform vec2      ScreenSize;
+        ///
         ///layout (location = 0) out vec4 FragColor;
         ///
         ///void main()
         ///{
         ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
         ///	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
+        ///	vec3 rayDirection = normalize(exitPoint - EntryPoint);
         ///
-        ///	//background need no raycasting
-        ///	if (EntryPoint == exitPoint)
-        ///		discard; [rest of string was truncated]&quot;;.
+        ///	//odstran [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string rcCustomTffFrag {
             get {
@@ -141,7 +141,6 @@ namespace VolumeRendering.Properties {
         ///   Looks up a localized string similar to #version 330
         ///
         ///in vec3 EntryPoint;
-        ///in vec4 ExitPointCoord;
         ///
         ///uniform sampler2D ExitPoints;
         ///uniform sampler3D VolumeTex;
@@ -149,17 +148,17 @@ namespace VolumeRendering.Properties {
         ///uniform float     StepSize;
         ///uniform float     AlphaReduce;
         ///uniform vec2      ScreenSize;
+        ///uniform float     scaleCoeff;
         ///
         ///layout (location = 0) out vec4 FragColor;
         ///
         ///void main()
         ///{
-        ///	vec4 normal4;
         ///	//gl_FragCoord --&gt; http://www.txutxi.com/?p=182
         ///	vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
         ///
-        ///	if (EntryPoint == exitPoint)
-        ///		//background need no ray [rest of string was truncated]&quot;;.
+        ///	//odstranenie miznutia objektu pri prilisnom priblizeni
+        ///	vec3 ent [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string rcCustomTffShadedFrag {
             get {
@@ -168,7 +167,7 @@ namespace VolumeRendering.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to #version 400
+        ///   Looks up a localized string similar to #version 330
         ///
         ///in vec3 EntryPoint;
         ///in vec4 ExitPointCoord;
@@ -224,27 +223,23 @@ namespace VolumeRendering.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to #version 400
+        ///   Looks up a localized string similar to #version 330
         ///
         ///layout (location = 0) in vec3 VerPos;
-        ///// have to use this variable!!!, or it will be very hard to debug for AMD video card
         ///layout (location = 1) in vec3 VerClr;  
         ///
-        ///
         ///out vec3 EntryPoint;
-        ///out vec4 ExitPointCoord;
-        ///
         ///uniform mat4 projectionMatrix;
         ///uniform mat4 modelViewMatrix;
         ///
         ///void main()
         ///{
         ///	//posunutie do stredu obrazovky
-        ///	vec3 tmp = vec3(-0.5f,-0.5f,-0.5f);
-        ///	tmp=VerPos+tmp; 
-        ///	EntryPoint = VerClr;
+        ///	vec3 tmp = VerPos+vec3(-0.5f,-0.5f,-0.5f); 
+        ///	EntryPoint = VerPos;
         ///	gl_Position = projectionMatrix*modelViewMatrix * vec4(tmp,1.0);
-        ///	ExitPointCoord [rest of string was truncated]&quot;;.
+        ///}
+        ///.
         /// </summary>
         internal static string rcVert {
             get {
@@ -258,6 +253,16 @@ namespace VolumeRendering.Properties {
         internal static System.Drawing.Bitmap temne_logo {
             get {
                 object obj = ResourceManager.GetObject("temne_logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap temne_logo2 {
+            get {
+                object obj = ResourceManager.GetObject("temne_logo2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

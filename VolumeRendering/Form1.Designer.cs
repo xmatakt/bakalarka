@@ -60,6 +60,9 @@
             this.saveIamgeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveTransferFunctionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadTransferFunctionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeBackgroundColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.barzoBordelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.button2 = new System.Windows.Forms.Button();
             this.info_label = new System.Windows.Forms.Label();
@@ -191,9 +194,10 @@
             // 
             this.color_label.AutoSize = true;
             this.color_label.BackColor = System.Drawing.Color.Red;
-            this.color_label.Location = new System.Drawing.Point(82, 521);
+            this.color_label.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.color_label.Location = new System.Drawing.Point(96, 521);
             this.color_label.Name = "color_label";
-            this.color_label.Size = new System.Drawing.Size(44, 17);
+            this.color_label.Size = new System.Drawing.Size(46, 19);
             this.color_label.TabIndex = 5;
             this.color_label.Text = "         ";
             this.color_label.Click += new System.EventHandler(this.color_label_Click);
@@ -334,7 +338,7 @@
             this.panel2.Controls.Add(this.listView3);
             this.panel2.Controls.Add(this.color_label);
             this.panel2.Controls.Add(this.listView2);
-            this.panel2.Location = new System.Drawing.Point(12, 42);
+            this.panel2.Location = new System.Drawing.Point(13, 42);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(176, 697);
             this.panel2.TabIndex = 18;
@@ -399,7 +403,8 @@
             this.menuStrip1.AutoSize = false;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1});
+            this.toolStripMenuItem1,
+            this.settingsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1028, 28);
@@ -420,30 +425,53 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(232, 24);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(223, 24);
             this.openToolStripMenuItem.Text = "Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveIamgeToolStripMenuItem
             // 
             this.saveIamgeToolStripMenuItem.Name = "saveIamgeToolStripMenuItem";
-            this.saveIamgeToolStripMenuItem.Size = new System.Drawing.Size(232, 24);
-            this.saveIamgeToolStripMenuItem.Text = "Save image...";
+            this.saveIamgeToolStripMenuItem.Size = new System.Drawing.Size(223, 24);
+            this.saveIamgeToolStripMenuItem.Text = "Save image";
             this.saveIamgeToolStripMenuItem.Click += new System.EventHandler(this.saveIamgeToolStripMenuItem_Click);
             // 
             // saveTransferFunctionToolStripMenuItem
             // 
             this.saveTransferFunctionToolStripMenuItem.Name = "saveTransferFunctionToolStripMenuItem";
-            this.saveTransferFunctionToolStripMenuItem.Size = new System.Drawing.Size(232, 24);
-            this.saveTransferFunctionToolStripMenuItem.Text = "Save transfer function...";
+            this.saveTransferFunctionToolStripMenuItem.Size = new System.Drawing.Size(223, 24);
+            this.saveTransferFunctionToolStripMenuItem.Text = "Save transfer function";
             this.saveTransferFunctionToolStripMenuItem.Click += new System.EventHandler(this.saveTransferFunctionToolStripMenuItem_Click);
             // 
             // loadTransferFunctionToolStripMenuItem
             // 
             this.loadTransferFunctionToolStripMenuItem.Name = "loadTransferFunctionToolStripMenuItem";
-            this.loadTransferFunctionToolStripMenuItem.Size = new System.Drawing.Size(232, 24);
-            this.loadTransferFunctionToolStripMenuItem.Text = "Load transfer function...";
+            this.loadTransferFunctionToolStripMenuItem.Size = new System.Drawing.Size(223, 24);
+            this.loadTransferFunctionToolStripMenuItem.Text = "Load transfer function";
             this.loadTransferFunctionToolStripMenuItem.Click += new System.EventHandler(this.loadTransferFunctionToolStripMenuItem_Click);
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.changeBackgroundColorToolStripMenuItem,
+            this.barzoBordelToolStripMenuItem});
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(74, 24);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            // 
+            // changeBackgroundColorToolStripMenuItem
+            // 
+            this.changeBackgroundColorToolStripMenuItem.Name = "changeBackgroundColorToolStripMenuItem";
+            this.changeBackgroundColorToolStripMenuItem.Size = new System.Drawing.Size(249, 24);
+            this.changeBackgroundColorToolStripMenuItem.Text = "Change background color";
+            this.changeBackgroundColorToolStripMenuItem.Click += new System.EventHandler(this.changeBackgroundColorToolStripMenuItem_Click);
+            // 
+            // barzoBordelToolStripMenuItem
+            // 
+            this.barzoBordelToolStripMenuItem.Name = "barzoBordelToolStripMenuItem";
+            this.barzoBordelToolStripMenuItem.Size = new System.Drawing.Size(249, 24);
+            this.barzoBordelToolStripMenuItem.Text = "Barzo bordel";
+            this.barzoBordelToolStripMenuItem.Click += new System.EventHandler(this.barzoBordelToolStripMenuItem_Click);
             // 
             // saveFileDialog1
             // 
@@ -466,7 +494,7 @@
             this.info_label.Size = new System.Drawing.Size(163, 123);
             this.info_label.TabIndex = 20;
             this.info_label.Text = "Now you are using loaded transfer function which can not be edited.\r\nTo make your" +
-    " own transfer function, click OwnTff button.\r\n";
+    " own transfer function, click on OwnTff button.\r\n";
             // 
             // panel3
             // 
@@ -578,14 +606,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1028, 840);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.output);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel3);
             this.Name = "Form1";
-            this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
@@ -651,6 +678,9 @@
         private System.Windows.Forms.Label shadingInfo_label;
         private System.Windows.Forms.ListBox output;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem changeBackgroundColorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem barzoBordelToolStripMenuItem;
     }
 }
 

@@ -29,10 +29,6 @@ void main()
 	float stepLength= length(Step);
 	float LengthSum = 0.0f;
 	float Length = length(exitPoint - EntryPoint);
-
-	//len preto aby to islo
-	//vec4 tmp = texture(TransferFunc, value);
-	//
 	
 	for(int i=0; i < 1600; i++)
 	{

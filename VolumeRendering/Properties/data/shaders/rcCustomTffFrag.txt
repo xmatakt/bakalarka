@@ -1,7 +1,6 @@
 #version 330
 
 in vec3 EntryPoint;
-in vec4 ExitPointCoord;
 
 uniform sampler2D ExitPoints;
 uniform sampler3D VolumeTex;
@@ -10,6 +9,9 @@ uniform float     StepSize;
 uniform float     AlphaReduce;
 uniform float     scaleCoeff;
 uniform vec2      ScreenSize;
+
+//uniform mat4 normalMatrix;
+
 layout (location = 0) out vec4 FragColor;
 
 void main()
@@ -20,6 +22,7 @@ void main()
 
 	//odstranenie miznutia objektu pri prilisnom priblizeni
 	vec3 entryPoint = vec3(0.0f);
+
 	if(scaleCoeff >= 2.7f)
 	{
 		float tmp = min((scaleCoeff - 2.7f) * 0.1f, 1.0f);
@@ -39,27 +42,32 @@ void main()
 	
 	//vec3 rayDirection = normalize(exitPoint - entryPoint);
 	vec4 currentPosition = vec4(entryPoint, 0.0f);
-	vec4 colorSum = vec4(.0f,.0f,.0f,.0f);
-	vec4 color = vec4(0.0f,0.0f,0.0f,0.0f);
-	vec4 value = vec4(0.0f);
+	vec4 colorSum = vec4(0.0f,0.0f,0.0f,0.0f);
+	vec4 color = vec4(0.0f);
+	float value = .0f;
 
 	vec3 Step = rayDirection * StepSize;
 	float stepLength= length(Step);
 	float LengthSum = 0.0f;
+	float alphaSum = .0f;
 	float Length = length(exitPoint - entryPoint);
+	float d = round(Length/StepSize);
 	
-	for(int i=0; i < 16000; i++)
+	for(int i=0; i < d; i++)
 	{
 		currentPosition.w = 0.0f;
-		value = texture(VolumeTex, currentPosition.xyz);
-		color = texture(TransferFunc, value.a);
+		value = texture(VolumeTex, currentPosition.xyz).a;
+		color = texture(TransferFunc, value);
 
 		//reduce the alpha to have a more transparent result
 		color.a *= AlphaReduce;
-		
-		//Front to back blending
 		color.rgb *= color.a;
-		colorSum = (1.0f - colorSum.a) * color + colorSum;
+
+		//Front to back blending
+		//colorSum += (1.0f - alphaSum) * color;
+		//alphaSum += (1.0f - alphaSum) * color.a;
+
+		colorSum += (1.0f - colorSum.a) * color;
 		
 		//accumulate length
 		LengthSum += stepLength;

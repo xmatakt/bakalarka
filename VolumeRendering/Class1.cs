@@ -74,6 +74,14 @@ namespace Shaders
             return Loaded;
         }
 
+        public void DetachShader(int programHandle)
+        {
+            if (!Loaded)
+                return;
+            Loaded = false;
+            GL.DetachShader(programHandle, ShaderHandle);
+        }
+
         public void DeleteShader()
         {
             if (!Loaded)

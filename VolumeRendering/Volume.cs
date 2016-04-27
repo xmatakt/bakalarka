@@ -11,7 +11,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace VolumeRendering
 {
-    class Volume
+    public class Volume
     {
         private string file;//vstupny file od uzivatela
         private string gradFile;
@@ -27,7 +27,7 @@ namespace VolumeRendering
             MatrixStore_Translations, MatrixStore_Rotations, MatrixStore_Scales;
         private bool shaded;//pre volbu uzivatela, ci chce tienovanie
         private bool gradient;//ci normaly treba pocitat, alebo nie
-        private bool scale;
+        private Vector3 volumeColor, backgroundColor;
         private TransferFunction transferFunction;
         private List<KeyValuePair<byte,int>> IsoTable;
         private Form1 form;
@@ -50,6 +50,8 @@ namespace VolumeRendering
             tmp4.Add(new Vector4(1.0f, 1.0f, .85f, 256));
 
             transferFunction = new TransferFunction(tmp2, tmp4);
+            volumeColor = new Vector3(0.0f, 0.0f, 0.0f);
+            backgroundColor = new Vector3(0.0f, 0.0f, 0.0f);
 
             this.shaded = shaded;
             this.form = form;
@@ -58,7 +60,6 @@ namespace VolumeRendering
             height = texHeight = h;
             vol_max = 0;
             gradient = false;
-            scale = true;
 
             stepSize = 0.001f;
             AlphaReduce = 0.5f;
@@ -87,18 +88,18 @@ namespace VolumeRendering
 
         private void InitVBO()
         {
-            float tmp = -0.0f;
             float[] vertices = 
              {
-	            0.0f+tmp, 0.0f+tmp, 0.0f+tmp,
-	            0.0f+tmp, 0.0f+tmp, 1.0f+tmp,
-	            0.0f+tmp, 1.0f+tmp, 0.0f+tmp,
-	            0.0f+tmp, 1.0f+tmp, 1.0f+tmp,
-	            1.0f+tmp, 0.0f+tmp, 0.0f+tmp,
-	            1.0f+tmp, 0.0f+tmp, 1.0f+tmp,
-	            1.0f+tmp, 1.0f+tmp, 0.0f+tmp,
-	            1.0f+tmp, 1.0f+tmp, 1.0f+tmp
+                0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f,
+                1.0f, 1.0f, 1.0f,
              };
+
             // draw the six faces of the boundbox by drawing triangles
             // draw it contra-clockwise
             // front: 1 5 7 3
@@ -123,23 +124,19 @@ namespace VolumeRendering
                     4,5,1
                 };
 
-            int[] gbo = new int[2];
-
+            int[] vbo = new int[2];
             VAO = GL.GenVertexArray();
-            GL.GenBuffers(2, gbo);
-            verticesID = gbo[0];
-            indicesID = gbo[1];
-
+            GL.GenBuffers(2, vbo);
+            verticesID = vbo[0];
+            indicesID = vbo[1];
             GL.BindVertexArray(VAO);
-
             //pozicia + farba
             GL.BindBuffer(BufferTarget.ArrayBuffer, verticesID);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(24 * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(0); //for vertex location (pozicia je rovnaka ako farba)
+            GL.EnableVertexAttribArray(0); //pozícia bude mať atribút 0
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(1);//for vertex color
+            GL.EnableVertexAttribArray(1); //farbabude mať atribút 1
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-
             //indices
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, indicesID);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(int) * 36), indices, BufferUsageHint.StaticDraw);
@@ -184,14 +181,14 @@ namespace VolumeRendering
         {
             try
             {
-                byte[] tff = transferFunction.GetTransferFunction();
                 //vytvorim 1D texturu z tff[]
+                //GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                //GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+                byte[] tff = transferFunction.GetTransferFunction();
                 tffTexID = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
                 GL.TexParameter(TextureTarget.Texture1D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-                GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
                 GL.TexImage1D(TextureTarget.Texture1D, 0, PixelInternalFormat.Rgba8, 256, 0, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
             }
             catch
@@ -380,16 +377,17 @@ namespace VolumeRendering
 
         private void InitFrameBuffer(int texID, int texWidth, int texHeight)
         {
-            // create a depth buffer for our framebuffer
+            // vytvorenie hĺbkového bufferu pre framebuffer
             depthBufferID = GL.GenRenderbuffer();
             GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthBufferID);
             GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, texWidth, texHeight);
-
-            // attach the texture and the depth buffer to the framebuffer
+            // pripojenie textúry a hĺbkového bufferu na framebuffer
             frameBufferID = GL.GenFramebuffer();
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBufferID);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texID, 0);
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBufferID);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D, texID, 0);
+            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
+                RenderbufferTarget.Renderbuffer, depthBufferID);
 
             GL.Enable(EnableCap.DepthTest);
         }
@@ -409,9 +407,9 @@ namespace VolumeRendering
 
             //toto tu bolo ale neviem preco, po odstraneni sa nic nedeje
             // Bind index 0 to the shader input variable "VerPos"
-            GL.BindAttribLocation(programID, 0, "VerPos");
+            //GL.BindAttribLocation(programID, 0, "VerPos");
             // Bind index 1 to the shader input variable "VerClr"
-            GL.BindAttribLocation(programID, 1, "VerClr");
+            //GL.BindAttribLocation(programID, 1, "VerClr");
 
             //pripojim zvolene shadere a zlinkujem program
             spMain.AddShaderToProgram(vertShaderID);
@@ -453,7 +451,7 @@ namespace VolumeRendering
 
         private void Render(CullFaceMode mode)
         {
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL.ClearColor(backgroundColor.X, backgroundColor.Y, backgroundColor.Z, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             spMain.UseProgram();
             spMain.SetUniform("modelViewMatrix", Current);
@@ -504,7 +502,43 @@ namespace VolumeRendering
             }
 
         #region nacitavanie a zapisovanie suborov
+        
+        public void LoadTransferFunction(string pathToFile)
+        {
+            try
+            {
+                int count = File.ReadAllBytes(pathToFile).Length;
+                byte[] tff = new byte[count];
 
+                BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
+                //naplnim tff[] 
+                br.Read(tff, 0, count);
+                br.Close();
+
+                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
+                //prepise data, nemusim vytvarat novu texturu a nicit staru
+                GL.TexSubImage1D(TextureTarget.Texture1D, 0, 0, 256, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
+            }
+        }
+
+        public void SaveTransferFunction(string path)
+        {
+            byte[] arr = transferFunction.GetTransferFunction();
+            BinaryWriter br = new BinaryWriter(new FileStream(path, FileMode.Create), Encoding.ASCII);
+            for (int i = 0; i < arr.Length; i++)
+                br.Write(arr[i]);
+            br.Flush();
+            br.Close();
+        }
+       
         private string LoadTsfFile(string pathToFile, int[] dimensions)
         {
             string rawFile = "";
@@ -646,7 +680,6 @@ namespace VolumeRendering
         public void Rotate(float x, float y, float angle)
         {
             RotationMatrix = Matrix4.CreateFromAxisAngle(new Vector3(y, x, 0.0f), angle);
-
             Current = (MatrixStore_Scales * ScaleMatrix) * (MatrixStore_Rotations * RotationMatrix) * (TranslationMatrix * MatrixStore_Translations) * modelViewMatrix;
             //spMain.SetUniform("modelViewMatrix", Current);
         }
@@ -679,6 +712,12 @@ namespace VolumeRendering
         public void SetAlphaReduce(float AlphaReduce) { this.AlphaReduce = AlphaReduce; }
 
         public void SetStepSize(float step) { stepSize = step; }
+
+        public void SetVolumeColor(Vector3 color) { volumeColor = color; }
+
+        public void SetVolumeColor(System.Drawing.Color color) { volumeColor = new Vector3(color.R/(float)255,color.G/(float)255,color.B/(float)255); }
+
+        public void SetBackgroundColor(System.Drawing.Color color) { backgroundColor = new Vector3(color.R / (float)255, color.G / (float)255, color.B / (float)255); }
 
         //public void SetScaleCoeff(float scaleCoeff) { this.scaleCoeff = scaleCoeff; }
 
@@ -745,42 +784,6 @@ namespace VolumeRendering
             spMain.SetUniform("TransferFunc", 0);
         }
 
-        public void SaveTransferFunction(string path)
-        {
-            byte[] arr = transferFunction.GetTransferFunction();
-            BinaryWriter br = new BinaryWriter(new FileStream(path, FileMode.Create), Encoding.ASCII);
-            for (int i = 0; i < arr.Length; i++)
-                br.Write(arr[i]);
-            br.Flush();
-            br.Close();
-        }
-
-        public void LoadTransferFunction(string pathToFile)
-        {
-            try
-            {
-                int count = File.ReadAllBytes(pathToFile).Length;
-                byte[] tff = new byte[count];
-
-                BinaryReader br = new BinaryReader(File.Open(pathToFile, FileMode.Open));
-                //naplnim tff[] 
-                br.Read(tff, 0, count);
-                br.Close();
-
-                GL.BindTexture(TextureTarget.Texture1D, tffTexID);
-                //prepise data, nemusim vytvarat novu texturu a nicit staru
-                GL.TexSubImage1D(TextureTarget.Texture1D, 0, 0, 256, PixelFormat.Rgba, PixelType.UnsignedByte, tff);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                System.Windows.Forms.MessageBox.Show("Nepodarilo sa najst subor: " + pathToFile);
-            }
-            catch
-            {
-                System.Windows.Forms.MessageBox.Show("Vyskytla sa chyba pri nacitani suboru: " + pathToFile);
-            }
-        }
-
         #endregion
 
         #region funkcie pre shading
@@ -791,11 +794,14 @@ namespace VolumeRendering
             form.AddTextToOutput("0%");
 
             int n = sampleSize;
+            //int h = 2 * n;
             Vector3 normal = new Vector3(0.0f);
             Vector3 s1, s2;
             int len = VolumeData.Length/10;
 
             int index = 0;
+            //vypocet gradientov cez centralnu diferenciu
+            //http://http.developer.nvidia.com/GPUGems/gpugems_ch39.html
             for (int z = 0; z < vol_max; z++)
             {
                 for (int y = 0; y < vol_max; y++)
@@ -809,7 +815,7 @@ namespace VolumeRendering
                         s1.Z = SampleVolume(x, y, z - n, VolumeData);
                         s2.Z = SampleVolume(x, y, z + n, VolumeData);
 
-                        normal = Vector3.Normalize(s2 - s1);
+                        normal = Vector3.Normalize(0.5f * (s2 - s1));
                         VolumeData[index] = (Half)normal.X;//0
                         VolumeData[index + 1] = (Half)normal.Y;//1
                         VolumeData[index + 2] = (Half)normal.Z;//2
@@ -827,7 +833,7 @@ namespace VolumeRendering
                     }
                 }
             }
-            form.AddTextToOutput("100%");
+            form.RewriteLastItem("100%");
             form.AddTextToOutput("Done.");
         }
 
@@ -855,7 +861,7 @@ namespace VolumeRendering
             
             form.AddTextToOutput("Done.");
 
-            GenerateGradients(2, VolumeData);
+            GenerateGradients(1, VolumeData);
             return VolumeData;
         }
 

@@ -1,7 +1,6 @@
 #version 330
 
 in vec3 EntryPoint;
-in vec4 ExitPointCoord;
 
 uniform sampler2D ExitPoints;
 uniform sampler3D VolumeTex;
@@ -23,7 +22,7 @@ void main()
 	if(scaleCoeff >= 2.7f)
 	{
 		float tmp = min((scaleCoeff - 2.7f) * 0.1f, 1.0f);
-		entryPoint = EntryPoint + tmp * (exitPoint - EntryPoint);//rayDirection;
+		entryPoint = EntryPoint + tmp * (exitPoint - EntryPoint);
 	}
 	else
 	{
@@ -37,16 +36,17 @@ void main()
 	
 	vec3 rayDirection = normalize(exitPoint - entryPoint);
 	vec4 currentPosition = vec4(entryPoint, 0.0f);
-	vec4 colorSum = vec4(.0f,.0f,.0f,0.0f);
-	vec4 color = vec4(0.0f,0.0f,0.0f,0.0f);
-	vec4 value = vec4(0.0f);
+	vec4 colorSum = vec4(.0f);
+	vec4 color = vec4(.0f);
+	vec4 value = vec4(.0f);
 
 	vec3 Step = rayDirection * StepSize;
 	float stepLength= length(Step);
 	float LengthSum = 0.0f;
 	float Length = length(exitPoint - entryPoint);
+	float d = round(Length/StepSize);
 	
-	for(int i=0; i < 16000; i++)
+	for(int i=0; i < d; i++)
 	{
 		currentPosition.w = 0.0f;
 		//value --> (nx,ny,nz,isovalue)
@@ -59,12 +59,15 @@ void main()
 		color.a *= AlphaReduce;
 		
 		//diffuse shading + fake ambient lighting
+		//vec3 L = vec3(0.0f, 0.0f, 1.0f);
+		//float s = max (dot (normalize(value.xyz), L), 0.0);
 		float s = max(dot(value.xyz, value.xyz),0.0);
-		color.rgb = s * color.rgb + .1f * color.rgb;
+
+		color.rgb = s * color.rgb + 0.1f * color.rgb;
 
 		//Front to back blending
 		color.rgb *= color.a;
-		colorSum = (1.0f - colorSum.a) * color + colorSum;
+		colorSum += (1.0f - colorSum.a) * color;
 		
 		//accumulate length
 		LengthSum += stepLength;

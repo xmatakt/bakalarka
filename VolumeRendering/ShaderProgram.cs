@@ -87,8 +87,8 @@ namespace Shaders
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
             if (location >= 0)
                 GL.UniformMatrix4(location, false, ref matrix);
-            else
-                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
+            //else
+            //    System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
 
         public void SetUniform(string uniformName, int value)
@@ -110,8 +110,8 @@ namespace Shaders
             int location = GL.GetUniformLocation(ProgramHandle, uniformName);
             if (location >= 0)
                 GL.Uniform1(location, value);
-            else
-                System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
+            //else
+            //    System.Windows.Forms.MessageBox.Show(uniformName + " is not bind to the uniform!");
         }
 
         public void SetUniform(string uniformName, Vector3 vector)

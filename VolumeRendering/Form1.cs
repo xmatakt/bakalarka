@@ -229,8 +229,8 @@ namespace VolumeRendering
         //volba farby
         private void color_label_Click(object sender, EventArgs e)
         {
-            colorDialog1.ShowDialog();
-            color_label.BackColor = colorDialog1.Color;
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+                color_label.BackColor = colorDialog1.Color;
         }
 
         //pridanie dvojice iso hodnota - farba
@@ -504,6 +504,19 @@ namespace VolumeRendering
             else
                 AddTextToOutput(text);
             output.Refresh();
+        }
+
+        private void changeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if ((colorDialog1.ShowDialog() == DialogResult.OK) && volumeLoaded)
+                volume.SetBackgroundColor(colorDialog1.Color);
+            glControl1.Invalidate();
+        }
+
+        private void barzoBordelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            IsoHunter ih = new IsoHunter(volume,glControl1);
+            ih.Show();
         }
     }
 }
